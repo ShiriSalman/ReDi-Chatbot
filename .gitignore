@@ -427,3 +427,19 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+# Python virtual environment
+.venv/
+.venv-backup/
+
+# Python testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# JavaScript testing (Jest)
+coverage/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
