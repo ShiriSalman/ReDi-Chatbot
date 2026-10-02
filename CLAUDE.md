@@ -39,10 +39,10 @@ The Task 2 question set is the main measure of correctness for the whole project
 ## Commands
 
 - `npm install`: installs the dev dependencies (Jest).
-- `npx jest`: runs the tests. `npm test` is still the npm placeholder and always fails.
+- `npm test` (or `npx jest`): runs the tests.
 - `npx jest path/to/file.test.js -t "test name"`: runs a single test.
 
-There are no tests yet.
+`tests/chat.test.js` only holds practice tests that check Jest works. They don't test any real application code.
 
 ## Git
 
