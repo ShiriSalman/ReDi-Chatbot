@@ -68,6 +68,7 @@ The limit is **10–25 included sources**.
 | 24 | Volunteer in Copenhagen | https://www.redi-school.org/volunteer-in-copenhagen | Volunteering or teaching | Volunteers | Yes | Time commitment, own email, mandatory training, links a Volunteer Guide PDF. No last-updated date |
 | 25 | Volunteer in Aarhus | https://www.redi-school.org/volunteer-in-aarhus | Volunteering or teaching | Volunteers | Yes | Not in the main menu, linked from #4. Includes a childcare volunteer role (Danish required). No last-updated date |
 | 26 | Volunteer in Malmö | https://www.redi-school.org/volunteer-in-malmo | Volunteering or teaching | Volunteers | Yes | Not in the main menu, linked from #4. 5-step process, teaching in English and Swedish. Named contacts may change. No last-updated date |
+| 27 | ReDI München: Der Weg zum Full Stack Entwickler | https://www.redi-school.org/blog/redi-school-full-stack-development | – | – | No | German only, blog post (dated October 9, year not shown), only about one Munich course. Says laptops can be borrowed for free |
 
 **Include?** is one of Yes, No or Maybe. When the answer is No, put the reason in Notes (for example "out of date" or "duplicate of #3").
 
@@ -85,7 +86,7 @@ Official documents that aren't on the website, such as FAQs, handbooks and appli
 These are topics with no good official source. The chatbot should answer "I don't know" for them, and they go into the Task 2 test questions as unanswerable questions.
 
 - Questions:
-Does ReDI provide laptops to every student?
+Does ReDI provide laptops to every student? (Partly answered by #17: Digital Women Program only)
 Can ReDI help me find an apartment in Munich?
 Will I get a job after completing a ReDI course?
 What salary will I earn after finishing a ReDI course?
