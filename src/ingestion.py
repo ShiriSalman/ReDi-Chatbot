@@ -76,4 +76,41 @@ def ingest(sources, fetch, existing_chunks=None):
     fetch(url) returns {"html": ..., "last_updated": ...} or raises an error.
     Chunks in existing_chunks are kept, except those of a source that is ingested again.
     """
-    raise NotImplementedError
+    result = IngestionResult()
+    stored = list(existing_chunks or [])
+
+    for source in sources:
+        url = source["url"]
+
+        if source.get("include") != "Yes":
+            result.report["skipped"].append(url)
+            continue
+
+        try:
+            page = fetch(url)
+        except Exception as error:
+            # Old chunks of this source stay, so a temporary outage loses nothing
+            result.report["failed"].append({"url": url, "reason": f"{type(error).__name__}: {error}"})
+            continue
+
+        pieces = chunk_text(clean_html(page["html"]))
+        if not pieces:
+            result.report["no_content"].append(url)
+            continue
+
+        last_updated = page.get("last_updated") or "unavailable"
+        # Replace this source's old chunks so re-ingesting creates no duplicates
+        stored = [chunk for chunk in stored if chunk["url"] != url]
+        for piece in pieces:
+            stored.append({
+                "text": piece,
+                "url": url,
+                "title": source["title"],
+                "category": source["category"],
+                "language": source["language"],
+                "last_updated": last_updated,
+            })
+        result.report["ingested"].append(url)
+
+    result.chunks = stored
+    return result
