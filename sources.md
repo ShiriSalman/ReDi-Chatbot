@@ -6,15 +6,24 @@ This file lists the only official ReDI sources the chatbot is allowed to use. If
 
 Tick a topic once at least one included source covers it.
 
-- [ ] What ReDI is and its mission
-- [ ] Courses offered
-- [ ] Who can join, and whether it costs anything
-- [ ] How to apply and the deadlines
-- [ ] Locations
-- [ ] Course format (online or in person, schedule, language)
-- [ ] Volunteering or teaching
-- [ ] Partnering or donating
-- [ ] Contact
+- [ x ] What ReDI is and its mission
+ => https://www.redi-school.org/
+- [ x ] Courses offered 
+=> https://www.redi-school.org/course-finder
+- [ x ] Who can join, and whether it costs anything 
+=> https://www.redi-school.org/course-finder
+- [ x ] How to apply and the deadlines 
+=>  https://www.redi-school.org/web-development/munich/dcp/coding-with-ai
+- [ x ] Locations 
+ => https://www.redi-school.org/
+- [ x ] Course format (online or in person, schedule, language) 
+=> https://www.redi-school.org/course-finder
+- [ x ] Volunteering or teaching 
+=> https://www.redi-school.org/become-a-volunteer-at-redi-school
+- [ x ] Partnering or donating 
+=> https://www.redi-school.org/support-redi
+- [ x ] Contact
+ => https://www.redi-school.org/contact
 
 ## 2. Inclusion rules
 
@@ -50,18 +59,32 @@ Official documents that aren't on the website, such as FAQs, handbooks and appli
 
 | Document | Ask whom | Status | Notes |
 |----------|----------|--------|-------|
-| | | Not asked / Asked / Received | |
+| PDF      | Luciana  | wait for responce! |
 | | | | |
 
 ## 5. Gaps
 
 These are topics with no good official source. The chatbot should answer "I don't know" for them, and they go into the Task 2 test questions as unanswerable questions.
 
-- 
+- Questions:
+Does ReDI provide laptops to every student?
+Can ReDI help me find an apartment in Munich?
+Will I get a job after completing a ReDI course?
+What salary will I earn after finishing a ReDI course?
+Can ReDI guarantee me an internship?
+Can ReDI help me with my visa or residence permit?
+Can ReDI pay for my transportation to the school?
+Which teacher will teach my course next semester?
+How many students will be in my class next semester?
+Can I receive financial support from ReDI while studying?
+
+- Answer:
+"I couldn't find reliable information about this in the available ReDI sources.”
+
 
 ## 6. Done checklist
 
-- [ ] Every topic in section 1 is either covered or listed in section 5
+- [ x ] Every topic in section 1 is either covered or listed in section 5
 - [ ] 10–20 sources are marked **Yes**
-- [ ] Every included source has a working URL or file name
+- [ x ] Every included source has a working URL or file name
 - [ ] Every excluded source has a reason in Notes
