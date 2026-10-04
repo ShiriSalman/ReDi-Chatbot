@@ -20,7 +20,7 @@
 
 **Given** the initial source list has been created  
 **When** the content scope is reviewed  
-**Then** it should cover Courses, Requirements, Applications, Schedules, and Other Services.
+**Then** it should cover About ReDI, Courses, Applications, Locations, Volunteering, Career Support, Support ReDI, and Contact.
 
 ---
 

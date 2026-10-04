@@ -1,0 +1,335 @@
+[
+  {
+    "url": "https://www.redi-school.org/",
+    "title": "ReDI School",
+    "category": "About ReDI",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "Mission and overview of all locations."
+  },
+  {
+    "url": "https://www.redi-school.org/course-finder",
+    "title": "Course Finder",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Courses, who can join, cost and course format."
+  },
+  {
+    "url": "https://www.redi-school.org/web-development/munich/dcp/coding-with-ai",
+    "title": "Coding with AI: Real-World Development Workflows",
+    "category": "Applications",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Only covers this one Munich course."
+  },
+  {
+    "url": "https://www.redi-school.org/become-a-volunteer-at-redi-school",
+    "title": "Become a volunteer",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Roles, time commitment and links to the city volunteer pages."
+  },
+  {
+    "url": "https://www.redi-school.org/support-redi",
+    "title": "Support ReDI",
+    "category": "Support ReDI",
+    "language": "en",
+    "audience": "Donors and partners",
+    "include": "Yes",
+    "notes": ""
+  },
+  {
+    "url": "https://www.redi-school.org/contact",
+    "title": "Contact",
+    "category": "Contact",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "Also the link for \"I don't know\" answers."
+  },
+  {
+    "url": "https://www.redi-school.org/faq",
+    "title": "FAQ",
+    "category": "Applications",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "General application process for all courses. Also covers who can join, course format, volunteering and donating. Has a German section at the bottom."
+  },
+  {
+    "url": "https://www.redi-school.org/our-career-support",
+    "title": "Our Career Services",
+    "category": "Career Support",
+    "language": "en",
+    "audience": "Current students",
+    "include": "Yes",
+    "notes": "Only for ReDI learners. Doesn't guarantee jobs or internships."
+  },
+  {
+    "url": "https://www.redi-school.org/our-impact",
+    "title": "Our impact",
+    "category": "About ReDI",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "Mission and values."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-berlin",
+    "title": "ReDI School Berlin",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": ""
+  },
+  {
+    "url": "https://www.redi-school.org/munich",
+    "title": "ReDI School Munich",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "Doesn't explain how to apply."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-nrw",
+    "title": "ReDI School NRW",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": ""
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-hamburg",
+    "title": "ReDI School Hamburg",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": ""
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-denmark",
+    "title": "ReDI School Denmark",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "Copenhagen and Aarhus, for women and non-binary people. Also shows dated news items."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-malmo",
+    "title": "ReDI School Malmö",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "For women. Some courses are taught in Swedish."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-school-gothenburg",
+    "title": "ReDI School Gothenburg",
+    "category": "Locations",
+    "language": "en",
+    "audience": "All",
+    "include": "Yes",
+    "notes": "For women."
+  },
+  {
+    "url": "https://www.redi-school.org/women-courses",
+    "title": "Women Courses",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Digital Women Program for women and gender-diverse people. Provides laptops and childcare (in-person classes, if available)."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-munich",
+    "title": "Volunteer in Munich",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Contact persons per program, schedule, info evenings. Named contacts may change."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-berlin",
+    "title": "Volunteer in Berlin",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Courses that need teachers per program."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-nrw",
+    "title": "Volunteer in NRW",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Minimum time commitment, 5-step process, in-person classes in Düsseldorf. Named contacts may change."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-hamburg",
+    "title": "Volunteer in Hamburg",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Schedule, fluent English required."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-copenhagen",
+    "title": "Volunteer in Copenhagen",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Time commitment, own email, mandatory training, links a Volunteer Guide PDF."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-aarhus",
+    "title": "Volunteer in Aarhus",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Not in the main menu, linked from Become a volunteer. Includes a childcare volunteer role (Danish required)."
+  },
+  {
+    "url": "https://www.redi-school.org/volunteer-in-malmo",
+    "title": "Volunteer in Malmö",
+    "category": "Volunteering",
+    "language": "en",
+    "audience": "Volunteers",
+    "include": "Yes",
+    "notes": "Not in the main menu, linked from Become a volunteer. 5-step process, teaching in English and Swedish. Named contacts may change."
+  },
+  {
+    "url": "https://www.redi-school.org/blog",
+    "title": "Blog",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "News that goes out of date quickly. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-in-the-media",
+    "title": "ReDI in the Media",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "News that goes out of date quickly. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/podcast",
+    "title": "Podcast",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Episodes, not stable reference content. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/redi-talent-summit",
+    "title": "ReDI Talent Summit",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "An event that goes out of date quickly. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/student-success-stories",
+    "title": "Student Success Stories",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Stories, not stable reference content. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/web-development-courses",
+    "title": "Web Development courses",
+    "category": null,
+    "language": "en",
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Checked: only lists courses, schedules and levels."
+  },
+  {
+    "url": "https://www.redi-school.org/user-centered-design-courses",
+    "title": "User Centered Design courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/cloud-computing-courses",
+    "title": "Cloud Computing Courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/cybersecurity-courses",
+    "title": "Cybersecurity Courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/data-analytics-ai-courses",
+    "title": "Data Analytics and AI courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/kids-and-teens-courses",
+    "title": "Kids and Teens courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/self-study-courses",
+    "title": "Self study courses",
+    "category": null,
+    "language": null,
+    "audience": null,
+    "include": "No",
+    "notes": "Duplicate of Course Finder. Judged by title."
+  },
+  {
+    "url": "https://www.redi-school.org/blog/redi-school-full-stack-development",
+    "title": "ReDI München: Der Weg zum Full Stack Entwickler",
+    "category": null,
+    "language": "de",
+    "audience": null,
+    "include": "No",
+    "notes": "German only, blog post (dated October 9, year not shown), only about one Munich course. Says laptops can be borrowed for free."
+  }
+]
