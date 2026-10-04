@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the ReDI Chatbot, a chatbot that answers questions about ReDI School using official ReDI information and links to the relevant sources. It's a solo learning project: the owner decides how each task gets built. Propose options and explain tradeoffs rather than picking a stack or architecture on your own.
 
-**Status:** planning only. There is no application code yet. The tech stack is undecided. `package.json` has Jest as a dev dependency, and there's also an empty Python `.venv` with only pip installed, so neither Node nor Python has been chosen.
+**Status:** planning only. There is no application code yet.
+
+**Stack:** Python with Flask (decided). The Node/Jest setup (`package.json`, `tests/chat.test.js`) is left over from practicing and hasn't been removed yet.
 
 ## MVP scope (agreed)
 
@@ -22,19 +24,18 @@ This is the ReDI Chatbot, a chatbot that answers questions about ReDI School usi
 
 The owner reviewed and approved this order:
 
-1. Define the content scope (`sources.md`)
-2. Collect real user questions, including ones that should get "I don't know"
-3. Define citation behavior
-4. Ingest the content (a one-off collection is fine)
-5. Retrieve the relevant passages for a question
-6. Ground answers in the retrieved passages
-7. Handle out-of-scope questions
-8. Build the web interface
-9. Test against the Task 2 questions
-10. Deploy
-11. Document how to update the content
+1. Define scope and content boundaries: decide which ReDI pages and topics are in or out of scope (`sources.md` plus a spec)
+2. Build the content ingestion pipeline: read or scrape web pages and PDFs, clean and structure the text, and keep the source URL on every content chunk
+3. Design the answer-grounding approach: retrieval (RAG) to find the content that matches a question and produce an answer backed by it
+4. *(after MVP)* Handle audience differentiation: tell prospective and current students apart and give each the right information
+5. Define citation and sourcing behavior: how source links are shown, and what happens when no source is found
+6. Build the conversational interface: the chat page itself (Flask + HTML/CSS/JavaScript)
+7. Handle out-of-scope and edge-case questions: deal with unknown, irrelevant or problematic questions instead of making up answers
+8. Test against real user questions: check correctness, tone, sources and the "I don't know" behavior
+9. Deploy and make accessible: put the chatbot online once it's decided where it runs
+10. Set up an update loop: document how to update the content (edit `sources.md`, re-run the ingestion). *(after MVP: collecting user feedback)*
 
-The Task 2 question set is the main measure of correctness for the whole project.
+Task 8, testing against real user questions, is the main measure of correctness for the whole project.
 
 ## Commands
 
