@@ -95,6 +95,22 @@ class TestSourcesOutsideScope:
 
         assert excluded["url"] in result.report["skipped"]
 
+    def test_removes_saved_chunks_of_a_source_that_is_no_longer_approved(self):
+        # The blog was ingested in an earlier run and is now marked "No"
+        old_chunk = {
+            "url": "https://www.redi-school.org/blog",
+            "title": "Blog",
+            "category": "About ReDI",
+            "language": "en",
+            "last_updated": "unavailable",
+            "text": "Join our open house next Thursday!",
+        }
+        excluded = make_source(url="https://www.redi-school.org/blog", include="No")
+
+        result = ingest([excluded], fetch=fake_fetch(), existing_chunks=[old_chunk])
+
+        assert chunks_for(result, excluded["url"]) == []
+
 
 # Scenario 3: Clean extracted website content
 class TestCleanHtml:

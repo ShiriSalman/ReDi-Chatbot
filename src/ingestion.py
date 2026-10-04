@@ -83,6 +83,8 @@ def ingest(sources, fetch, existing_chunks=None):
         url = source["url"]
 
         if source.get("include") != "Yes":
+            # Drop chunks from earlier runs, so a source marked "No" is no longer used
+            stored = [chunk for chunk in stored if chunk["url"] != url]
             result.report["skipped"].append(url)
             continue
 
