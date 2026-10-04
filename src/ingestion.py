@@ -5,6 +5,11 @@ tests/test_ingestion.py for the tests.
 """
 from dataclasses import dataclass, field
 
+from bs4 import BeautifulSoup
+
+# Page parts that repeat on every page or aren't readable text
+UNWANTED_TAGS = ["nav", "header", "footer", "script", "style", "noscript"]
+
 
 @dataclass
 class IngestionResult:
@@ -22,7 +27,15 @@ class IngestionResult:
 
 def clean_html(html):
     """Return the relevant text of a page, without nav, header, footer, scripts and styles."""
-    raise NotImplementedError
+    soup = BeautifulSoup(html, "html.parser")
+
+    for tag in soup(UNWANTED_TAGS):
+        tag.decompose()
+
+    # Use only the body, so the <title> in <head> isn't counted as page text
+    content = soup.body or soup
+    lines = (line.strip() for line in content.get_text(separator="\n").splitlines())
+    return "\n".join(line for line in lines if line)
 
 
 def chunk_text(text, max_chars=500):
