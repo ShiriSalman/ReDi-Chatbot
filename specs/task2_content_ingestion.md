@@ -9,6 +9,17 @@ that can later be used for retrieval and answer generation.
 The pipeline must preserve the source information for every chunk so that
 answers can be cited later.
 
+## Out of scope
+
+- **German-language content:** some approved English sources also contain
+  German sections (for example the German section at the bottom of the FAQ).
+  Detecting and removing them is not part of Task 2, so for now these
+  sections are ingested like the rest of the page.
+- **Dated news items:** some approved sources show dated news next to their
+  stable content (for example the news on the ReDI School Denmark page).
+  Detecting and removing them is not part of Task 2, so for now these items
+  are ingested like the rest of the page.
+
 ---
 
 ## Scenario 1 – Ingest an approved web source
