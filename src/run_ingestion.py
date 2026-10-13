@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from fetching import fetch_page
-from ingestion import ingest
+from ingestion import ingest, summarize_report
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 SOURCES_PATH = DATA_DIR / "sources.json"
@@ -32,11 +32,12 @@ def run(sources_path, chunks_path, fetch=fetch_page):
 
 def format_report(report):
     """Return a short, readable summary of an ingestion report."""
+    summary = summarize_report(report)
     lines = [
-        f"Ingested: {len(report['ingested'])}",
-        f"Skipped: {len(report['skipped'])}",
-        f"Failed: {len(report['failed'])}",
-        f"No content: {len(report['no_content'])}",
+        f"Ingested: {summary['ingested']}",
+        f"Skipped: {summary['skipped']}",
+        f"Failed: {summary['failed']}",
+        f"No content: {summary['no_content']}",
     ]
     for failure in report["failed"]:
         lines.append(f"  failed: {failure['url']} ({failure['reason']})")
