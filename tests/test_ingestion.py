@@ -1,7 +1,9 @@
 # Tests for the content ingestion pipeline, written from specs/task2_content_ingestion.md.
 # src/ingestion.py does not exist yet, so every test fails until it is written.
 # The fetch function is passed in, so the tests never touch the network.
-from ingestion import chunk_text, clean_html, ingest
+import copy
+
+from ingestion import chunk_text, clean_html, ingest, summarize_report
 
 PAGE_HTML = """
 <html>
@@ -304,3 +306,64 @@ class TestReport:
         assert result.report["ingested"] == [ingested["url"]]
         assert result.report["skipped"] == [skipped["url"]]
         assert [f["url"] for f in result.report["failed"]] == [failed["url"]]
+
+
+# Iteration: summarize the report as counts per category
+class TestSummarizeReport:
+    def test_counts_the_sources_in_each_category(self):
+        report = {
+            "ingested": ["https://www.redi-school.org/faq", "https://www.redi-school.org/course-finder"],
+            "skipped": ["https://www.redi-school.org/blog"],
+            "failed": [{"url": "https://www.redi-school.org/broken", "reason": "ConnectionError: 404"}],
+            "no_content": [],
+        }
+
+        assert summarize_report(report) == {
+            "ingested": 2,
+            "skipped": 1,
+            "failed": 1,
+            "no_content": 0,
+            "total": 4,
+        }
+
+    def test_an_empty_report_gives_zero_counts(self):
+        report = {"ingested": [], "skipped": [], "failed": [], "no_content": []}
+
+        assert summarize_report(report) == {
+            "ingested": 0,
+            "skipped": 0,
+            "failed": 0,
+            "no_content": 0,
+            "total": 0,
+        }
+
+    def test_counts_match_the_lists_of_a_real_run(self):
+        ingested = make_source(url="https://www.redi-school.org/faq")
+        skipped = make_source(url="https://www.redi-school.org/blog", include="No")
+        failed = make_source(url="https://www.redi-school.org/broken")
+
+        def fetch(url):
+            if url == failed["url"]:
+                raise ConnectionError("Timeout")
+            return {"html": PAGE_HTML, "last_updated": None}
+
+        result = ingest([ingested, skipped, failed], fetch=fetch)
+
+        summary = summarize_report(result.report)
+        for key in ["ingested", "skipped", "failed", "no_content"]:
+            assert summary[key] == len(result.report[key])
+        assert summary["total"] == 3
+
+    def test_does_not_change_the_report(self):
+        # Other code reads the report lists, so the summary must leave them as they are
+        report = {
+            "ingested": ["https://www.redi-school.org/faq"],
+            "skipped": [],
+            "failed": [{"url": "https://www.redi-school.org/broken", "reason": "Timeout"}],
+            "no_content": ["https://www.redi-school.org/empty"],
+        }
+        before = copy.deepcopy(report)
+
+        summarize_report(report)
+
+        assert report == before
