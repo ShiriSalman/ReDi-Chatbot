@@ -6,9 +6,20 @@ tests/test_grounding.py for the tests.
 import math
 import re
 from collections import Counter
+from dataclasses import dataclass
 
 # Shown when the ingested content does not cover a question
 NOT_ENOUGH_INFO = "The available ReDI sources do not provide enough information to answer this question."
+
+# The rules the model gets with every question. Edit the wording here.
+INSTRUCTIONS = """You answer questions about ReDI School of Digital Integration for the general public.
+
+Use only the ReDI sources below. Do not use general knowledge and do not guess.
+
+- If the sources answer the question, answer it clearly and briefly in English.
+- If the sources cover only part of the question, answer that part and say which part the sources do not cover.
+- If the sources do not contain enough information to answer, say so. Do not make up an answer.
+- If the sources contain conflicting information, point out the conflict and name both sources instead of choosing one."""
 
 # BM25 settings, the usual defaults:
 # K1 controls how quickly repeated words stop adding points,
@@ -30,9 +41,21 @@ STOPWORDS = {
 }
 
 
+def stem(word):
+    """Reduce a plural to its singular form, so "courses" matches "course".
+
+    Short words ("bus") and words ending in "ss" ("class") are kept as they are.
+    """
+    if len(word) > 4 and word.endswith("ies"):
+        return word[:-3] + "y"
+    if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
 def tokenize(text):
-    """Split text into lowercase words, without stopwords."""
-    return [word for word in re.findall(r"\w+", text.lower()) if word not in STOPWORDS]
+    """Split text into lowercase words, without stopwords, with plurals reduced to the singular."""
+    return [stem(word) for word in re.findall(r"\w+", text.lower()) if word not in STOPWORDS]
 
 
 def retrieve(question, chunks, top_k=TOP_K):
@@ -78,10 +101,51 @@ def retrieve(question, chunks, top_k=TOP_K):
 
 
 def build_prompt(question, chunks):
-    """Build the prompt that asks the model to answer only from the given chunks."""
-    raise NotImplementedError
+    """Build the prompt that asks the model to answer only from the given chunks.
+
+    Every source is numbered and shows its title and URL, so the model can tell
+    the sources apart and name them when they conflict.
+    """
+    sources = "\n\n".join(
+        f"[{number}] {chunk['title']} ({chunk['url']})\n{chunk['text']}"
+        for number, chunk in enumerate(chunks, start=1)
+    )
+    return f"{INSTRUCTIONS}\n\nSources:\n\n{sources}\n\nQuestion: {question}"
+
+
+@dataclass
+class AnswerResult:
+    text: str
+    # False when the ingested content did not cover the question
+    enough_information: bool
+    # The chunks the answer is based on, with their source metadata, for citations later
+    sources: list
 
 
 def answer_question(question, chunks, generate):
-    """Answer the question from the ingested chunks, or say there is not enough information."""
-    raise NotImplementedError
+    """Answer a question using only relevant ReDI chunks.
+
+    generate(prompt) calls the model and returns its answer as text.
+    Raises ValueError when there is no ingested content at all.
+    """
+    if not chunks:
+        raise ValueError("No ingested ReDI content available.")
+
+    relevant_chunks = retrieve(question, chunks)
+
+    if not relevant_chunks:
+        # Nothing to ground an answer on, so the model is not asked at all
+        return AnswerResult(
+            text=NOT_ENOUGH_INFO,
+            enough_information=False,
+            sources=[]
+        )
+
+    prompt = build_prompt(question, relevant_chunks)
+    answer = generate(prompt)
+
+    return AnswerResult(
+        text=answer,
+        enough_information=True,
+        sources=relevant_chunks
+    )

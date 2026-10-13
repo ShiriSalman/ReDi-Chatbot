@@ -5,7 +5,7 @@
 # these tests check that our code gives it the right context and instructions.
 import pytest
 
-from grounding import NOT_ENOUGH_INFO, answer_question, build_prompt, retrieve
+from grounding import NOT_ENOUGH_INFO, answer_question, build_prompt, retrieve, tokenize
 
 
 def make_chunk(text, **overrides):
@@ -74,6 +74,16 @@ class TestFindRelevantContent:
         selected = retrieve("On which evenings do the courses take place?", ALL_CHUNKS)
 
         assert SCHEDULE_CHUNK in selected
+
+
+# Scenario 1: singular and plural forms of a word should match
+class TestWordForms:
+    def test_singular_and_plural_count_as_the_same_word(self):
+        assert tokenize("course") == tokenize("courses")
+        assert tokenize("city") == tokenize("cities")
+
+    def test_short_words_and_double_s_are_kept(self):
+        assert tokenize("bus class") == ["bus", "class"]
 
 
 # Scenario 2: Ignore unrelated content
