@@ -25,6 +25,17 @@ class IngestionResult:
     })
 
 
+def summarize_report(report):
+    """Return the number of sources in each report category, plus the total.
+
+    The report itself is not changed. Every source ends up in exactly one
+    category, so the total is the number of sources in the run.
+    """
+    summary = {key: len(report[key]) for key in ["ingested", "skipped", "failed", "no_content"]}
+    summary["total"] = sum(summary.values())
+    return summary
+
+
 def clean_html(html):
     """Return the relevant text of a page, without nav, header, footer, scripts and styles."""
     soup = BeautifulSoup(html, "html.parser")

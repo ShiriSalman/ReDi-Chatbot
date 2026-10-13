@@ -1,0 +1,10 @@
+[importlinter]
+root_package = src
+
+[importlinter:contract:fetching_independence]
+name = Fetching must not depend on ingestion
+type = forbidden
+source_modules =
+    src.fetching
+forbidden_modules =
+    src.ingestion
