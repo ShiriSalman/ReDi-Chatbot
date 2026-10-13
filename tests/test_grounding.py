@@ -123,6 +123,16 @@ class TestNoRelevantContent:
     def test_retrieves_nothing_for_a_question_the_content_does_not_cover(self):
         assert retrieve(self.QUESTION, ALL_CHUNKS) == []
 
+    def test_one_shared_word_is_not_enough(self):
+        # Found in the real content: the Berlin page talks about "the leaders of tomorrow",
+        # which shares only one word with the weather question
+        berlin_chunk = make_chunk(
+            "We break down barriers and connect the leaders of tomorrow.",
+            url="https://www.redi-school.org/redi-school-berlin",
+        )
+
+        assert retrieve(self.QUESTION, ALL_CHUNKS + [berlin_chunk]) == []
+
     def test_says_there_is_not_enough_information(self):
         result = answer_question(self.QUESTION, ALL_CHUNKS, generate=fake_generate())
 
