@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReDI School Chatbot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+</head>
+<body>
+  <main class="chat">
+    <header class="chat-header">
+      <h1>ReDI School Chatbot</h1>
+      <p class="intro">
+        Ask a question about ReDI School. Answers are based only on official ReDI pages,
+        with links to the pages they come from.
+      </p>
+    </header>
+
+    <!-- New messages are announced to screen readers -->
+    <section id="chat-log" class="chat-log" role="log" aria-live="polite" aria-label="Conversation"></section>
+
+    <p id="loading" class="loading" role="status" hidden>Looking for an answer…</p>
+
+    <form id="chat-form" class="chat-form" novalidate>
+      <label for="question" class="visually-hidden">Your question</label>
+      <input id="question" name="question" type="text" autocomplete="off" maxlength="500"
+             placeholder="For example: How do I apply?" aria-describedby="form-error">
+      <button id="send" type="submit">Send</button>
+    </form>
+    <p id="form-error" class="form-error" role="alert"></p>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>
