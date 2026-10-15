@@ -56,8 +56,28 @@ We chose option 1.
 `static/js/chat.js` shows all text with `textContent` and creates source
 links as `<a>` elements only for `http`/`https` URLs.
 
-Option 2 would have needed extra work for exactly the parts the spec stresses
-most: the loading state and the visible conversation history.
+### Why option 1
+
+1. **It fits what the spec asks for.** The spec describes a chat: a loading
+   state while waiting (AC7) and earlier messages staying visible in order
+   (AC8). Option 1 gives both directly. Option 2 reloads the page for every
+   question, so it has no live loading state, and keeping the history would
+   need extra work with sessions or hidden form fields.
+2. **It keeps the existing features unchanged.** The endpoint only passes the
+   question to `answer_question()` and the sources to `collect_citations()`,
+   then returns their results as JSON. No grounding or citation logic is
+   repeated in the web layer.
+3. **The important behaviour is easy to test.** Because the API returns
+   structured data, Flask's test client checks every case (answer, sources,
+   fallback, empty and invalid input, 503, 500) without a browser, in the
+   same test-first way as Tasks 2, 3 and 5.
+4. **It keeps later steps open.** A real language model, a link to ReDI's
+   contact page, or another platform can be added behind the same
+   `/api/chat` without changing how the page works.
+5. **Its main risk can be controlled.** Option 2's biggest advantage is
+   automatic HTML escaping. Option 1 gets the same safety from one clear
+   rule (show text with `textContent`, create links only for `http`/`https`
+   URLs), which a test guards.
 
 ## Consequences
 
