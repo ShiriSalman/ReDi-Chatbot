@@ -1,30 +1,20 @@
+/* Colors and font follow the ReDI School website (redi-school.org).
+   Where a ReDI color is too light for readable text, a darker shade of it is used,
+   so text keeps a contrast of at least 4.5:1. */
 :root {
-  --background: #f5f6f8;
-  --surface: #ffffff;
-  --text: #1c1f24;
-  --muted: #555b66;
-  --border: #d5d9e0;
-  --accent: #0b5cad;
-  --accent-text: #ffffff;
-  --user-bubble: #e3eefb;
-  --error-bubble: #fdecec;
-  --error-text: #9b1c1c;
-  --focus: #f0a500;
-}
+  --redi-orange: #f15a22;        /* ReDI button color, used for borders and focus */
+  --redi-orange-dark: #c8410f;   /* same orange, dark enough for white button text */
+  --redi-teal: #58adc4;          /* ReDI dark accent */
+  --redi-teal-dark: #1f6f86;     /* same teal, dark enough for link text */
+  --redi-teal-light: #f3f9fb;    /* ReDI light accent background */
+  --redi-peach: #f9d6c9;         /* ReDI accent */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #15171b;
-    --surface: #1f2228;
-    --text: #eceef2;
-    --muted: #a9afba;
-    --border: #3a3f48;
-    --accent: #5aa2f0;
-    --accent-text: #0d1117;
-    --user-bubble: #1d3350;
-    --error-bubble: #3d1f22;
-    --error-text: #ffb4b4;
-  }
+  --background: #ffffff;
+  --text: #000000;
+  --muted: #4a4a4a;
+  --border: #d9d9d9;
+  --error-background: #fdecec;
+  --error-text: #9b1c1c;
 }
 
 * {
@@ -35,7 +25,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -50,9 +40,16 @@ body {
   padding: 1.5rem 1rem;
 }
 
+.chat-header {
+  padding-bottom: 1rem;
+  border-bottom: 3px solid var(--redi-orange);
+}
+
 .chat-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.6rem;
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .intro {
@@ -70,9 +67,7 @@ body {
 .message {
   max-width: 85%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--surface);
+  border-radius: 0.25rem;
   overflow-wrap: anywhere;
 }
 
@@ -83,16 +78,19 @@ body {
 
 .message-user {
   align-self: flex-end;
-  background: var(--user-bubble);
+  background: var(--redi-peach);
 }
 
 .message-assistant {
   align-self: flex-start;
+  background: var(--redi-teal-light);
+  border-left: 4px solid var(--redi-teal);
 }
 
 .message-error {
   align-self: flex-start;
-  background: var(--error-bubble);
+  background: var(--error-background);
+  border-left: 4px solid var(--error-text);
   color: var(--error-text);
 }
 
@@ -104,7 +102,10 @@ body {
 }
 
 .sources-title {
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
 }
 
 .sources ul {
@@ -113,7 +114,13 @@ body {
 }
 
 .sources a {
-  color: var(--accent);
+  color: var(--redi-teal-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sources a:hover {
+  text-decoration-thickness: 2px;
 }
 
 .loading {
@@ -135,22 +142,26 @@ body {
   flex: 1;
   min-width: 0;
   padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--surface);
+  border: 1px solid var(--text);
+  border-radius: 0.25rem;
+  background: var(--background);
   color: var(--text);
   font: inherit;
 }
 
 .chat-form button {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 0.5rem;
-  background: var(--accent);
-  color: var(--accent-text);
+  border-radius: 0.25rem;
+  background: var(--redi-orange-dark);
+  color: #ffffff;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.chat-form button:hover {
+  background: #a8380c;
 }
 
 .chat-form button:disabled,
@@ -162,7 +173,7 @@ body {
 input:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 3px solid var(--redi-orange);
   outline-offset: 2px;
 }
 
@@ -184,6 +195,10 @@ a:focus-visible {
 @media (max-width: 30rem) {
   .chat {
     padding: 1rem;
+  }
+
+  .chat-header h1 {
+    font-size: 1.6rem;
   }
 
   .message {
