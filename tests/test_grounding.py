@@ -85,6 +85,9 @@ class TestWordForms:
     def test_short_words_and_double_s_are_kept(self):
         assert tokenize("bus class") == ["bus", "class"]
 
+    def test_single_letters_and_digits_are_dropped(self):
+        assert tokenize("z. B. room 5 at ReDI") == ["room", "redi"]
+
 
 # Scenario 2: Ignore unrelated content
 class TestIgnoreUnrelatedContent:
@@ -142,6 +145,13 @@ class TestNoRelevantContent:
         )
 
         assert retrieve(self.QUESTION, ALL_CHUNKS + [berlin_chunk]) == []
+
+    def test_a_single_letter_is_not_a_match(self):
+        # Found in the chat page: "<b>hallo</b>" matched the "B" in the German
+        # abbreviation "z. B." on the FAQ page, so a greeting got four sources
+        faq_chunk = make_chunk("Partner sind z. B. Unternehmen, die von unseren Programmen profitieren.")
+
+        assert retrieve("<b>hallo</b>", ALL_CHUNKS + [faq_chunk]) == []
 
     def test_says_there_is_not_enough_information(self):
         result = answer_question(self.QUESTION, ALL_CHUNKS, generate=fake_generate())
