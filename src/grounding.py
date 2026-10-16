@@ -54,8 +54,16 @@ def stem(word):
 
 
 def tokenize(text):
-    """Split text into lowercase words, without stopwords, with plurals reduced to the singular."""
-    return [stem(word) for word in re.findall(r"\w+", text.lower()) if word not in STOPWORDS]
+    """Split text into lowercase words, without stopwords, with plurals reduced to the singular.
+
+    Single letters and digits are dropped: they say nothing about a topic and matched
+    by accident, for example the "b" of "<b>" with the "B." of "z. B.".
+    """
+    return [
+        stem(word)
+        for word in re.findall(r"\w+", text.lower())
+        if len(word) > 1 and word not in STOPWORDS
+    ]
 
 
 def retrieve(question, chunks, top_k=TOP_K):
