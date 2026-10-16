@@ -11,6 +11,7 @@ const formError = document.getElementById("form-error");
 const EMPTY_QUESTION = "Please enter a question.";
 const GENERIC_ERROR = "Something went wrong while answering your question. Please try again.";
 const NETWORK_ERROR = "The chatbot could not be reached. Please check your connection and try again.";
+const CONTACT_FALLBACK_TITLE = "ReDI contact page";
 
 function addMessage(role, text) {
   const message = document.createElement("div");
@@ -68,6 +69,26 @@ function addSources(message, sources) {
   message.appendChild(section);
 }
 
+// The server decides when to offer the contact page; the page only checks the link is safe
+function addContact(message, contact) {
+  if (!contact || !isSafeUrl(contact.url)) {
+    return;
+  }
+
+  const line = document.createElement("p");
+  line.className = "contact";
+  line.append("You can ask ReDI directly: ");
+
+  const link = document.createElement("a");
+  link.href = contact.url;
+  link.textContent = contact.title || CONTACT_FALLBACK_TITLE;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  line.appendChild(link);
+
+  message.appendChild(line);
+}
+
 function setLoading(isLoading) {
   loading.hidden = !isLoading;
   sendButton.disabled = isLoading;
@@ -106,6 +127,7 @@ form.addEventListener("submit", async (event) => {
     if (ok) {
       const message = addMessage("assistant", data.answer);
       addSources(message, data.sources || []);
+      addContact(message, data.contact);
     } else {
       addMessage("error", data.error || GENERIC_ERROR);
       // Give the question back so the visitor can try again without retyping it

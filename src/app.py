@@ -22,6 +22,11 @@ EMPTY_QUESTION = "Please enter a question."
 CONTENT_UNAVAILABLE = "ReDI information is temporarily unavailable. Please try again later."
 SERVER_ERROR = "Something went wrong while answering your question. Please try again."
 
+# Offered when retrieval finds nothing, so the visitor can ask ReDI directly.
+# The URL is an approved source in data/sources.json; tests/test_app.py checks that.
+CONTACT_URL = "https://www.redi-school.org/contact"
+CONTACT_TITLE = "ReDI contact page"
+
 DEMO_ANSWER = (
     "Demo mode: no language model is connected yet, so this is not a real answer. "
     "The sources below are the ReDI pages that match your question."
@@ -77,11 +82,15 @@ def create_app(chunks, generate):
             app.logger.exception("Answering a question failed")
             return jsonify(error=SERVER_ERROR), 500
 
-        return jsonify(
-            answer=result.text,
-            enough_information=result.enough_information,
-            sources=collect_citations(result.sources),
-        )
+        response = {
+            "answer": result.text,
+            "enough_information": result.enough_information,
+            "sources": collect_citations(result.sources),
+        }
+        # Only when retrieval found nothing; the link is never one of the sources
+        if not result.enough_information:
+            response["contact"] = {"title": CONTACT_TITLE, "url": CONTACT_URL}
+        return jsonify(response)
 
     return app
 
