@@ -1,0 +1,207 @@
+/* Colors and font follow the ReDI School website (redi-school.org).
+   Where a ReDI color is too light for readable text, a darker shade of it is used,
+   so text keeps a contrast of at least 4.5:1. */
+:root {
+  --redi-orange: #f15a22;        /* ReDI button color, used for borders and focus */
+  --redi-orange-dark: #c8410f;   /* same orange, dark enough for white button text */
+  --redi-teal: #58adc4;          /* ReDI dark accent */
+  --redi-teal-dark: #1f6f86;     /* same teal, dark enough for link text */
+  --redi-teal-light: #f3f9fb;    /* ReDI light accent background */
+  --redi-peach: #f9d6c9;         /* ReDI accent */
+
+  --background: #ffffff;
+  --text: #000000;
+  --muted: #4a4a4a;
+  --border: #d9d9d9;
+  --error-background: #fdecec;
+  --error-text: #9b1c1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 46rem;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.chat-header {
+  padding-bottom: 1rem;
+  border-bottom: 3px solid var(--redi-orange);
+}
+
+.chat-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.intro {
+  margin: 0;
+  color: var(--muted);
+}
+
+.chat-log {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message {
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.message p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.message-user {
+  align-self: flex-end;
+  background: var(--redi-peach);
+}
+
+.message-assistant {
+  align-self: flex-start;
+  background: var(--redi-teal-light);
+  border-left: 4px solid var(--redi-teal);
+}
+
+.message-error {
+  align-self: flex-start;
+  background: var(--error-background);
+  border-left: 4px solid var(--error-text);
+  color: var(--error-text);
+}
+
+.sources {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.sources-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+}
+
+.sources ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.sources a {
+  color: var(--redi-teal-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sources a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.loading {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.chat-form {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  background: var(--background);
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--text);
+  border-radius: 0.25rem;
+  background: var(--background);
+  color: var(--text);
+  font: inherit;
+}
+
+.chat-form button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: var(--redi-orange-dark);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chat-form button:hover {
+  background: #a8380c;
+}
+
+.chat-form button:disabled,
+.chat-form input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--redi-orange);
+  outline-offset: 2px;
+}
+
+.form-error {
+  margin: 0;
+  min-height: 1.5em;
+  color: var(--error-text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .chat {
+    padding: 1rem;
+  }
+
+  .chat-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .message {
+    max-width: 100%;
+  }
+}
