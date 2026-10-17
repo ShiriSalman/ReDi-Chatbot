@@ -25,6 +25,11 @@ def run(sources_path, chunks_path, fetch=fetch_page):
 
     result = ingest(sources, fetch=fetch, existing_chunks=existing_chunks)
 
+    # Drop chunks of sources deleted from sources.json. ingest() keeps other sources'
+    # chunks on purpose, so this check needs the complete list and lives here.
+    listed_urls = {source["url"] for source in sources}
+    result.chunks = [chunk for chunk in result.chunks if chunk["url"] in listed_urls]
+
     # ensure_ascii=False keeps characters like "ö" readable in the file
     chunks_path.write_text(json.dumps(result.chunks, ensure_ascii=False, indent=2), encoding="utf-8")
     return result
