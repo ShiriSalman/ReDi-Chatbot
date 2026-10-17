@@ -19,6 +19,10 @@ CHUNKS_PATH = PROJECT_DIR / "data" / "chunks.json"
 
 # Messages shown to visitors. They never contain internal details such as errors or paths.
 EMPTY_QUESTION = "Please enter a question."
+QUESTION_TOO_LONG = "Please keep your question under 500 characters."
+
+# Same limit as the input field's maxlength in templates/chat.html
+MAX_QUESTION_LENGTH = 500
 CONTENT_UNAVAILABLE = "ReDI information is temporarily unavailable. Please try again later."
 SERVER_ERROR = "Something went wrong while answering your question. Please try again."
 
@@ -69,6 +73,10 @@ def create_app(chunks, generate):
         question = body.get("question") if isinstance(body, dict) else None
         if not isinstance(question, str) or not question.strip():
             return jsonify(error=EMPTY_QUESTION), 400
+        question = question.strip()
+        # The page limits the input too, but direct API calls must not cause large model calls
+        if len(question) > MAX_QUESTION_LENGTH:
+            return jsonify(error=QUESTION_TOO_LONG), 400
 
         # answer_question raises ValueError for this case too, but checking first
         # keeps a ValueError from the model from being reported as missing content
@@ -76,7 +84,7 @@ def create_app(chunks, generate):
             return jsonify(error=CONTENT_UNAVAILABLE), 503
 
         try:
-            result = answer_question(question.strip(), chunks, generate)
+            result = answer_question(question, chunks, generate)
         except Exception:
             # The details go to the server log only, never to the visitor
             app.logger.exception("Answering a question failed")
