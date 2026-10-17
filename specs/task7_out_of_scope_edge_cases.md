@@ -51,7 +51,8 @@ Task 7 has two kinds of behaviour (see Task 3, "Who decides what"):
 | Empty or blank question | 400 "Please enter a question." | Task 6 |
 | Question over 500 characters | 400 "Please keep your question under 500 characters." | Task 6 |
 | HTML-like text (`<b>hallo</b>`) | shown as text; single letters don't match | Task 3, Task 6 |
-| Greetings and small talk ("hallo", "thanks!") | usually no relevant chunk → fallback with contact link | Task 3, contact-link spec |
+| Greetings ("hi", "hello", "hallo", "bye") | no relevant chunk → fallback with contact link | Task 3, contact-link spec |
+| Small talk that shares a word with ReDI pages ("thanks!", "good morning") | retrieval finds pages (for example "a huge thank you to our supporters"), so the model is called with them; the real model's reply is checked in Task 8 | Task 3 |
 | Partially supported answer | model answers the supported part and names the gap | Task 3 Scenario 5 |
 | Conflicting sources | model points out the conflict and names both sources | Task 3 Scenario 6 |
 | Non-English question | often no relevant chunk → English fallback; if chunks are found, the model answers in English | Task 3 |
@@ -153,8 +154,10 @@ Reused, unchanged: the Task 3 and Task 6 tests for the no-match fallback,
   Adding separate delimiters was considered but left out to keep the change
   small; `test_error_responses_hide_internal_details` relies on the
   `Sources:` label.
-- Small talk such as "thanks!" getting the fallback with the contact link is
-  acceptable for the MVP.
+- Small talk is not filtered in this task (no retrieval change). Greetings
+  like "hi" get the fallback with the contact link; phrases like "thanks!"
+  can match ReDI pages and reach the model. Both are acceptable for the MVP
+  and are checked with a real model in Task 8.
 - The exact wording of the fallback and of the new rules can be changed by the
   owner; the tests check keywords, not full sentences (except AC2's
   "only answer questions about ReDI School").
