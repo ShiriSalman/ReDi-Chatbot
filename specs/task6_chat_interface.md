@@ -117,6 +117,12 @@ In a successful response, a `sources` entry whose metadata URL is missing or inv
 {"error": "Please enter a question."}
 ```
 
+**Question too long** (`400 Bad Request`), when the question is longer than 500 characters after trimming:
+
+```json
+{"error": "Please keep your question under 500 characters."}
+```
+
 **Unavailable ingested content** (`503 Service Unavailable`):
 
 ```json
@@ -139,6 +145,7 @@ Do not include stack traces, API keys, raw prompts, or internal file paths in JS
 - Use the existing `answer_question(question, chunks, generate)` for retrieval and grounded answering.
 - Use `collect_citations(result.sources)` to produce unique source entries with metadata-derived URLs.
 - Entries whose URL is missing or invalid are kept with `"url": null`; no link is ever invented for them.
+- **Question length:** after trimming, a question may be at most 500 characters (`MAX_QUESTION_LENGTH`), the same limit as the input field's `maxlength`. A longer question returns 400 without calling the model, so requests sent directly to the API cannot cause large model calls.
 - If no relevant chunks are found, return the existing `NOT_ENOUGH_INFO` message with an empty sources array, without calling the model.
 - If the loaded chunk list is empty, return the 503 error **before** calling `answer_question`. Every exception raised inside `answer_question` (including a `ValueError` from the model) returns the generic 500, so a model error is never reported as missing content.
 - Do not hard-code API credentials or claim that a real model is connected before it is configured.
@@ -147,7 +154,6 @@ Do not include stack traces, API keys, raw prompts, or internal file paths in JS
 **Known limitations** (found in the spec review, open for a later decision):
 
 - **Malformed `data/chunks.json`:** if the file exists but is not valid JSON, the app fails at startup instead of serving a 503.
-- **Question length:** the input field limits questions to 500 characters, but the server does not. Requests sent directly to the API can be longer. This matters for cost once a real model is connected.
 
 ## 9. Frontend behavior
 

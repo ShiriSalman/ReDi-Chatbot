@@ -188,6 +188,31 @@ class TestEmptyQuestion:
         assert generate.prompts == []
 
 
+# Question length (spec section 7 and 8): the server enforces the same 500-character limit as the page
+class TestQuestionLength:
+    def test_question_over_500_characters_returns_400(self):
+        generate = fake_generate()
+
+        response = ask(make_client(generate=generate), "a" * 501)
+
+        assert response.status_code == 400
+        assert response.get_json() == {"error": "Please keep your question under 500 characters."}
+        assert generate.prompts == []
+
+    def test_question_of_exactly_500_characters_is_accepted(self):
+        question = SUPPORTED_QUESTION + " " * 10 + "x" * (500 - len(SUPPORTED_QUESTION) - 10)
+
+        response = ask(make_client(), question)
+
+        assert response.status_code == 200
+
+    def test_length_is_measured_after_trimming(self):
+        # Spaces around a normal question must not push it over the limit
+        response = ask(make_client(), " " * 600 + SUPPORTED_QUESTION + " " * 600)
+
+        assert response.status_code == 200
+
+
 # Invalid requests (spec section 7 and suggested test 6)
 class TestInvalidRequest:
     def test_missing_json_body_returns_400(self):
