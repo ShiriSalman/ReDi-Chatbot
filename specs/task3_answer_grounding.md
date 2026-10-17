@@ -46,8 +46,9 @@ This change does not touch:
   its answer as text. It is passed in, so tests use a fake model.
 
 **Output:** an `AnswerResult` with:
-- `text`: the model's answer, or `NOT_ENOUGH_INFO` ("The available ReDI
-  sources do not provide enough information to answer this question.")
+- `text`: the model's answer, or `NOT_ENOUGH_INFO` ("I can only answer
+  questions about ReDI School, and the available ReDI sources do not provide
+  enough information to answer this one." Wording from Task 7.)
 - `enough_information`: `False` only when retrieval found no relevant chunk
 - `sources`: the retrieved chunks, unchanged, most relevant first (at most
   5). These are the chunks given to the model, not only the ones it used.
