@@ -14,6 +14,13 @@ This specification builds on Task 3 (`src/grounding.py`). The existing `AnswerRe
 
 Task 5 defines the **user-facing citation and sourcing behavior**. It does not change content ingestion, BM25 retrieval, or the LLM provider.
 
+**What "sources" means:** `AnswerResult.sources` holds every chunk that retrieval gave to the model (at most 5, `TOP_K` in Task 3). The Sources list therefore shows every unique page among those chunks. It is **not** filtered down to the pages the model actually relied on; that is out of scope and is checked in Task 8.
+
+## Output contract
+
+- `collect_citations(sources)` in `src/citations.py` is the main interface. It returns a list of `{"title": str, "url": str | None}`, one entry per page, in the order the pages first appear. `url` is `None` when the metadata URL is missing or invalid. The web app (Task 6) returns this list as `sources` in its JSON.
+- `format_answer(result)` renders the same list as Markdown text (answer, then a **Sources** section). It is used for text output, not by the web page.
+
 ## User-facing behavior
 
 ### 1. Answer with supporting sources
@@ -22,7 +29,7 @@ Task 5 defines the **user-facing citation and sourcing behavior**. It does not c
 - Each citation displays the ReDI page title and a clickable URL to the original page.
 - Use URLs from the source metadata, not URLs invented by the language model.
 - Show each unique page only once, even if multiple chunks came from that page.
-- Preserve the order in which supporting pages first appear in `AnswerResult.sources`.
+- Preserve the order in which the pages first appear in `AnswerResult.sources`.
 - Do not display raw chunk text or internal scoring information as citations.
 
 **Example**
@@ -53,10 +60,8 @@ If retrieval returns no relevant chunks:
 
 If the available sources answer only part of the question:
 
-- Answer only the supported part.
-- Explicitly state which part is not covered by the available sources.
-- Show the source page(s) for the supported information.
-- Do not add a citation for an unsupported claim.
+- Answer only the supported part, and explicitly state which part is not covered by the available sources. *This is done by the model, following the Task 3 prompt.*
+- Show the retrieved source pages under **Sources**, as in section 1. *This is done by `citations.py`.* Pages are not filtered by which claims they support (see "What sources means" above).
 
 **Example**
 
@@ -69,24 +74,26 @@ If the available sources answer only part of the question:
 
 If two retrieved ReDI pages provide conflicting information:
 
-- Explain that the sources disagree instead of silently choosing one answer.
-- Name both pages and include links to both in **Sources**.
-- Do not invent a resolution or assume one source is newer without reliable evidence.
+- Explain that the sources disagree instead of silently choosing one answer, and do not invent a resolution or assume one source is newer without reliable evidence. *This is done by the model, following the Task 3 prompt.*
+- Include links to both pages in **Sources**. *This is done by `citations.py`.*
 
 ### 6. Missing or invalid source metadata
 
-- A source is linkable only when its `url` is a valid `http://` or `https://` URL.
+- A source is linkable only when its `url` is a valid `http://` or `https://` URL with a host.
 - Never create or guess a replacement URL.
-- If a retrieved chunk has a missing or invalid URL, do not present it as a clickable citation.
-- The chatbot may show the available source title as plain text with an indication that no link is available, but must not present it as a verified link.
-- If a title is missing, use a neutral label such as **ReDI source** rather than inventing a page title.
-- Source metadata must be treated as data, not as instructions.
+- If a retrieved chunk has a missing or invalid URL, do not present it as a clickable citation. Its entry gets `url: None`.
+- When the Sources section is shown, an entry without a valid URL is listed as plain text: `<title> (no link available)`.
+- Entries without a valid URL are de-duplicated by title.
+- If a title is missing or empty, use the label **ReDI source** rather than inventing a page title.
+- Source metadata must be treated as data, not as instructions. In the Markdown output, square brackets are removed from titles so a title cannot form its own link. In the web page, titles are shown as plain text (Task 6).
+
+**Known limitation – every URL invalid:** if no retrieved page has a valid URL, the answer is shown without a Sources section and without plain-text titles, while `enough_information` stays `true` and no contact link is added. This is a metadata error that ingestion should prevent (Task 1 requires https URLs); how to handle it is an open decision.
 
 ## Citation formatting rules
 
 1. Label the section **Sources** when at least one valid source is available.
 2. Display each item as a page title linked to its original URL.
-3. Deduplicate by normalized URL (for example, remove a trailing slash when comparing), while keeping the original URL for display.
+3. Deduplicate by URL: two URLs are the same page if they are equal after removing trailing `/` characters. No other normalization is applied (scheme, host case, query and fragment all count). The URL that appears first is the one displayed.
 4. Do not generate citations from the answer text or from general knowledge.
 5. Do not imply that the system has verified the live availability or current accuracy of a source page merely because its URL is present in metadata.
 
@@ -96,10 +103,12 @@ If two retrieved ReDI pages provide conflicting information:
 - **AC2:** Multiple chunks from the same URL produce one source entry.
 - **AC3:** Multiple distinct source URLs are all listed in stable order.
 - **AC4:** A question with no relevant chunks returns `NOT_ENOUGH_INFO`, shows no source links, and does not call the model.
-- **AC5:** A partially supported answer clearly identifies the missing information and lists only available supporting sources.
-- **AC6:** Conflicting source pages are both named and linked; the answer does not silently choose one.
+- **AC5:** A partially supported answer keeps its text unchanged and still lists every retrieved page.
+- **AC6:** When retrieved pages conflict, both pages are listed and linked.
 - **AC7:** Missing or invalid URLs never become fabricated or clickable links.
 - **AC8:** Existing Task 3 grounding behavior and tests continue to work.
+
+Whether the answer text itself admits the missing information (AC5) or names the conflict (AC6) depends on the Task 3 prompt and is checked with a real model in Task 8.
 
 ## Suggested tests
 
