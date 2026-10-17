@@ -32,7 +32,7 @@ As a visitor interested in ReDI School, I want to type a question in a chat inte
 ## 4. Existing features and dependencies
 
 - **Task 2:** Ingestion produces and stores ReDI text chunks with source metadata.
-- **Task 3:** `grounding.answer_question(question, chunks, generate)` returns an `AnswerResult` containing `text`, `enough_information`, and `sources`. It raises `ValueError` if no ingested chunks are available.
+- **Task 3:** `grounding.answer_question(question, chunks, generate)` returns an `AnswerResult` containing `text`, `enough_information`, and `sources`. It raises `ValueError` if the chunk list is empty, but the app checks for that case itself before calling it (see section 8).
 - **Task 5:** `citations.format_answer(result)` returns answer text followed, when applicable, by a Markdown `**Sources**` section with source links. `citations.collect_citations(result.sources)` provides structured title/URL pairs.
 
 **Integration decision:** The Flask endpoint should return **structured JSON** with the answer text and a structured citations array. The browser should render text safely and create links from validated citation metadata. `format_answer()` may be reused for a Markdown-compatible display or regression check, but do not inject its output as untrusted raw HTML. Avoid showing duplicate source sections.
@@ -107,6 +107,10 @@ The final paths may follow the project's existing layout and `pytest.ini` import
 }
 ```
 
+*Extended by `specs/task6_contact_link.md`:* this response also contains a `contact` field with a link to ReDI's contact page.
+
+In a successful response, a `sources` entry whose metadata URL is missing or invalid has `"url": null` (see section 8).
+
 **Invalid request** (`400 Bad Request`):
 
 ```json
@@ -129,14 +133,21 @@ Do not include stack traces, API keys, raw prompts, or internal file paths in JS
 
 ## 8. Backend behavior
 
-- Load the approved, previously ingested chunks from the project's actual storage format. Verify that format before implementation; do not assume a file path or schema not present in the project.
+- **Loading chunks:** `load_chunks()` reads `data/chunks.json` (a JSON list of chunk dicts, written by Task 2) **once, when the app starts**. A missing file gives an empty list. After re-running the ingestion, the app must be restarted to use the new chunks.
+- **App setup:** `create_app(chunks, generate)` receives the chunks and the generation function, so tests pass their own chunks and a fake model.
+- **Demo mode:** no language model is connected yet. `python src/app.py` passes `demo_generate`, which returns a fixed text saying that no model is connected and the answer is not real. Retrieval and sources stay real. A real model is out of scope for Task 6.
 - Use the existing `answer_question(question, chunks, generate)` for retrieval and grounded answering.
 - Use `collect_citations(result.sources)` to produce unique source entries with metadata-derived URLs.
-- Return only citations with valid HTTP(S) URLs as clickable links. If sources lack valid URLs, do not invent links.
+- Entries whose URL is missing or invalid are kept with `"url": null`; no link is ever invented for them.
 - If no relevant chunks are found, return the existing `NOT_ENOUGH_INFO` message with an empty sources array, without calling the model.
-- If no ingested chunks are available at all, catch the `ValueError` from Task 3 and return a service-unavailable error.
-- The generation function should be supplied through configuration or dependency injection so tests can use a fake model. Do not hard-code API credentials or claim that a real model is connected before it is configured.
+- If the loaded chunk list is empty, return the 503 error **before** calling `answer_question`. Every exception raised inside `answer_question` (including a `ValueError` from the model) returns the generic 500, so a model error is never reported as missing content.
+- Do not hard-code API credentials or claim that a real model is connected before it is configured.
 - Treat source content and generated text as untrusted display data.
+
+**Known limitations** (found in the spec review, open for a later decision):
+
+- **Malformed `data/chunks.json`:** if the file exists but is not valid JSON, the app fails at startup instead of serving a 503.
+- **Question length:** the input field limits questions to 500 characters, but the server does not. Requests sent directly to the API can be longer. This matters for cost once a real model is connected.
 
 ## 9. Frontend behavior
 
@@ -148,6 +159,8 @@ Do not include stack traces, API keys, raw prompts, or internal file paths in JS
 - Trim whitespace and reject empty questions before sending.
 - Display the answer using safe text rendering (for example, `textContent`), not `innerHTML` with raw model output.
 - Render source links as real `<a>` elements, with the URL set only from the validated structured API response. Do not parse arbitrary URLs from the generated answer text.
+- The browser checks again that a URL is `http`/`https` before making a link. A source with `"url": null` (or a URL that fails this check) is shown as plain text: `<title> (no link available)`.
+- The **Sources** heading is shown only if at least one source has a valid link.
 - Do not display raw chunk text as a citation.
 - Keep the conversation in memory on the current page; refresh may clear it.
 - Support narrow/mobile screens, keyboard use, visible focus, and readable contrast.

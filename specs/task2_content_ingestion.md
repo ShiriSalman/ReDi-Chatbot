@@ -9,6 +9,17 @@ that can later be used for retrieval and answer generation.
 The pipeline must preserve the source information for every chunk so that
 answers can be cited later.
 
+## Definitions
+
+- **Approved source:** an entry in `data/sources.json` with `include: "Yes"`
+  (see Task 1). Entries marked `No` or `Maybe` are skipped.
+- **Chunk:** a dict with `text`, `url`, `title`, `category`, `language` and
+  `last_updated`, saved as a JSON list in `data/chunks.json`. `title`,
+  `category` and `language` come from `data/sources.json`, not from the page.
+- **Run:** `python src/run_ingestion.py` reads `data/sources.json`, ingests
+  the sources and saves `data/chunks.json`. Chunks from earlier runs are
+  kept unless this spec says they are replaced or removed.
+
 ## Out of scope
 
 - **German-language content:** some approved English sources also contain
@@ -19,6 +30,26 @@ answers can be cited later.
   stable content (for example the news on the ReDI School Denmark page).
   Detecting and removing them is not part of Task 2, so for now these items
   are ingested like the rest of the page.
+- **PDFs and staff documents:** only HTML web pages are ingested (see Task 1).
+  PDFs and documents from ReDI staff are deferred.
+
+## Known limitations
+
+Found in the spec review. They describe what the code does today and are
+open for a later decision:
+
+- **Sources deleted from `data/sources.json`:** a source that is removed from
+  the file entirely (not marked `No`) keeps its chunks in `data/chunks.json`.
+  Only sources still listed with `No` or `Maybe` have their chunks removed.
+- **No usable content:** when a page that had content becomes empty, its
+  chunks from earlier runs are kept (see Scenario 9).
+- **Non-HTML responses:** a PDF or other non-HTML URL is parsed as HTML and
+  can be recorded as ingested with unreadable text. There is no content-type
+  check.
+- **Repeated text inside the main content** (for example carousels) is not
+  removed (see Scenario 3).
+- **Last-updated date:** ReDI's pages currently send no `Last-Modified`
+  header, so every chunk has `last_updated: "unavailable"`.
 
 ---
 
@@ -34,10 +65,14 @@ answers can be cited later.
 
 ## Scenario 2 – Do not ingest sources outside the approved scope
 
-**Given** a webpage is not included in the approved content scope  
-**When** the ingestion pipeline receives the webpage  
-**Then** the webpage should not be ingested  
+**Given** a source in `data/sources.json` is marked `No` or `Maybe`  
+**When** the ingestion pipeline runs  
+**Then** the page should not be fetched or ingested  
+**And** chunks saved for it in earlier runs should be removed  
 **And** the pipeline should record that the source was skipped.
+
+Sources that are not listed in `data/sources.json` at all are never fetched
+(see Known limitations for their old chunks).
 
 ---
 
@@ -46,9 +81,13 @@ answers can be cited later.
 **Given** an approved webpage contains relevant content and unnecessary
 website elements  
 **When** the content is processed  
-**Then** unnecessary elements such as navigation, footer text and repeated
-page elements should be removed  
+**Then** only the page `<body>` should be used  
+**And** the HTML elements `nav`, `header`, `footer`, `script`, `style` and
+`noscript` should be removed from it  
 **And** the relevant textual content should remain.
+
+Repeated text inside the main content is not removed in this task (see
+Known limitations).
 
 ---
 
@@ -74,13 +113,14 @@ page elements should be removed
 
 ## Scenario 6 – Preserve freshness information
 
-**Given** an approved source provides a last-updated date  
+**Given** the server sends a `Last-Modified` header for an approved page  
 **When** the source is ingested  
-**Then** the last-updated date should be stored with its metadata.
+**Then** the date should be stored in each chunk as `last_updated` in the
+format `YYYY-MM-DD`.
 
-**Given** an approved source does not provide a last-updated date  
+**Given** the header is missing or cannot be read  
 **When** the source is ingested  
-**Then** the metadata should indicate that the last-updated date is unavailable.
+**Then** `last_updated` should be the string `"unavailable"`.
 
 ---
 
@@ -99,7 +139,9 @@ page elements should be removed
 **When** the ingestion pipeline attempts to process it  
 **Then** the pipeline should not crash  
 **And** the source should be recorded as failed  
-**And** the failure reason should be logged.
+**And** the failure reason should be recorded in the report  
+**And** chunks saved for this source in earlier runs should be kept, so a
+temporary outage loses nothing.
 
 ---
 
@@ -108,7 +150,9 @@ page elements should be removed
 **Given** an approved source is accessible but contains no usable textual content  
 **When** the ingestion pipeline processes the source  
 **Then** no empty content chunks should be stored  
-**And** the source should be reported as having no usable content.
+**And** the source should be reported as having no usable content  
+**And** chunks saved for this source in earlier runs are kept (see Known
+limitations).
 
 ---
 
