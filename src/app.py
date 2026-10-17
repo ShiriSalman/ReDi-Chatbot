@@ -86,5 +86,10 @@ def create_app(chunks, generate):
     return app
 
 
+""" if __name__ == "__main__":
+    create_app(load_chunks(), demo_generate).run() """
+
+app = create_app(load_chunks(), demo_generate)
+
 if __name__ == "__main__":
-    create_app(load_chunks(), demo_generate).run()
+    app.run(debug=True)
