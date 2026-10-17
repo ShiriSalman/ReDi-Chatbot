@@ -36,8 +36,9 @@ Out of scope).
 
 1. A visitor asks a question for which retrieval finds no relevant ReDI
    content (for example "What will the weather be like in Tokyo tomorrow?").
-2. The assistant message shows the existing text: "The available ReDI sources
-   do not provide enough information to answer this question."
+2. The assistant message shows the existing fallback text (`NOT_ENOUGH_INFO`):
+   "I can only answer questions about ReDI School, and the available ReDI
+   sources do not provide enough information to answer this one."
 3. Below it, a short line offers the contact page: "You can ask ReDI
    directly:" followed by a link **ReDI contact page** that opens
    https://www.redi-school.org/contact in a new tab.
@@ -59,7 +60,7 @@ responses stay exactly as defined there.
 
   ```json
   {
-    "answer": "The available ReDI sources do not provide enough information to answer this question.",
+    "answer": "I can only answer questions about ReDI School, and the available ReDI sources do not provide enough information to answer this one.",
     "enough_information": false,
     "sources": [],
     "contact": {"title": "ReDI contact page", "url": "https://www.redi-school.org/contact"}

@@ -101,7 +101,7 @@ The final paths may follow the project's existing layout and `pytest.ini` import
 
 ```json
 {
-  "answer": "The available ReDI sources do not provide enough information to answer this question.",
+  "answer": "I can only answer questions about ReDI School, and the available ReDI sources do not provide enough information to answer this one.",
   "enough_information": false,
   "sources": []
 }

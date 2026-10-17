@@ -54,7 +54,7 @@ If retrieval returns no relevant chunks:
 
 **Example**
 
-> The available ReDI sources do not provide enough information to answer this question.
+> I can only answer questions about ReDI School, and the available ReDI sources do not provide enough information to answer this one.
 
 ### 4. Partially supported answer
 
