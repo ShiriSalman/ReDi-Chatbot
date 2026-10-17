@@ -12,6 +12,10 @@ from grounding import NOT_ENOUGH_INFO
 FAQ_URL = "https://www.redi-school.org/faq"
 APPLY_URL = "https://www.redi-school.org/apply"
 CHAT_JS = Path(__file__).parent.parent / "static" / "js" / "chat.js"
+SOURCES_FILE = Path(__file__).parent.parent / "data" / "sources.json"
+
+# From specs/task6_contact_link.md
+CONTACT = {"title": "ReDI contact page", "url": "https://www.redi-school.org/contact"}
 
 SUPPORTED_QUESTION = "Are the courses free?"
 UNRELATED_QUESTION = "What will the weather be like in Tokyo tomorrow?"
@@ -147,6 +151,8 @@ class TestCitations:
 # AC5: No relevant content
 class TestNoRelevantContent:
     def test_unrelated_question_returns_the_fallback_without_sources(self):
+        # Also covers specs/task6_contact_link.md AC1 and AC4:
+        # the contact link is its own field and never one of the sources
         response = ask(make_client(), UNRELATED_QUESTION)
 
         assert response.status_code == 200
@@ -154,6 +160,7 @@ class TestNoRelevantContent:
             "answer": NOT_ENOUGH_INFO,
             "enough_information": False,
             "sources": [],
+            "contact": CONTACT,
         }
 
     def test_the_model_is_not_called(self):
@@ -280,3 +287,37 @@ class TestSafeRendering:
         script = CHAT_JS.read_text(encoding="utf-8")
 
         assert "innerHTML" not in script
+
+
+# Contact link for unanswered questions, written from specs/task6_contact_link.md.
+# AC1, AC2 and AC4 are covered by TestNoRelevantContent above; AC6 is checked manually.
+class TestContactLink:
+    # AC3
+    def test_answered_question_has_no_contact_link(self):
+        response = ask(make_client(), SUPPORTED_QUESTION)
+
+        assert response.status_code == 200
+        assert "contact" not in response.get_json()
+
+    # AC5
+    def test_contact_url_is_an_approved_source(self):
+        sources = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
+
+        approved_urls = [source["url"] for source in sources if source["include"] == "Yes"]
+        assert CONTACT["url"] in approved_urls
+
+    # AC7
+    @pytest.mark.parametrize("case", ["blank question", "no content", "model error"])
+    def test_error_responses_have_no_contact_link(self, case):
+        def broken_generate(prompt):
+            raise RuntimeError("model failed")
+
+        if case == "blank question":
+            response = ask(make_client(), "   ")
+        elif case == "no content":
+            response = ask(make_client(chunks=[]), SUPPORTED_QUESTION)
+        else:
+            response = ask(make_client(generate=broken_generate), SUPPORTED_QUESTION)
+
+        assert response.status_code in (400, 503, 500)
+        assert "contact" not in response.get_json()

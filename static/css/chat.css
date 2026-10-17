@@ -123,6 +123,23 @@ body {
   text-decoration-thickness: 2px;
 }
 
+.message .contact {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.contact a {
+  color: var(--redi-teal-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.contact a:hover {
+  text-decoration-thickness: 2px;
+}
+
 .loading {
   margin: 0;
   color: var(--muted);

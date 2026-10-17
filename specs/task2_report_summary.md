@@ -33,14 +33,21 @@ This change does not touch:
 
 ## The interface
 
-**Input:** An ingestion report with four lists: `ingested`, `skipped`,
+`summarize_report(report)` in `src/ingestion.py`.
+
+**Input:** An ingestion report with all four lists: `ingested`, `skipped`,
 `failed` and `no_content`.
 
-**Output:** The number of sources in each category, plus the total:
+**Output:** A new dict with the number of entries in each list, plus `total`
+(all ints):
 
 ```python
 {"ingested": 2, "skipped": 1, "failed": 1, "no_content": 0, "total": 4}
 ```
+
+`total` is the sum of the four counts. Every entry of `data/sources.json`
+ends up in exactly one list, so `total` is the number of entries processed
+in the run. A URL listed twice in `data/sources.json` is counted twice.
 
 ---
 
@@ -99,6 +106,22 @@ the report is only read, never changed.
 **When** the report is printed for the maintainer  
 **Then** the printed counts should come from the summary  
 **And** the printed output should stay the same as before this change.
+
+The printed output (`format_report` in `src/run_ingestion.py`) is, for a run
+with one failed source and no empty pages:
+
+```text
+Ingested: 2
+Skipped: 1
+Failed: 1
+No content: 0
+  failed: https://www.redi-school.org/broken (ConnectionError: 404)
+```
+
+The four count lines come first, in this order, followed by one line per
+failed source and one per source with no content. `total` is not printed.
+The existing test checks the count lines and the failure line as text, not
+the full output.
 
 ---
 
