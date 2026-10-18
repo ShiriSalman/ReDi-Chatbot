@@ -103,10 +103,9 @@ def create_app(chunks, generate):
     return app
 
 
-""" if __name__ == "__main__":
-    create_app(load_chunks(), demo_generate).run() """
-
+# Vercel looks for a module-level variable called "app"
 app = create_app(load_chunks(), demo_generate)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Debug mode stays off: its error page can run Python code and shows stack traces
+    app.run()

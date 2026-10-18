@@ -94,6 +94,21 @@ def test_a_second_run_creates_no_duplicates(tmp_path):
     assert len(second) == len(first)
 
 
+# Scenario 2b: Remove sources deleted from the list
+def test_removes_chunks_of_a_source_deleted_from_the_list(tmp_path):
+    sources_path = write_sources(tmp_path)
+    chunks_path = tmp_path / "chunks.json"
+    run(sources_path, chunks_path, fetch=fetch_ok)
+
+    # Malmö is deleted from sources.json entirely (not marked "No")
+    without_malmo = [s for s in SOURCES if s["url"] != "https://www.redi-school.org/redi-school-malmo"]
+    write_sources(tmp_path, without_malmo)
+    run(sources_path, chunks_path, fetch=fetch_ok)
+
+    urls = {chunk["url"] for chunk in read_chunks(chunks_path)}
+    assert urls == {"https://www.redi-school.org/faq"}
+
+
 # Scenario 8: Handle an unavailable source
 def test_keeps_the_saved_chunks_of_a_source_that_fails_on_the_next_run(tmp_path):
     sources_path = write_sources(tmp_path)

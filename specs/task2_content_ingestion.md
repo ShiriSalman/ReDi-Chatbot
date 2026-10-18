@@ -38,9 +38,6 @@ answers can be cited later.
 Found in the spec review. They describe what the code does today and are
 open for a later decision:
 
-- **Sources deleted from `data/sources.json`:** a source that is removed from
-  the file entirely (not marked `No`) keeps its chunks in `data/chunks.json`.
-  Only sources still listed with `No` or `Maybe` have their chunks removed.
 - **No usable content:** when a page that had content becomes empty, its
   chunks from earlier runs are kept (see Scenario 9).
 - **Non-HTML responses:** a PDF or other non-HTML URL is parsed as HTML and
@@ -71,8 +68,18 @@ open for a later decision:
 **And** chunks saved for it in earlier runs should be removed  
 **And** the pipeline should record that the source was skipped.
 
-Sources that are not listed in `data/sources.json` at all are never fetched
-(see Known limitations for their old chunks).
+---
+
+## Scenario 2b – Remove sources deleted from the list
+
+**Given** chunks of a source were saved in an earlier run  
+**And** the source has since been deleted from `data/sources.json` entirely  
+**When** the ingestion runs (`run()` in `src/run_ingestion.py`)  
+**Then** its chunks should be removed from `data/chunks.json`.
+
+This rule belongs to the run, not to `ingest()`: only the run knows the
+complete list in `data/sources.json`. `ingest()` can be called with part of
+the list and keeps the chunks of other sources (Scenario 7).
 
 ---
 
