@@ -4,7 +4,8 @@ See specs/task6_chat_interface.md for the expected behavior and
 tests/test_app.py for the tests.
 
 Usage: .venv/Scripts/python.exe src/app.py, then open http://127.0.0.1:5000
-No language model is connected yet, so the app runs in demo mode (see demo_generate).
+With GEMINI_API_KEY set, answers come from Google Gemini (see src/llm.py).
+Without it, the app runs in demo mode (see demo_generate).
 """
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ from flask import Flask, jsonify, render_template, request
 
 from citations import collect_citations
 from grounding import answer_question
+from llm import choose_generate
 
 PROJECT_DIR = Path(__file__).parent.parent
 CHUNKS_PATH = PROJECT_DIR / "data" / "chunks.json"
@@ -38,7 +40,7 @@ DEMO_ANSWER = (
 
 
 def demo_generate(prompt):
-    """Stand-in for the language model until a real one is configured."""
+    """Stand-in for the language model when GEMINI_API_KEY is not set."""
     return DEMO_ANSWER
 
 
@@ -104,7 +106,7 @@ def create_app(chunks, generate):
 
 
 # Vercel looks for a module-level variable called "app"
-app = create_app(load_chunks(), demo_generate)
+app = create_app(load_chunks(), choose_generate(demo_generate))
 
 if __name__ == "__main__":
     # Debug mode stays off: its error page can run Python code and shows stack traces

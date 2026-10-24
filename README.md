@@ -26,7 +26,15 @@ python src/app.py
 
 Then open http://127.0.0.1:5000 in your browser.
 
-No language model is connected yet, so the app runs in **demo mode**: retrieval and source links are real,
+To get real answers from Google Gemini, set your API key in the same terminal first
+(never write it in a file that is committed):
+
+```powershell
+$env:GEMINI_API_KEY = "your-key"
+python src/app.py
+```
+
+Without `GEMINI_API_KEY` the app runs in **demo mode**: retrieval and source links are real,
 but the answer text is a placeholder that says it is not a real answer.
 If `data/chunks.json` is missing, the chat answers with a "temporarily unavailable" message; run the ingestion first.
 
