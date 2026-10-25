@@ -239,11 +239,14 @@ class TestPreserveSourceInformation:
             for key in ["url", "title", "category", "language", "last_updated"]:
                 assert chunk[key] == next(c for c in ALL_CHUNKS if c["text"] == chunk["text"])[key]
 
-    def test_the_prompt_includes_the_source_url_of_each_chunk(self):
+    def test_the_prompt_names_each_source_by_title_without_its_url(self):
+        # The URLs stay in the chunks for the citations, but not in the prompt: in Task 8 the
+        # model copied them into its answers (specs/task8_fix_answer_format.md)
         prompt = build_prompt("Are the courses free?", [FREE_CHUNK, SCHEDULE_CHUNK])
 
-        assert FREE_CHUNK["url"] in prompt
-        assert SCHEDULE_CHUNK["url"] in prompt
+        for chunk in [FREE_CHUNK, SCHEDULE_CHUNK]:
+            assert chunk["title"] in prompt
+            assert chunk["url"] not in prompt
 
     def test_the_answer_lists_the_chunks_it_was_based_on(self):
         result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate())
@@ -321,3 +324,8 @@ class TestAnswerFormat:
     # AC7: it said five pages state "all courses are free", but only Course Finder does
     def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
         assert "actually contains it" in self.PROMPT.lower()
+
+    # AC9: answers still cited "[1]", because the prompt numbered the sources
+    def test_prompt_has_no_source_numbers(self):
+        assert "[1]" not in self.PROMPT
+        assert "[2]" not in self.PROMPT
