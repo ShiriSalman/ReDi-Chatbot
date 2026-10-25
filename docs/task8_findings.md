@@ -40,14 +40,27 @@ answers. The question IDs refer to `data/task8_questions.json`.
 | q10 "Does ReDI help me find a job?" | `/our-career-support` is not retrieved. |
 | q18 "Write me a poem." | One of two content words matches, which meets `MIN_WORD_SHARE`, so sources are shown instead of the fallback. The model itself refuses politely. Found in the browser with the same cause: "What is the weather tomorrow?" and "thanks". |
 
+## Run 2: after removing URLs and numbers from the prompt
+
+Run on 2026-10-25 with the same model, after `specs/task8_fix_answer_format.md`
+("Iteration: no URLs and numbers in the prompt"). Compare with
+`git log -p docs/task8_results.md`.
+
+- **A is fixed for English answers.** q08, q09 and q10 no longer end with a
+  link list or `[n]` numbers.
+- **One URL is left: q15, the German answer.** It ends with
+  "Source: FAQ https://www.redi-school.org/faq". No chunk text contains this
+  URL, so the model built it itself from the title and the ReDI domain. The
+  URL happens to be correct, but it is invented. This answer also breaks the
+  English rule (B), so fixing B may fix it too.
+- **B, D and E are unchanged.** Still 14 of 18 passed. Pass/fail doesn't
+  change, because the fix only affects the answer text.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
 
-1. **A:** take the URLs out of the prompt. The links below the answer come
-   from the code, not from the model. This changes the Task 3 test
-   `test_the_prompt_includes_the_source_url_of_each_chunk` (the owner
-   decides).
+1. ~~**A:** take the URLs out of the prompt.~~ Done (run 2).
 2. **C:** show the contact link when the model says the sources don't cover
    the question.
 3. **Retrieval:** questions with only two content words (q18, "thanks",
