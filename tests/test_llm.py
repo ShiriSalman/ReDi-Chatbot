@@ -10,7 +10,7 @@ import pytest
 from google.genai import errors
 
 from app import SERVER_ERROR, create_app, demo_generate
-from llm import MODEL, choose_generate, make_gemini_generate
+from llm import MODEL, RETRY_ATTEMPTS, TIMEOUT_MS, choose_generate, make_gemini_generate
 
 FREE_CHUNK = {
     "text": "All our courses are free of charge for every learner.",
@@ -115,20 +115,37 @@ class TestChooseGenerate:
         assert choose_generate(demo_generate, environ=environ) is demo_generate
 
     def test_uses_gemini_with_the_key_from_gemini_api_key(self, monkeypatch):
-        created = []
-
-        def fake_genai_client(**kwargs):
-            created.append(kwargs)
-            return fake_client("Answer from Gemini.")
-
-        monkeypatch.setattr("google.genai.Client", fake_genai_client)
+        created = record_client_creation(monkeypatch)
 
         generate = choose_generate(
             demo_generate, environ={"GEMINI_API_KEY": "test-key", "GOOGLE_API_KEY": "google-key"}
         )
 
-        assert created == [{"api_key": "test-key"}]
+        assert len(created) == 1
+        assert created[0]["api_key"] == "test-key"
         assert generate("the prompt") == "Answer from Gemini."
+
+    # AC11: on 2026-10-25 a network error and a 503 "high demand" each failed a question at once
+    def test_client_gets_a_timeout_and_retries(self, monkeypatch):
+        created = record_client_creation(monkeypatch)
+
+        choose_generate(demo_generate, environ={"GEMINI_API_KEY": "test-key"})
+
+        http_options = created[0]["http_options"]
+        assert http_options.timeout == TIMEOUT_MS
+        assert http_options.retry_options.attempts == RETRY_ATTEMPTS
+
+
+def record_client_creation(monkeypatch):
+    """Replace genai.Client with a fake and return the list of arguments it was created with."""
+    created = []
+
+    def fake_genai_client(**kwargs):
+        created.append(kwargs)
+        return fake_client("Answer from Gemini.")
+
+    monkeypatch.setattr("google.genai.Client", fake_genai_client)
+    return created
 
 
 # Security: no Gemini key is ever written in the code (Google API keys start with "AIza")
