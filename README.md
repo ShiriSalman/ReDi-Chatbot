@@ -38,6 +38,18 @@ Without `GEMINI_API_KEY` the app runs in **demo mode**: retrieval and source lin
 but the answer text is a placeholder that says it is not a real answer.
 If `data/chunks.json` is missing, the chat answers with a "temporarily unavailable" message; run the ingestion first.
 
+## Evaluate real user questions (Task 8)
+
+Sends every question in `data/task8_questions.json` through the chat API and writes the
+results table to `docs/task8_results.md`:
+
+```powershell
+python src/run_evaluation.py
+```
+
+With `GEMINI_API_KEY` set, the answers come from Gemini (one call per answered question);
+without it, only retrieval, sources and the fallback can be judged.
+
 ## Run the tests
 
 ```powershell
