@@ -15,6 +15,13 @@ MODEL = "gemini-3.8-flash"
 # The only setting that switches Gemini on. The key is never written in the code.
 API_KEY_VARIABLE = "GEMINI_API_KEY"
 
+# Without these the SDK tries once and waits without limit. With them it retries
+# network errors, timeouts, 429 and 5xx (for example 503 "high demand") with growing
+# pauses; a wrong key or model (4xx) is not retried. TIMEOUT_MS is per attempt and in
+# milliseconds; a long answer took 56 seconds.
+TIMEOUT_MS = 60_000
+RETRY_ATTEMPTS = 3  # including the first try
+
 
 def make_gemini_generate(client, model=MODEL):
     """Return a generate(prompt) function that asks Gemini through the given client.
@@ -45,5 +52,10 @@ def choose_generate(fallback, environ=os.environ):
 
     # Imported only here, so demo mode works without creating a client
     from google import genai
+    from google.genai import types
 
-    return make_gemini_generate(genai.Client(api_key=api_key))
+    http_options = types.HttpOptions(
+        timeout=TIMEOUT_MS,
+        retry_options=types.HttpRetryOptions(attempts=RETRY_ATTEMPTS),
+    )
+    return make_gemini_generate(genai.Client(api_key=api_key, http_options=http_options))
