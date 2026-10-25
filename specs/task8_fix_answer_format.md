@@ -100,6 +100,44 @@ The URLs stay in the prompt. `test_the_prompt_includes_the_source_url_of_each_ch
 - `test_prompt_forbids_listing_sources_links_or_urls` (AC6)
 - `test_prompt_asks_to_attribute_statements_only_to_supporting_sources` (AC7)
 
+## Iteration: no URLs and numbers in the prompt
+
+**Evidence:** in the Task 8 run on 2026-10-25 (`docs/task8_results.md`,
+finding A in `docs/task8_findings.md`), 3 of 18 answers still ended with
+"Links to sources: [1] https://…", despite the rule against it.
+
+**Cause:** `build_prompt()` shows each source as `[n] title (url)`. The model
+can copy what it sees, and a rule only makes copying less likely.
+
+**Change:** `build_prompt()` shows each source as `Source: <title>`, followed
+by its text, with no number and no URL. What the model doesn't see, it can't
+copy.
+- The links below the answer don't depend on this. They come from
+  `collect_citations(result.sources)`, which still has all metadata
+  (Task 3, Scenario 7).
+- Each title belongs to exactly one URL in `data/chunks.json` (24 titles,
+  checked on 2026-10-25), so the model can still tell the sources apart and
+  name both sides of a conflict by title.
+- The rules stay as they are.
+
+**Changed test (Task 3):**
+- `test_the_prompt_includes_the_source_url_of_each_chunk` becomes
+  `test_the_prompt_names_each_source_by_title_without_its_url`.
+- Scenario 7 asks for the metadata to stay attached to the chunks. That is
+  still tested by `test_retrieved_chunks_keep_all_their_metadata` and
+  `test_the_answer_lists_the_chunks_it_was_based_on`.
+
+**Acceptance criteria:**
+- **AC9:** The prompt contains each source's title and text, but neither its
+  URL nor a number like `[1]`.
+- **AC10:** All other tests pass unchanged.
+- **AC11 (by hand):** run `python src/run_evaluation.py` again. No answer
+  contains a URL or a `[n]` number.
+
+**Tests:**
+- `test_the_prompt_names_each_source_by_title_without_its_url` (AC9, changed)
+- `test_prompt_has_no_source_numbers` (AC9)
+
 ## Out of scope
 
 - Rendering Markdown on the page. It would need a library plus sanitising and
