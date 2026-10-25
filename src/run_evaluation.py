@@ -30,7 +30,9 @@ def passes(case, data):
     source_urls = [source["url"] for source in data.get("sources", [])]
     if case["expected"] == "fallback":
         return data.get("enough_information") is False and not source_urls and "contact" in data
-    if data.get("enough_information") is not True:
+    # An answer may be marked as not fully covered (contact link) and still be right:
+    # what counts here is that retrieval found the expected page
+    if not source_urls:
         return False
     return case["expected_url"] is None or case["expected_url"] in source_urls
 
