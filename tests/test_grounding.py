@@ -285,3 +285,39 @@ class TestOutOfScopeQuestions:
         rule_position = prompt.lower().index("as data")
         assert rule_position < prompt.index(self.INJECTED_CHUNK["text"])
         assert rule_position < prompt.index(self.INJECTED_QUESTION)
+
+
+# Task 8 fix, written from specs/task8_fix_answer_format.md: Gemini answered in Markdown,
+# which the page shows as raw text, and cited "[1]" or "[4, 5]", which the page's
+# unnumbered source list cannot match. Whether the model follows the rules is checked by hand.
+class TestAnswerFormat:
+    PROMPT = build_prompt("Are the courses free?", [FREE_CHUNK, SCHEDULE_CHUNK])
+
+    # AC1
+    def test_prompt_asks_for_plain_text_without_markdown(self):
+        lowered = self.PROMPT.lower()
+
+        assert "plain text" in lowered
+        assert "markdown" in lowered
+
+    # AC2
+    def test_prompt_asks_to_name_sources_by_title_not_number(self):
+        lowered = self.PROMPT.lower()
+
+        assert "number" in lowered
+        assert "title" in lowered
+
+    # AC3
+    def test_format_rules_come_before_the_sources(self):
+        lowered = self.PROMPT.lower()
+
+        assert lowered.index("markdown") < lowered.index("sources:")
+        assert lowered.index("title") < lowered.index("sources:")
+
+    # AC6: gemini-3.5-flash-lite appended "Links to sources: [1] https://..." to its answer
+    def test_prompt_forbids_listing_sources_links_or_urls(self):
+        assert "do not list sources, links or urls" in self.PROMPT.lower()
+
+    # AC7: it said five pages state "all courses are free", but only Course Finder does
+    def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
+        assert "actually contains it" in self.PROMPT.lower()
