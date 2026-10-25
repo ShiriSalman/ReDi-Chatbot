@@ -122,13 +122,12 @@ def retrieve(question, chunks, top_k=TOP_K):
 def build_prompt(question, chunks):
     """Build the prompt that asks the model to answer only from the given chunks.
 
-    Every source is numbered and shows its title and URL, so the model can tell
-    the sources apart and name them when they conflict.
+    Every source shows its title, so the model can tell the sources apart and name
+    them when they conflict (each title belongs to one page). Numbers and URLs are
+    left out: the model copied them into its answers (Task 8), and the links below
+    the answer come from the chunks' metadata anyway.
     """
-    sources = "\n\n".join(
-        f"[{number}] {chunk['title']} ({chunk['url']})\n{chunk['text']}"
-        for number, chunk in enumerate(chunks, start=1)
-    )
+    sources = "\n\n".join(f"Source: {chunk['title']}\n{chunk['text']}" for chunk in chunks)
     return f"{INSTRUCTIONS}\n\nSources:\n\n{sources}\n\nQuestion: {question}"
 
 
