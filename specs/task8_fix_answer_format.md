@@ -66,6 +66,40 @@ Checked by hand with Gemini (after):
 - `test_prompt_asks_to_name_sources_by_title_not_number` (AC2)
 - `test_format_rules_come_before_the_sources` (AC3)
 
+## Iteration: no link lists, no over-attribution
+
+**Evidence (after the first fix):** on 2026-10-25, with
+`gemini-3.5-flash-lite`, "Are ReDI School courses free?" got a plain-text
+answer, but with two new problems:
+
+- It ended with "Links to sources: [1] https://www.redi-school.org/ … [5] …".
+  This repeats the source list shown below the answer and uses numbers again.
+  The model copies the URLs from the prompt (`[n] title (url)`).
+- It said "According to ReDI School, Course Finder, ReDI School Hamburg, Our
+  impact, and ReDI School NRW, all of their courses are free". Only Course
+  Finder says so ("All our courses are free!"). The other pages speak of
+  "free tech education" in general.
+
+**Change:** two more rules in `INSTRUCTIONS`.
+- *Do not list sources, links or URLs in the answer. They are shown below
+  it.*
+- *Only attribute a statement to a source that actually contains it.*
+
+The URLs stay in the prompt. `test_the_prompt_includes_the_source_url_of_each_chunk`
+(Task 3) requires them, and they help the model tell the sources apart.
+
+**Acceptance criteria:**
+- **AC6:** The prompt contains the rule not to list sources, links or URLs.
+- **AC7:** The prompt contains the rule to attribute a statement only to a
+  source that actually contains it.
+- **AC8 (by hand):** "Are ReDI School courses free?" gets an answer without
+  a link list. If it names a source for "all courses are free", that source
+  is Course Finder.
+
+**Tests:**
+- `test_prompt_forbids_listing_sources_links_or_urls` (AC6)
+- `test_prompt_asks_to_attribute_statements_only_to_supporting_sources` (AC7)
+
 ## Out of scope
 
 - Rendering Markdown on the page. It would need a library plus sanitising and

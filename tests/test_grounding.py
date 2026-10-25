@@ -313,3 +313,11 @@ class TestAnswerFormat:
 
         assert lowered.index("markdown") < lowered.index("sources:")
         assert lowered.index("title") < lowered.index("sources:")
+
+    # AC6: gemini-3.5-flash-lite appended "Links to sources: [1] https://..." to its answer
+    def test_prompt_forbids_listing_sources_links_or_urls(self):
+        assert "do not list sources, links or urls" in self.PROMPT.lower()
+
+    # AC7: it said five pages state "all courses are free", but only Course Finder does
+    def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
+        assert "actually contains it" in self.PROMPT.lower()
