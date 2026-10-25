@@ -133,6 +133,29 @@ def build_prompt(question, chunks):
     return f"{INSTRUCTIONS}\n\nSources:\n\n{sources}\n\nQuestion: {question}"
 
 
+# A web address: starts with http(s):// or www., and doesn't end in punctuation,
+# so "Read more at https://example.org." keeps its full stop
+URL = r"(?:https?://|www\.)[^\s()<>]*[^\s()<>.,;:!?]"
+
+
+def remove_urls(text):
+    """Remove every web address from the model's answer.
+
+    The prompt contains no URLs, so any URL in an answer was guessed by the model, and in
+    Task 8 some of them didn't exist. The real links come from the chunks' metadata instead.
+    A URL in brackets is removed together with its brackets. Text without URLs is
+    returned unchanged.
+    """
+    if not re.search(URL, text):
+        return text
+    text = re.sub(rf"\s*\(\s*{URL}\s*\)", "", text)
+    text = re.sub(rf"\s*{URL}", "", text)
+    # Tidy the gaps the URLs left, without touching line breaks between paragraphs
+    text = re.sub(r"[ \t]+([.,;:!?])", r"\1", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    return text.strip()
+
+
 @dataclass
 class AnswerResult:
     text: str
@@ -162,7 +185,8 @@ def answer_question(question, chunks, generate):
         )
 
     prompt = build_prompt(question, relevant_chunks)
-    answer = generate(prompt)
+    # Links must never be invented, so the code removes any URL the model wrote
+    answer = remove_urls(generate(prompt))
 
     return AnswerResult(
         text=answer,
