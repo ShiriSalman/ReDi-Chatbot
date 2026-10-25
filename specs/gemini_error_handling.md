@@ -176,15 +176,53 @@ The errors are real SDK classes built without network, for example
 - `test_gemini_connection.py` stays out of the test suite. `pytest.ini`
   collects only `tests/`, so a normal test run never calls Gemini.
 
+## Iteration: timeout and retry
+
+**Evidence:** on 2026-10-25, with a real key, every answer in the chat page
+failed for a while with the friendly 500, for two reasons:
+- **19:52:** `httpx.ConnectError: getaddrinfo failed`. The network was
+  briefly unavailable.
+- **19:57:** `ServerError: 503 UNAVAILABLE` ("This model is currently
+  experiencing high demand. Spikes in demand are usually temporary.").
+
+An answer to "thanks" also took 56 seconds. The SDK does **not** retry by
+default (no `retry_options` means one attempt), and it sets no timeout of its
+own.
+
+**Change (`src/llm.py`):**
+- `choose_generate()` creates the client as
+  `genai.Client(api_key=..., http_options=types.HttpOptions(timeout=TIMEOUT_MS, retry_options=types.HttpRetryOptions(attempts=RETRY_ATTEMPTS)))`.
+- `TIMEOUT_MS = 60_000` applies to each attempt and is in milliseconds. It is
+  above the 56 seconds measured for a long answer.
+- `RETRY_ATTEMPTS = 3` counts the first try.
+- With `retry_options` set, the SDK retries on its own. It retries HTTP 408,
+  429, 500, 502, 503 and 504, and also `httpx.TimeoutException` and
+  `httpx.ConnectError` (checked in `google/genai/_api_client.py`). It waits
+  with exponential backoff between attempts, starting at 1 second.
+- 400, 401, 403 and 404 are not retried, because another attempt cannot fix a
+  wrong key or model.
+- When all attempts fail, the error reaches `app.py` as before, and the
+  visitor sees 500 `SERVER_ERROR`.
+
+**Acceptance criteria:**
+- **AC11:** The Gemini client is created with `timeout=TIMEOUT_MS` and
+  `retry_options.attempts=RETRY_ATTEMPTS`. Checked by a unit test with a
+  monkeypatched `genai.Client`.
+- **AC12:** The SDK's own retry rules are not tested again; that would test
+  the SDK, not our code. Checked by hand: during a short 503 spike, a
+  question still gets an answer.
+
+**Known limitation:** the worst case is about 3 × 60 seconds plus the waits
+between attempts. If the Vercel function time limit is shorter, it ends the
+request first. Check this in Task 9.
+
+**Tests (`tests/test_llm.py`):**
+- `test_client_gets_a_timeout_and_retries` (AC11)
+- `test_uses_gemini_with_the_key_from_gemini_api_key` now checks only the
+  `api_key` argument, because the client also receives `http_options`.
+
 ## Later (not in this spec)
 
-- **Timeout:** set it with `genai.Client(http_options=types.HttpOptions(timeout=...))`,
-  in milliseconds. Without it, a hanging call keeps the visitor waiting.
-  Check which default applies.
-- **Retry:** the SDK does **not** retry by default (no `retry_options` means
-  one attempt). Retries need
-  `HttpOptions(retry_options=types.HttpRetryOptions(attempts=...))`. The SDK
-  then retries on 408, 429, 500, 502, 503 and 504.
 - **Response validation beyond empty text**, for example checking the finish
   reason or handling a cut-off answer.
 - **A separate message for 429** ("The chatbot is busy, please try again in
