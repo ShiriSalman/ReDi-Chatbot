@@ -88,6 +88,17 @@ class TestPassFail:
     def test_answer_case_without_expected_url_only_needs_an_answer(self):
         assert run_one(make_case(COVERED))["passed"] is True
 
+    # specs/task8_fix_contact_link_not_covered.md, AC7: an honest "not covered" answer with
+    # the right sources and the contact link is what we want, not a failure
+    def test_answer_case_with_contact_link_still_passes(self):
+        def generate(prompt):
+            return "[NOT COVERED] The sources do not say how long each course is."
+
+        [result] = evaluate([make_case(COVERED, expected_url=FAQ_URL)], CHUNKS, generate)
+
+        assert result["passed"] is True
+        assert result["contact"] is True
+
 
 # Evidence recorded for each question
 class TestRecordedEvidence:

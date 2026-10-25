@@ -90,13 +90,33 @@ Run on 2026-10-25 with the same model, after `specs/task8_fix_invented_urls.md`.
   only redundant (known limitation in the spec).
 - Still 14 of 18 passed. C, D and E are unchanged.
 
+## Run 5: after the "not covered" marker
+
+Run with the same model, after `specs/task8_fix_contact_link_not_covered.md`.
+
+- **C is fixed.** q03 and q11 now show the contact link. The marker
+  "[NOT COVERED]" appears in none of the 18 answers.
+- **The model also marked partial answers:** q05, q08 and q09. They give
+  what the sources cover and offer the contact link for the rest, which is
+  the intent of the rule.
+- **Also marked:** q12 (unclear question), q14 (injection attempt) and q18
+  ("Write me a poem."). q18 now at least offers the contact link. Its wrong
+  sources are the known retrieval problem.
+- **Observation (q15, German question):** retrieval finds only FAQ chunks,
+  not Course Finder. The answer now says the sources "do not explicitly
+  state whether the courses themselves are free". That is honest for those
+  chunks, but weaker than the English question. It also adds an unrelated
+  sentence about personal information.
+- Still 14 of 18 passed. The runner now counts an "answer" case with the
+  contact link as passed if the expected page was retrieved.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
 
 1. ~~**A:** take the URLs out of the prompt.~~ Done (run 2).
-2. **C:** show the contact link when the model says the sources don't cover
-   the question.
+2. ~~**C:** show the contact link when the model says the sources don't cover
+   the question.~~ Done (run 5).
 3. **Retrieval:** questions with only two content words (q18, "thanks",
    "What is the weather tomorrow?").
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).

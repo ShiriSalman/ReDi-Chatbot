@@ -5,7 +5,15 @@
 # these tests check that our code gives it the right context and instructions.
 import pytest
 
-from grounding import NOT_ENOUGH_INFO, answer_question, build_prompt, remove_urls, retrieve, tokenize
+from grounding import (
+    NOT_COVERED_MARKER,
+    NOT_ENOUGH_INFO,
+    answer_question,
+    build_prompt,
+    remove_urls,
+    retrieve,
+    tokenize,
+)
 
 
 def make_chunk(text, **overrides):
@@ -383,3 +391,61 @@ class TestNoUrlsInTheAnswer:
         assert result.text == "Yes, they are free. Sources: - FAQ"
         assert FREE_CHUNK in result.sources
         assert result.sources[0]["url"].startswith("https://")
+
+
+# Task 8 fix, written from specs/task8_fix_contact_link_not_covered.md: the model said the
+# sources don't cover the question, but enough_information stayed True, so no contact link.
+# The model now marks such answers, and the code turns the marker into enough_information=False.
+class TestNotCoveredMarker:
+    QUESTION = "Is there a certificate after the course?"
+
+    # AC1
+    def test_prompt_contains_the_not_covered_rule(self):
+        prompt = build_prompt(self.QUESTION, [FREE_CHUNK])
+
+        rule_position = prompt.index(NOT_COVERED_MARKER)
+        assert rule_position < prompt.index(FREE_CHUNK["text"])
+        assert rule_position < prompt.index(self.QUESTION)
+
+    # AC2
+    def test_marked_answer_is_not_enough_information_but_keeps_its_sources(self):
+        answer = f"{NOT_COVERED_MARKER} The sources do not say whether there is a certificate."
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.enough_information is False
+        assert result.text == "The sources do not say whether there is a certificate."
+        assert FREE_CHUNK in result.sources
+
+    # AC3
+    @pytest.mark.parametrize(
+        "answer",
+        [
+            "[not covered] The sources do not say.",
+            "The sources do not say. [NOT COVERED]",
+        ],
+        ids=["lower case", "at the end"],
+    )
+    def test_marker_is_found_in_any_case_and_position(self, answer):
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.enough_information is False
+        assert result.text == "The sources do not say."
+
+    # AC4
+    def test_answer_that_is_only_the_marker_becomes_the_fallback_text(self):
+        generate = fake_generate(f"  {NOT_COVERED_MARKER}  ")
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=generate)
+
+        assert result.enough_information is False
+        assert result.text == NOT_ENOUGH_INFO
+
+    # AC5
+    def test_answer_without_marker_is_unchanged(self):
+        result = answer_question(
+            "Are the courses free?", ALL_CHUNKS, generate=fake_generate("Yes, all courses are free.")
+        )
+
+        assert result.enough_information is True
+        assert result.text == "Yes, all courses are free."
