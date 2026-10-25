@@ -325,6 +325,20 @@ class TestAnswerFormat:
     def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
         assert "actually contains it" in self.PROMPT.lower()
 
+    # specs/task8_fix_english_answers.md: "Sind die Kurse kostenlos?" got a German answer
+    def test_prompt_asks_to_always_answer_in_english(self):
+        assert "always answer in english" in self.PROMPT.lower()
+
+    def test_english_rule_comes_before_a_german_question_and_source(self):
+        german_question = "Sind die Kurse kostenlos?"
+        german_chunk = make_chunk("Alle unsere Kurse sind kostenlos.")
+
+        prompt = build_prompt(german_question, [german_chunk])
+
+        rule_position = prompt.lower().index("always answer in english")
+        assert rule_position < prompt.index(german_chunk["text"])
+        assert rule_position < prompt.index(german_question)
+
     # AC9: answers still cited "[1]", because the prompt numbered the sources
     def test_prompt_has_no_source_numbers(self):
         assert "[1]" not in self.PROMPT
