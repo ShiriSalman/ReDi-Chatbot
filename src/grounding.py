@@ -28,7 +28,9 @@ Use only the ReDI sources below. Do not use general knowledge and do not guess.
 - If the question can be understood in more than one way, answer the most likely meaning and say which assumption you made, or suggest a more specific question.
 - You have no access to personal information such as application status or course enrolment. For questions about a person's own situation, say so and suggest contacting ReDI directly.
 - Write the answer as plain text in short paragraphs. Do not use Markdown, such as asterisks, bullet points or headings.
-- Do not refer to sources by their numbers. The links to the sources are shown below the answer; if you need to name a source, use its title."""
+- Do not refer to sources by their numbers. The links to the sources are shown below the answer; if you need to name a source, use its title.
+- Do not list sources, links or URLs in the answer; they are shown below it.
+- Only attribute a statement to a source that actually contains it."""
 
 # BM25 settings, the usual defaults:
 # K1 controls how quickly repeated words stop adding points,
