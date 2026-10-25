@@ -115,8 +115,8 @@ Run with the same model, after `specs/task8_fix_contact_link_not_covered.md`.
 The spec allows one focused fix at a time, each with before/after evidence.
 
 1. ~~**A:** take the URLs out of the prompt.~~ Done (run 2).
-2. **C:** show the contact link when the model says the sources don't cover
-   the question.
+2. ~~**C:** show the contact link when the model says the sources don't cover
+   the question.~~ Done (run 5).
 3. **Retrieval:** questions with only two content words (q18, "thanks",
    "What is the weather tomorrow?").
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
