@@ -212,6 +212,13 @@ own.
   the SDK, not our code. Checked by hand: during a short 503 spike, a
   question still gets an answer.
 
+**Model change:** with retries, answers still took long because
+`gemini-3.8-flash` is slow (the docs call it the "most intelligent Flash
+model") and was overloaded. `MODEL` is now `gemini-3.5-flash-lite`, which the
+models page lists as stable and as "our fastest, most cost-effective" model.
+Whether it still follows the prompt rules (only the sources, plain text) is
+checked by hand in the chat page.
+
 **Known limitation:** the worst case is about 3 × 60 seconds plus the waits
 between attempts. If the Vercel function time limit is shorter, it ends the
 request first. Check this in Task 9.

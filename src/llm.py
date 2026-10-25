@@ -9,8 +9,10 @@ friendly message.
 """
 import os
 
-# The models page lists it as stable (checked on 2026-10-24); change it here
-MODEL = "gemini-3.8-flash"
+# The models page lists it as stable and as the fastest, most cost-effective model
+# (checked on 2026-10-24). gemini-3.8-flash was slower (56 seconds for one answer)
+# and overloaded on 2026-10-25. Change it here.
+MODEL = "gemini-3.5-flash-lite"
 
 # The only setting that switches Gemini on. The key is never written in the code.
 API_KEY_VARIABLE = "GEMINI_API_KEY"
