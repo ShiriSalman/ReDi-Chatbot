@@ -439,6 +439,9 @@ htmlcov/
 # JavaScript testing (Jest)
 coverage/
 
+# Playwright MCP page snapshots and screenshots
+.playwright-mcp/
+
 # Environment variables and secrets
 .env
 .env.*
