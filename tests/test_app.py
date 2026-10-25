@@ -324,6 +324,20 @@ class TestContactLink:
         assert response.status_code == 200
         assert "contact" not in response.get_json()
 
+    # specs/task8_fix_contact_link_not_covered.md, AC6: the model says the sources don't
+    # cover the question, so the visitor gets the contact link as well as the sources
+    def test_marked_answer_shows_sources_and_the_contact_link(self):
+        generate = fake_generate("[NOT COVERED] The sources do not say how long each course is.")
+
+        data = ask(make_client(generate=generate), SUPPORTED_QUESTION).get_json()
+
+        assert data == {
+            "answer": "The sources do not say how long each course is.",
+            "enough_information": False,
+            "sources": [{"title": "FAQ", "url": FAQ_URL}],
+            "contact": CONTACT,
+        }
+
     # AC5
     def test_contact_url_is_an_approved_source(self):
         sources = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
