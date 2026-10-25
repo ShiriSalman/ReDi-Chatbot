@@ -56,6 +56,40 @@ Run on 2026-10-25 with the same model, after `specs/task8_fix_answer_format.md`
 - **B, D and E are unchanged.** Still 14 of 18 passed. Pass/fail doesn't
   change, because the fix only affects the answer text.
 
+## Run 3: after "Always answer in English"
+
+Run on 2026-10-25 with the same model, after `specs/task8_fix_english_answers.md`.
+
+- **B is fixed.** q15 answers in English and has no URL: "… the sources
+  state that ReDI School offers free technical education." It still ends with
+  "Sources: - FAQ", a list of titles without links.
+- **New finding F: invented, partly wrong URLs.** q01 ends with a source list
+  that has URLs. Two of them don't exist:
+  - `https://www.redi-school.org/hamburg`; the real one is
+    `/redi-school-hamburg`.
+  - `/munich-courses/coding-with-ai-real-world-development-workflows`; the
+    real one is `/web-development/munich/dcp/coding-with-ai`.
+
+  q06 also ends with "Sources: - Contact (https://www.redi-school.org/contact)".
+  Since run 2 the prompt has no URLs, so when the model ignores the rule
+  "Do not list sources, links or URLs", it guesses them from the title and
+  the domain. This breaks "never invent links" (Task 5). A prompt rule is not
+  enough for this, so the code has to prevent it.
+
+## Run 4: after removing URLs in code
+
+Run on 2026-10-25 with the same model, after `specs/task8_fix_invented_urls.md`.
+
+- **F is fixed.** None of the 18 answers contains a URL (`http`, `www.`) or a
+  `[n]` number.
+- **B is still fixed.** q15 answers in English: "… the courses offered by the
+  ReDI School of Digital Integration are free of charge."
+- **Left over (low):** q01, q05, q10 and q15 still end with a list of titles,
+  for example "Source: FAQ, Course Finder". There are no links, nothing is
+  invented, and the titles match the sources shown below the answer. It is
+  only redundant (known limitation in the spec).
+- Still 14 of 18 passed. C, D and E are unchanged.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -65,7 +99,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
    the question.
 3. **Retrieval:** questions with only two content words (q18, "thanks",
    "What is the weather tomorrow?").
-4. **B, D, E** after that. E may need overlapping chunks in the ingestion.
+4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
+5. **D, E** after that. E may need overlapping chunks in the ingestion.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.

@@ -5,7 +5,7 @@
 # these tests check that our code gives it the right context and instructions.
 import pytest
 
-from grounding import NOT_ENOUGH_INFO, answer_question, build_prompt, retrieve, tokenize
+from grounding import NOT_ENOUGH_INFO, answer_question, build_prompt, remove_urls, retrieve, tokenize
 
 
 def make_chunk(text, **overrides):
@@ -325,7 +325,61 @@ class TestAnswerFormat:
     def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
         assert "actually contains it" in self.PROMPT.lower()
 
+    # specs/task8_fix_english_answers.md: "Sind die Kurse kostenlos?" got a German answer
+    def test_prompt_asks_to_always_answer_in_english(self):
+        assert "always answer in english" in self.PROMPT.lower()
+
+    def test_english_rule_comes_before_a_german_question_and_source(self):
+        german_question = "Sind die Kurse kostenlos?"
+        german_chunk = make_chunk("Alle unsere Kurse sind kostenlos.")
+
+        prompt = build_prompt(german_question, [german_chunk])
+
+        rule_position = prompt.lower().index("always answer in english")
+        assert rule_position < prompt.index(german_chunk["text"])
+        assert rule_position < prompt.index(german_question)
+
     # AC9: answers still cited "[1]", because the prompt numbered the sources
     def test_prompt_has_no_source_numbers(self):
         assert "[1]" not in self.PROMPT
         assert "[2]" not in self.PROMPT
+
+
+# Task 8 fix, written from specs/task8_fix_invented_urls.md: with no URLs in the prompt, the model
+# guessed them when it listed sources, and two of them didn't exist. The code removes every URL
+# from the answer; the real links come from the chunks' metadata.
+class TestNoUrlsInTheAnswer:
+    # AC1
+    @pytest.mark.parametrize(
+        "text, expected",
+        [
+            ("See https://www.redi-school.org/hamburg for more.", "See for more."),
+            ("Old page: http://redi-school.org/faq", "Old page:"),
+            ("Visit www.redi-school.org today.", "Visit today."),
+            ("Sources: - Contact (https://www.redi-school.org/contact)", "Sources: - Contact"),
+            (
+                "Course Finder (https://www.redi-school.org/course-finder), FAQ.",
+                "Course Finder, FAQ.",
+            ),
+        ],
+        ids=["https", "http", "www", "in brackets", "before a comma"],
+    )
+    def test_removes_urls_from_the_text(self, text, expected):
+        assert remove_urls(text) == expected
+
+    # AC2
+    def test_text_without_urls_is_unchanged(self):
+        text = "Yes, all courses are free. Write to takuya@redi-school.org for Hamburg."
+
+        assert remove_urls(text) == text
+
+    # AC3
+    def test_the_answer_has_no_urls_but_the_sources_keep_theirs(self):
+        generate = fake_generate("Yes, they are free. Sources: - FAQ (https://www.redi-school.org/made-up)")
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=generate)
+
+        assert "http" not in result.text
+        assert result.text == "Yes, they are free. Sources: - FAQ"
+        assert FREE_CHUNK in result.sources
+        assert result.sources[0]["url"].startswith("https://")
