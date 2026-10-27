@@ -154,6 +154,21 @@ class TestNoRelevantContent:
 
         assert retrieve(self.QUESTION, ALL_CHUNKS + [berlin_chunk]) == []
 
+    # specs/task8_fix_retrieval_min_words.md: with two content words, one accidental match was
+    # already 50 %. "Write me a poem." got sources because some page says "write".
+    def test_two_word_question_needs_both_words(self):
+        write_chunk = make_chunk("Volunteers write the curriculum together with the learners.")
+
+        assert retrieve("Write me a poem.", ALL_CHUNKS + [write_chunk]) == []
+
+    def test_two_word_question_finds_a_chunk_with_both_words(self):
+        apply_chunk = make_chunk("You can apply for a course after the info day.")
+
+        assert apply_chunk in retrieve("How do I apply for a course?", ALL_CHUNKS + [apply_chunk])
+
+    def test_one_word_question_needs_only_that_word(self):
+        assert retrieve("Volunteers?", ALL_CHUNKS) == [VOLUNTEER_CHUNK]
+
     def test_a_single_letter_is_not_a_match(self):
         # Found in the chat page: "<b>hallo</b>" matched the "B" in the German
         # abbreviation "z. B." on the FAQ page, so a greeting got four sources
