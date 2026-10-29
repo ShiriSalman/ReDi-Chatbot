@@ -8,13 +8,14 @@ With GEMINI_API_KEY set, answers come from Google Gemini (see src/llm.py).
 Without it, the app runs in demo mode (see demo_generate).
 """
 import json
+import logging
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
 from citations import collect_citations
 from grounding import answer_question
-from llm import choose_generate
+from llm import MODEL, choose_generate
 
 PROJECT_DIR = Path(__file__).parent.parent
 CHUNKS_PATH = PROJECT_DIR / "data" / "chunks.json"
@@ -105,8 +106,32 @@ def create_app(chunks, generate):
     return app
 
 
-# Vercel looks for a module-level variable called "app"
-app = create_app(load_chunks(), choose_generate(demo_generate))
+def log_startup(app, chunks, generate):
+    """Log once at startup which content and which model the app answers with.
+
+    On a server nobody watches the page, so a missing GEMINI_API_KEY or missing content
+    has to show up in the log, not only in the visitors' answers.
+    """
+    app.logger.setLevel(logging.INFO)
+    if not chunks:
+        app.logger.error(
+            "No ReDI content loaded: data/chunks.json is missing or empty, "
+            "so every question gets the 'temporarily unavailable' error."
+        )
+    if generate is demo_generate:
+        app.logger.warning(
+            "Demo mode: GEMINI_API_KEY is not set, so answers are placeholders, not real answers."
+        )
+    else:
+        app.logger.info(f"Answering with Gemini ({MODEL}) from {len(chunks)} chunks.")
+
+
+# gunicorn ("app:app" in the Dockerfile, used on Render) and Vercel both load this
+# module-level variable called "app"
+chunks = load_chunks()
+generate = choose_generate(demo_generate)
+app = create_app(chunks, generate)
+log_startup(app, chunks, generate)
 
 if __name__ == "__main__":
     # Debug mode stays off: its error page can run Python code and shows stack traces
