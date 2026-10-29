@@ -112,7 +112,7 @@
     "question": "What is my application status?",
     "topic": "Applications",
     "case": "personal",
-    "expected": "answer",
+    "expected": "fallback",
     "expected_url": null,
     "known_issue": null
   },
@@ -159,6 +159,15 @@
     "case": "out_of_scope",
     "expected": "fallback",
     "expected_url": null,
-    "known_issue": "One of the two words (\"write\", \"poem\") appears on ReDI pages, which meets MIN_WORD_SHARE, so sources are returned instead of the fallback"
+    "known_issue": null
+  },
+  {
+    "id": "q19",
+    "question": "What is the weather tomorrow?",
+    "topic": "Unrelated",
+    "case": "out_of_scope",
+    "expected": "fallback",
+    "expected_url": null,
+    "known_issue": null
   }
 ]

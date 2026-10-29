@@ -49,6 +49,11 @@ B = 0.75
 MIN_WORD_SHARE = 0.5
 TOP_K = 5
 
+# With only two content words, one accidental match is already 50 % ("Write me a poem."
+# matched pages that say "write"), so a chunk must also contain at least this many of the
+# question's words. A one-word question still needs just its one word. Tuned in Task 8.
+MIN_MATCHED_WORDS = 2
+
 # Common words that say nothing about what a question is about
 STOPWORDS = {
     "a", "about", "an", "and", "are", "at", "be", "can", "do", "does", "for", "from",
@@ -86,7 +91,8 @@ def retrieve(question, chunks, top_k=TOP_K):
     """Return the chunks that best match the question, most relevant first.
 
     Chunks are scored with BM25 and returned unchanged, so their source metadata stays attached.
-    Returns an empty list when no chunk contains at least MIN_WORD_SHARE of the question's words.
+    Returns an empty list when no chunk contains at least MIN_WORD_SHARE of the question's words
+    and at least MIN_MATCHED_WORDS of them (or all of them, for a one-word question).
     """
     question_words = set(tokenize(question))
     if not question_words or not chunks:
@@ -109,6 +115,8 @@ def retrieve(question, chunks, top_k=TOP_K):
         frequencies = Counter(words)
         matched = sum(1 for word in question_words if frequencies[word])
         if matched / len(question_words) < MIN_WORD_SHARE:
+            continue
+        if matched < min(MIN_MATCHED_WORDS, len(question_words)):
             continue
 
         length_factor = 1 - B + B * len(words) / average_length if average_length else 1
