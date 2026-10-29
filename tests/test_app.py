@@ -2,12 +2,14 @@
 # src/app.py does not exist yet, so every test fails until it is written.
 # The app gets its chunks and generate function passed in, so no real model or data file is used.
 import json
+import logging
 from pathlib import Path
 
 import pytest
 
-from app import create_app, load_chunks
+from app import create_app, demo_generate, load_chunks, log_startup
 from grounding import NOT_ENOUGH_INFO
+from llm import MODEL
 
 FAQ_URL = "https://www.redi-school.org/faq"
 APPLY_URL = "https://www.redi-school.org/apply"
@@ -360,3 +362,32 @@ class TestContactLink:
 
         assert response.status_code in (400, 503, 500)
         assert "contact" not in response.get_json()
+
+
+# specs/task9_deploy_render.md, AC8: on a server nobody watches the page, so a missing key or
+# missing content must show up in the log when the app starts, not only in visitors' answers
+class TestStartupLog:
+    def startup_messages(self, caplog, chunks, generate):
+        app = create_app(chunks=chunks, generate=generate)
+        with caplog.at_level(logging.INFO):
+            log_startup(app, chunks, generate)
+        return [(record.levelno, record.getMessage()) for record in caplog.records]
+
+    def test_logs_an_error_when_no_content_is_loaded(self, caplog):
+        messages = self.startup_messages(caplog, [], fake_generate())
+
+        assert any(level == logging.ERROR and "No ReDI content" in text for level, text in messages)
+
+    def test_warns_in_demo_mode(self, caplog):
+        messages = self.startup_messages(caplog, CHUNKS, demo_generate)
+
+        assert any(
+            level == logging.WARNING and "Demo mode" in text and "GEMINI_API_KEY" in text
+            for level, text in messages
+        )
+
+    def test_names_the_model_and_the_number_of_chunks_otherwise(self, caplog):
+        messages = self.startup_messages(caplog, CHUNKS, fake_generate())
+
+        assert (logging.INFO, f"Answering with Gemini ({MODEL}) from {len(CHUNKS)} chunks.") in messages
+        assert all(level < logging.WARNING for level, _ in messages)

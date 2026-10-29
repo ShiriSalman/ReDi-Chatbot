@@ -25,15 +25,33 @@ def test_dockerfile_copies_what_the_app_needs(path):
     assert re.search(rf"^COPY\s+{re.escape(path)}\s", read(DOCKERFILE), re.MULTILINE)
 
 
-# AC2: gunicorn serves the app and doesn't kill a slow Gemini answer
-def test_dockerfile_starts_gunicorn_with_a_long_enough_timeout():
-    dockerfile = read(DOCKERFILE)
-    command = next(line for line in dockerfile.splitlines() if line.startswith("CMD"))
+def start_command():
+    return next(line for line in read(DOCKERFILE).splitlines() if line.startswith("CMD"))
+
+
+def option_value(command, option):
+    return int(re.search(rf'"{option}",\s*"(\d+)"', command).group(1))
+
+
+# AC2: gunicorn serves the app, and a redeploy doesn't kill a slow Gemini answer.
+# With threads gunicorn uses the gthread worker, where --timeout doesn't limit a request;
+# --graceful-timeout is what cuts off answers still running on a restart.
+def test_dockerfile_starts_gunicorn_with_a_long_enough_graceful_timeout():
+    command = start_command()
 
     assert "gunicorn" in command
     assert "app:app" in command
-    timeout = int(re.search(r'"--timeout",\s*"(\d+)"', command).group(1))
-    assert timeout > RETRY_ATTEMPTS * TIMEOUT_MS / 1000
+    assert option_value(command, "--graceful-timeout") > RETRY_ATTEMPTS * TIMEOUT_MS / 1000
+
+
+def test_dockerfile_uses_one_worker():
+    # A second worker would load the chunks and the Gemini client twice for no benefit
+    assert option_value(start_command(), "--workers") == 1
+
+
+# AC9: the same Python version on every build
+def test_base_image_is_pinned_to_a_patch_version():
+    assert re.search(r"^FROM python:\d+\.\d+\.\d+-slim$", read(DOCKERFILE), re.MULTILINE)
 
 
 # AC3: no secrets in the image

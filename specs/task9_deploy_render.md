@@ -99,6 +99,49 @@ Checked by hand:
 - **AC7:** With `GEMINI_API_KEY` set on Render, "Are ReDI courses free?" gets
   a real answer with sources. Without it, it gets the demo answer.
 
+## Iteration: fixes from the code review (2026-10-29)
+
+A code review of the first version found these problems before the branch
+was pushed. The gunicorn behaviour was checked in its settings reference.
+
+1. **The timeout was wrong.** With `--threads`, gunicorn uses the `gthread`
+   worker. For non-sync workers, `--timeout` "is not tied to the length of
+   time required to handle a single request". What cuts off a slow answer
+   is `--graceful-timeout` (default 30 s). On every redeploy, answers still
+   running are killed after it runs out.
+   - **Change:** `--graceful-timeout 200`, above the Gemini client's worst
+     case. `--timeout` goes back to its default.
+2. **Two workers loaded everything twice** (chunks and Gemini client). The
+   threads already give concurrency, and the work is waiting for Gemini.
+   - **Change:** `--workers 1 --threads 4`.
+3. **The base image wasn't pinned.**
+   - **Change:** `python:3.14.7-slim`, the venv's version (the tag exists
+     on Docker Hub).
+4. **Wrong configuration went unnoticed on a server.** Without
+   `GEMINI_API_KEY`, the app quietly answered in demo mode. Without
+   `data/chunks.json`, every question got 503. Neither showed up in the log.
+   - **Change:** `log_startup(app, chunks, generate)` in `src/app.py` logs
+     once when the module loads:
+     - an **error** "No ReDI content loaded …" when there are no chunks
+     - a **warning** "Demo mode: GEMINI_API_KEY is not set …" in demo mode
+     - otherwise **info** "Answering with Gemini (<model>) from <n> chunks."
+   - `app.logger` is set to `INFO`, so the info line shows in Render's log.
+5. **An outdated comment.** "Vercel looks for a module-level variable called
+   app" now also applies to gunicorn (`app:app`). The comment names both.
+
+**Changed acceptance criterion:**
+- **AC2:** gunicorn uses one worker and a `--graceful-timeout` above
+  `RETRY_ATTEMPTS × TIMEOUT_MS / 1000`.
+
+**New acceptance criteria:**
+- **AC8:** `log_startup` logs an error with no chunks, a warning in demo
+  mode, and an info line with the model and number of chunks otherwise.
+- **AC9:** The base image is pinned to a patch version (`python:3.X.Y-slim`).
+
+**Out of scope:** limiting parallel Gemini calls for the free tier (review
+point 3). It changes what visitors see when the limit is hit, so the owner
+decides it separately.
+
 ## Known limitations
 
 - **Docker is not installed on the development machine.** The image is
