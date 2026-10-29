@@ -171,7 +171,7 @@ The errors are real SDK classes built without network, for example
 ## Security
 
 - The key lives only in an environment variable: the shell locally, and the
-  Vercel project settings when deployed. It never goes into code, commits,
+  Render dashboard when deployed. It never goes into code, commits,
   logs or chat (Gemini docs: "Treat your Gemini API key like a password").
 - `test_gemini_connection.py` stays out of the test suite. `pytest.ini`
   collects only `tests/`, so a normal test run never calls Gemini.
@@ -220,8 +220,8 @@ Whether it still follows the prompt rules (only the sources, plain text) is
 checked by hand in the chat page.
 
 **Known limitation:** the worst case is about 3 × 60 seconds plus the waits
-between attempts. If the Vercel function time limit is shorter, it ends the
-request first. Check this in Task 9.
+between attempts. On Render, gunicorn's `--graceful-timeout` is set above it
+(`specs/task9_deploy_render.md`).
 
 **Tests (`tests/test_llm.py`):**
 - `test_client_gets_a_timeout_and_retries` (AC11)

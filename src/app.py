@@ -126,8 +126,7 @@ def log_startup(app, chunks, generate):
         app.logger.info(f"Answering with Gemini ({MODEL}) from {len(chunks)} chunks.")
 
 
-# gunicorn ("app:app" in the Dockerfile, used on Render) and Vercel both load this
-# module-level variable called "app"
+# gunicorn loads this module-level variable called "app" ("app:app" in the Dockerfile, on Render)
 chunks = load_chunks()
 generate = choose_generate(demo_generate)
 app = create_app(chunks, generate)

@@ -9,11 +9,7 @@ Run the chatbot as a Docker web service on Render. The whole Flask app (the
 chat page and `POST /api/chat`) runs in one container. The app's code and
 behaviour don't change.
 
-The owner decided on Render only (2026-10-27). Netlify was considered and
-left out:
-- It can't run Docker containers or a Flask server.
-- Its functions support TypeScript, JavaScript and Go, not Python
-  (`docs.netlify.com/build/functions/lambda-compatibility/`).
+The owner decided on Render as the only hosting platform (2026-10-27).
 
 ## Facts from the docs (checked 2026-10-29)
 
@@ -69,7 +65,6 @@ Keeps these out of the build context and the image:
 
 - `src/`, `templates/`, `static/`
 - the JSON API (ADR 0002)
-- the Vercel setup
 
 ### Settings on Render (by hand)
 
@@ -126,8 +121,9 @@ was pushed. The gunicorn behaviour was checked in its settings reference.
      - a **warning** "Demo mode: GEMINI_API_KEY is not set …" in demo mode
      - otherwise **info** "Answering with Gemini (<model>) from <n> chunks."
    - `app.logger` is set to `INFO`, so the info line shows in Render's log.
-5. **An outdated comment.** "Vercel looks for a module-level variable called
-   app" now also applies to gunicorn (`app:app`). The comment names both.
+5. **An outdated comment.** The comment on the module-level `app` in
+   `src/app.py` named an earlier host. It now says that gunicorn loads it
+   (`app:app`).
 
 **Changed acceptance criterion:**
 - **AC2:** gunicorn uses one worker and a `--graceful-timeout` above
