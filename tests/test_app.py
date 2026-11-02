@@ -391,3 +391,18 @@ class TestStartupLog:
 
         assert (logging.INFO, f"Answering with Gemini ({MODEL}) from {len(CHUNKS)} chunks.") in messages
         assert all(level < logging.WARNING for level, _ in messages)
+
+def test_weather_question_returns_fallback():
+    client = make_client(chunks=load_chunks())
+
+    response = client.post(
+        "/api/chat",
+        json={"question": "What is the weather tomorrow?"}
+    )
+
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["enough_information"] is False
+    assert data["sources"] == []
+    assert "contact" in data
