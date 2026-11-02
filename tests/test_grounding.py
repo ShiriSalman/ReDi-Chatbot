@@ -6,7 +6,10 @@
 import pytest
 
 from grounding import (
+    GOODBYE_REPLY,
+    GREETING_REPLY,
     NOT_COVERED_MARKER,
+    THANKS_REPLY,
     NOT_ENOUGH_INFO,
     answer_question,
     build_prompt,
@@ -472,3 +475,50 @@ class TestNotCoveredMarker:
 
         assert result.enough_information is True
         assert result.text == "Yes, all courses are free."
+
+
+# Task 8 fix, written from specs/task8_fix_small_talk.md: "thanks" reached the model with
+# unrelated sources, and "hi" got the unfriendly fallback. Small talk now gets a fixed reply.
+class TestSmallTalk:
+    # AC1
+    @pytest.mark.parametrize(
+        "message, reply",
+        [
+            ("hi", GREETING_REPLY),
+            ("Hello!", GREETING_REPLY),
+            ("good morning", GREETING_REPLY),
+            ("thanks", THANKS_REPLY),
+            ("  THANK YOU  ", THANKS_REPLY),
+            ("danke", THANKS_REPLY),
+            ("bye.", GOODBYE_REPLY),
+        ],
+    )
+    def test_small_talk_gets_its_reply_without_the_model(self, message, reply):
+        generate = fake_generate()
+
+        result = answer_question(message, ALL_CHUNKS, generate=generate)
+
+        assert result.text == reply
+        assert result.enough_information is True
+        assert result.sources == []
+        assert generate.prompts == []
+
+    # AC2
+    def test_small_talk_inside_a_question_is_a_normal_question(self):
+        generate = fake_generate()
+
+        result = answer_question("thanks, are the courses free?", ALL_CHUNKS, generate=generate)
+
+        assert result.text not in {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
+        assert len(generate.prompts) == 1
+
+    # AC6: "thanks, how do I apply?" got the fallback, because "thank" counted as a content word
+    def test_polite_and_filler_words_are_dropped(self):
+        assert tokenize("Thanks, please tell me, hi hello hey hallo danke, I want to know") == []
+
+    # AC7
+    @pytest.mark.parametrize("question", ["thanks, how do I apply?", "please tell me how to apply"])
+    def test_polite_words_do_not_hide_the_question(self, question):
+        apply_chunk = make_chunk("You can apply for a course after the info day.")
+
+        assert apply_chunk in retrieve(question, ALL_CHUNKS + [apply_chunk])

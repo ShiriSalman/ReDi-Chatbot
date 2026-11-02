@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from app import create_app, load_chunks
-from grounding import NOT_ENOUGH_INFO
+from grounding import GOODBYE_REPLY, GREETING_REPLY, NOT_ENOUGH_INFO, THANKS_REPLY
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 QUESTIONS_FILE = DATA_DIR / "task8_questions.json"
@@ -63,7 +63,7 @@ class TestQuestionSet:
         assert len({case["id"] for case in QUESTIONS}) == len(QUESTIONS)
         for case in QUESTIONS:
             assert set(case) == FIELDS, case["id"]
-            assert case["expected"] in {"answer", "fallback"}, case["id"]
+            assert case["expected"] in {"answer", "fallback", "small_talk"}, case["id"]
 
     def test_covers_every_case_type(self):
         # Spec scope: straightforward, unclear, partially covered and out-of-scope questions
@@ -89,6 +89,12 @@ def test_real_question(case):
         assert data["enough_information"] is False
         assert data["sources"] == []
         assert "contact" in data
+        assert generate.prompts == []
+    elif case["expected"] == "small_talk":
+        # specs/task8_fix_small_talk.md: a fixed reply, no sources, no contact link, no model call
+        assert data["answer"] in {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
+        assert data["sources"] == []
+        assert "contact" not in data
         assert generate.prompts == []
     else:
         assert data["enough_information"] is True

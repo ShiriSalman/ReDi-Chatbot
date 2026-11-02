@@ -187,5 +187,32 @@
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/faq",
     "known_issue": null
+  },
+  {
+    "id": "q22",
+    "question": "thanks",
+    "topic": "Small talk",
+    "case": "small_talk",
+    "expected": "small_talk",
+    "expected_url": null,
+    "known_issue": null
+  },
+  {
+    "id": "q23",
+    "question": "hi",
+    "topic": "Small talk",
+    "case": "small_talk",
+    "expected": "small_talk",
+    "expected_url": null,
+    "known_issue": null
+  },
+  {
+    "id": "q24",
+    "question": "thanks, how do I apply?",
+    "topic": "Applications",
+    "case": "straightforward",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/faq",
+    "known_issue": null
   }
 ]

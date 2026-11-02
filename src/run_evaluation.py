@@ -13,7 +13,10 @@ from datetime import date
 from pathlib import Path
 
 from app import create_app, demo_generate, load_chunks
+from grounding import GOODBYE_REPLY, GREETING_REPLY, THANKS_REPLY
 from llm import MODEL, choose_generate
+
+SMALL_TALK_REPLIES = {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
 
 PROJECT_DIR = Path(__file__).parent.parent
 QUESTIONS_PATH = PROJECT_DIR / "data" / "task8_questions.json"
@@ -30,6 +33,8 @@ def passes(case, data):
     source_urls = [source["url"] for source in data.get("sources", [])]
     if case["expected"] == "fallback":
         return data.get("enough_information") is False and not source_urls and "contact" in data
+    if case["expected"] == "small_talk":
+        return data.get("answer") in SMALL_TALK_REPLIES and not source_urls and "contact" not in data
     # An answer may be marked as not fully covered (contact link) and still be right:
     # what counts here is that retrieval found the expected page
     if not source_urls:

@@ -88,6 +88,14 @@ class TestPassFail:
     def test_answer_case_without_expected_url_only_needs_an_answer(self):
         assert run_one(make_case(COVERED))["passed"] is True
 
+    # specs/task8_fix_small_talk.md, AC4
+    def test_small_talk_case_passes_with_its_reply(self):
+        assert run_one(make_case("thanks", expected="small_talk"))["passed"] is True
+
+    def test_small_talk_case_fails_with_sources(self):
+        # "Are the courses free?" is a real question, so it gets sources, not a small-talk reply
+        assert run_one(make_case(COVERED, expected="small_talk"))["passed"] is False
+
     # specs/task8_fix_contact_link_not_covered.md, AC7: an honest "not covered" answer with
     # the right sources and the contact link is what we want, not a failure
     def test_answer_case_with_contact_link_still_passes(self):

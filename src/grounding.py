@@ -15,6 +15,31 @@ NOT_ENOUGH_INFO = (
     "do not provide enough information to answer this one."
 )
 
+# Fixed replies to small talk (specs/task8_fix_small_talk.md). "thanks" matched "thank you"
+# on ReDI pages and reached the model; "hi" got the fallback, which sounds unfriendly.
+GREETING_REPLY = (
+    "Hello! I answer questions about ReDI School, for example how to apply "
+    "or which courses there are."
+)
+THANKS_REPLY = "You're welcome! Feel free to ask another question about ReDI School."
+GOODBYE_REPLY = "Goodbye! Come back any time with questions about ReDI School."
+
+# A message gets a reply only if it is one of these as a whole, so "thanks, how do I apply?"
+# stays a normal question. "ok" is left out: none of the replies fits it.
+SMALL_TALK = {
+    **dict.fromkeys(
+        ["hi", "hello", "hallo", "hey", "hi there", "hello there",
+         "good morning", "good afternoon", "good evening"],
+        GREETING_REPLY,
+    ),
+    **dict.fromkeys(
+        ["thanks", "thank you", "thank you very much", "thanks a lot", "thx",
+         "danke", "great", "cool", "you are great"],
+        THANKS_REPLY,
+    ),
+    **dict.fromkeys(["bye", "bye bye", "goodbye", "see you"], GOODBYE_REPLY),
+}
+
 # The model starts its answer with this when the sources don't cover the whole question.
 # The code removes it and shows the contact link (specs/task8_fix_contact_link_not_covered.md).
 NOT_COVERED_MARKER = "[NOT COVERED]"
@@ -59,6 +84,10 @@ STOPWORDS = {
     "a", "about", "an", "and", "are", "at", "be", "can", "do", "does", "for", "from",
     "how", "i", "in", "is", "it", "like", "me", "my", "of", "on", "or", "the", "there",
     "to", "what", "when", "where", "which", "who", "will", "with", "you", "your",
+    # Polite and filler words from requests: with MIN_MATCHED_WORDS, "thanks, how do I
+    # apply?" needed a chunk with both "thank" and "apply" and got the fallback
+    "thanks", "thank", "please", "hi", "hello", "hey", "hallo", "danke",
+    "tell", "know", "want", "would",
 }
 
 
@@ -167,6 +196,15 @@ def remove_urls(text):
     return text.strip()
 
 
+def small_talk_reply(question):
+    """Return the fixed reply if the whole message is small talk, otherwise None.
+
+    Letter case, punctuation and extra spaces are ignored, so "Thanks!" matches "thanks".
+    """
+    normalized = " ".join(re.sub(r"[^\w\s]", " ", question.lower()).split())
+    return SMALL_TALK.get(normalized)
+
+
 @dataclass
 class AnswerResult:
     text: str
@@ -185,6 +223,11 @@ def answer_question(question, chunks, generate):
     """
     if not chunks:
         raise ValueError("No ingested ReDI content available.")
+
+    # Small talk needs no sources and no model: it gets a fixed, friendly reply
+    reply = small_talk_reply(question)
+    if reply:
+        return AnswerResult(text=reply, enough_information=True, sources=[])
 
     relevant_chunks = retrieve(question, chunks)
 
