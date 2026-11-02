@@ -110,6 +110,32 @@ Run with the same model, after `specs/task8_fix_contact_link_not_covered.md`.
 - Still 14 of 18 passed. The runner now counts an "answer" case with the
   contact link as passed if the expected page was retrieved.
 
+## Run 6: after the retrieval fix and the Render deployment
+
+Run on 2026-11-02 with the same model and 19 questions. It includes the new
+q19 "What is the weather tomorrow?" and `specs/task8_fix_retrieval_min_words.md`.
+
+- **16 of 19 passed**, as expected. Only the three known ranking cases fail:
+  q08 (Berlin volunteer page), q09 (contact page) and q10 (career support).
+- **The two-word fix works with the real model.** q13, q18 and q19 get the
+  fallback with the contact link, and the model is not called for them.
+- **The earlier fixes still hold:**
+  - no API errors
+  - no URL in any answer
+  - no visible "[NOT COVERED]" marker
+- **Contact link:** shown on 13 of 19 answers. That is every fallback, plus
+  every answer the model marked as not fully covered (q03, q05, q08, q09,
+  q11, q12, q14, q15).
+- **Left over (low):** q10 still ends with "Source: FAQ", a title without a
+  link.
+- **q15 (German):** the answer is in English. It stays cautious ("the
+  sources do not explicitly state whether the courses are free"), because
+  retrieval finds only FAQ chunks for the German question.
+- **Seen in the live app on Render, not in this run:** "how do i apply"
+  added an unrequested sentence about having no access to personal
+  information. This is the same pattern as q15 in run 5. The
+  personal-information rule may be applied too broadly.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -117,10 +143,14 @@ The spec allows one focused fix at a time, each with before/after evidence.
 1. ~~**A:** take the URLs out of the prompt.~~ Done (run 2).
 2. ~~**C:** show the contact link when the model says the sources don't cover
    the question.~~ Done (run 5).
-3. **Retrieval:** questions with only two content words (q18, "thanks",
-   "What is the weather tomorrow?").
+3. ~~**Retrieval:** questions with only two content words (q18, "What is the
+   weather tomorrow?").~~ Done (run 6). One-word small talk such as "thanks"
+   remains and needs its own fix.
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
-5. **D, E** after that. E may need overlapping chunks in the ingestion.
+5. **The personal-information rule is applied too broadly** ("how do i apply"
+   in the live app, q15 in run 5). Narrow its wording.
+6. **Ranking** (q08, q09, q10, and the German q15 finding only FAQ chunks).
+7. **D, E** after that. E may need overlapping chunks in the ingestion.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.
