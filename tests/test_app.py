@@ -406,3 +406,16 @@ def test_weather_question_returns_fallback():
     assert data["enough_information"] is False
     assert data["sources"] == []
     assert "contact" in data
+
+
+# specs/task8_fix_small_talk.md, AC3: a greeting is not a failed question, so no contact link
+def test_greeting_has_no_sources_and_no_contact_link():
+    generate = fake_generate()
+
+    data = ask(make_client(generate=generate), "hi").get_json()
+
+    assert data["enough_information"] is True
+    assert data["sources"] == []
+    assert "contact" not in data
+    assert data["answer"].startswith("Hello!")
+    assert generate.prompts == []
