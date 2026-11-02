@@ -136,6 +136,20 @@ q19 "What is the weather tomorrow?" and `specs/task8_fix_retrieval_min_words.md`
   information. This is the same pattern as q15 in run 5. The
   personal-information rule may be applied too broadly.
 
+## Run 7: after limiting the personal-information note
+
+Run on 2026-11-02 with the same model and 21 questions. It adds q20 "Did I
+pass the course?" and q21 "how do i apply", after
+`specs/task8_fix_personal_info_rule.md`.
+
+- **18 of 21 passed.** Only the known ranking cases q08, q09 and q10 fail.
+- **The note now appears only where it belongs.** q20 answers "I have no
+  access to personal information and suggest contacting ReDI directly." No
+  other answer mentions personal information. In particular q02, q15 and
+  q21 ("how do i apply", the live-app case) don't.
+- **The earlier fixes still hold:** no API errors, no URLs, no visible
+  marker.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -147,8 +161,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
    weather tomorrow?").~~ Done (run 6). One-word small talk such as "thanks"
    remains and needs its own fix.
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
-5. **The personal-information rule is applied too broadly** ("how do i apply"
-   in the live app, q15 in run 5). Narrow its wording.
+5. ~~**The personal-information rule is applied too broadly** ("how do i
+   apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. **Ranking** (q08, q09, q10, and the German q15 finding only FAQ chunks).
 7. **D, E** after that. E may need overlapping chunks in the ingestion.
 

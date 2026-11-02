@@ -304,6 +304,14 @@ class TestOutOfScopeQuestions:
         assert "assumption" in prompt
         assert "personal information" in prompt
 
+    # specs/task8_fix_personal_info_rule.md: "how do i apply" got an unrequested note about
+    # personal information, because the rule had no condition
+    def test_personal_information_note_is_limited_to_personal_questions(self):
+        prompt = build_prompt("Are the courses free?", [FREE_CHUNK]).lower()
+
+        assert "only if the question is about the visitor's own situation" in prompt
+        assert "do not add this to answers to general questions" in prompt
+
     # AC5
     def test_rules_come_before_an_injected_instruction(self):
         prompt = build_prompt(self.INJECTED_QUESTION, [self.INJECTED_CHUNK])
