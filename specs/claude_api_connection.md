@@ -179,8 +179,8 @@ and `_request_id`.
 
 ## Security
 
-- The key lives only in the environment variable (shell locally; Vercel
-  project settings when deployed). It is never put in code, commits, logs or
+- The key lives only in the environment variable (shell locally; Render
+  dashboard when deployed). It is never put in code, commits, logs or
   chat.
 - Logs contain the request ID and token counts, never the key.
 
@@ -200,8 +200,8 @@ and `_request_id`.
 - The SDK exception for 402 `billing_error` and 413 `request_too_large`. It
   isn't in the SDK table, but it is still an `APIError` and still ends as a
   500.
-- The Vercel function time limit, which may require a lower
-  `TIMEOUT_SECONDS`.
+- That gunicorn's `--graceful-timeout` on Render still covers the Claude
+  client's worst case (`specs/task9_deploy_render.md`).
 
 ## Out of scope
 

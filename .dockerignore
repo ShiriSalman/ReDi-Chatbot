@@ -1,0 +1,26 @@
+# Kept out of the Docker build context and image (specs/task9_deploy_render.md)
+
+# Secrets and local settings
+.env
+.env.*
+*.env
+
+# Version control and local environments
+.git
+.venv
+.venv-backup
+.vscode
+
+# Caches
+**/__pycache__
+.pytest_cache
+.coverage
+htmlcov
+.playwright-mcp
+
+# Not needed at runtime
+tests
+docs
+specs
+data/raw
+node_modules

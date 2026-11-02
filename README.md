@@ -50,6 +50,17 @@ python src/run_evaluation.py
 With `GEMINI_API_KEY` set, the answers come from Gemini (one call per answered question);
 without it, only retrieval, sources and the fallback can be judged.
 
+## Deploy to Render
+
+The `Dockerfile` runs the app with gunicorn (see `specs/task9_deploy_render.md`). On Render:
+
+1. Create a **Web Service** from this GitHub repo and choose **Docker** as the language.
+2. Under **Environment**, add `GEMINI_API_KEY` with your key. Without it the app runs in demo mode.
+   Never put the key in the repo or the `Dockerfile`.
+3. Set the **health check path** to `/`.
+
+After re-running the ingestion, commit `data/chunks.json`; Render then builds a new image.
+
 ## Run the tests
 
 ```powershell
