@@ -150,6 +150,23 @@ pass the course?" and q21 "how do i apply", after
 - **The earlier fixes still hold:** no API errors, no URLs, no visible
   marker.
 
+## Run 8: after the small-talk replies and the polite-word stopwords
+
+Run on 2026-11-03 with the same model and 24 questions. It adds q22
+"thanks", q23 "hi" and q24 "thanks, how do I apply?", after
+`specs/task8_fix_small_talk.md` and its iteration.
+
+- **21 of 24 passed.** Only the known ranking cases q08, q09 and q10 fail.
+- **Small talk gets its fixed reply,** with no sources, no contact link and
+  no model call:
+  - q22 "thanks": "You're welcome! …"
+  - q23 "hi": "Hello! I answer questions about ReDI School …"
+- **A polite word no longer hides the question.** q24 "thanks, how do I
+  apply?" gets a real answer from the FAQ.
+- **The earlier fixes still hold:**
+  - no API errors, URLs or visible marker
+  - the personal-information note appears only for q20
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -158,8 +175,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
 2. ~~**C:** show the contact link when the model says the sources don't cover
    the question.~~ Done (run 5).
 3. ~~**Retrieval:** questions with only two content words (q18, "What is the
-   weather tomorrow?").~~ Done (run 6). One-word small talk such as "thanks"
-   remains and needs its own fix.
+   weather tomorrow?").~~ Done (run 6). ~~One-word small talk such as
+   "thanks"~~ done (run 8).
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
