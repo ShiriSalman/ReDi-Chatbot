@@ -98,6 +98,46 @@ their fixed reply.
   - `test_small_talk_case_passes_with_its_reply` (AC4)
   - `test_small_talk_case_fails_with_sources` (AC4)
 
+## Iteration: polite words inside real questions
+
+**Evidence:** while checking this fix in the real app, "thanks, how do I
+apply?" got the fallback. It is not small talk, so it goes to retrieval with
+the content words `thank` and `apply`. Since
+`specs/task8_fix_retrieval_min_words.md`, a chunk needs both words, and no
+chunk contains both. A polite word in front of a real question hid the
+question.
+
+**Change:** polite words and filler words from requests become stopwords in
+`src/grounding.py`, so retrieval ignores them:
+- polite words: thanks, thank, please, hi, hello, hey, hallo, danke
+- request fillers: tell, know, want, would
+
+Small talk on its own is still caught by `small_talk_reply()` before
+retrieval, so this changes only messages that contain a real question.
+
+**Simulated on the real `chunks.json` before implementing (2026-11-03):**
+
+| Message | Before | After |
+|---|---|---|
+| "thanks, how do I apply?" | fallback | `/faq` and the course page ✅ |
+| "please tell me how to apply" | 2 pages | 2 pages (with "please" alone as a stopword, 0) ✅ |
+| "I want to know if the courses are free" | 2 pages | 3 pages, now including `/course-finder` ✅ |
+| "hello, where is ReDI in Munich?" | 4 pages | 3 pages, including `/munich` ✅ |
+| the 21 earlier catalogue questions | | unchanged, except the 5th result of q12 "When does it start?". The two chunks with the semester dates stay. |
+
+**Catalogue addition:** q24 "thanks, how do I apply?" (straightforward,
+answer, `/faq`).
+
+**Acceptance criteria:**
+- **AC6:** `tokenize()` drops polite and filler words.
+- **AC7:** "thanks, how do I apply?" and "please tell me how to apply" find a
+  chunk about applying.
+- **AC8:** The catalogue tests pass with q24.
+
+**Tests (`tests/test_grounding.py`):**
+- `test_polite_and_filler_words_are_dropped` (AC6)
+- `test_polite_words_do_not_hide_the_question` (AC7, parametrized)
+
 ## Known limitations
 
 - **The list is maintained by hand.** Other small talk ("ok", "nice", "lol")

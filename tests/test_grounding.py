@@ -511,3 +511,14 @@ class TestSmallTalk:
 
         assert result.text not in {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
         assert len(generate.prompts) == 1
+
+    # AC6: "thanks, how do I apply?" got the fallback, because "thank" counted as a content word
+    def test_polite_and_filler_words_are_dropped(self):
+        assert tokenize("Thanks, please tell me, hi hello hey hallo danke, I want to know") == []
+
+    # AC7
+    @pytest.mark.parametrize("question", ["thanks, how do I apply?", "please tell me how to apply"])
+    def test_polite_words_do_not_hide_the_question(self, question):
+        apply_chunk = make_chunk("You can apply for a course after the info day.")
+
+        assert apply_chunk in retrieve(question, ALL_CHUNKS + [apply_chunk])
