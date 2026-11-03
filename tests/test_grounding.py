@@ -3,6 +3,8 @@
 # The generate function (the LLM call) is passed in, so the tests never call a real model.
 # Whether the model really follows the rules is checked with real questions in Task 8;
 # these tests check that our code gives it the right context and instructions.
+from collections import Counter
+
 import pytest
 
 from grounding import (
@@ -13,6 +15,7 @@ from grounding import (
     NOT_ENOUGH_INFO,
     answer_question,
     build_prompt,
+    has_enough_matching_words,
     remove_urls,
     retrieve,
     tokenize,
@@ -171,6 +174,16 @@ class TestNoRelevantContent:
 
     def test_one_word_question_needs_only_that_word(self):
         assert retrieve("Volunteers?", ALL_CHUNKS) == [VOLUNTEER_CHUNK]
+
+    # The matching rules on their own, without building chunks
+    @pytest.mark.parametrize("question_words, chunk_words, expected", [
+        ({"write", "poem"}, ["write"], False),  # 50 %, but fewer than MIN_MATCHED_WORDS
+        ({"apply", "course"}, ["apply", "course"], True),
+        ({"volunteer"}, ["volunteer"], True),  # a one-word question needs only that word
+        ({"apply", "course", "berlin", "fee", "deadline"}, ["apply", "course"], False),  # under 50 %
+    ])
+    def test_has_enough_matching_words(self, question_words, chunk_words, expected):
+        assert has_enough_matching_words(question_words, Counter(chunk_words)) is expected
 
     def test_a_single_letter_is_not_a_match(self):
         # Found in the chat page: "<b>hallo</b>" matched the "B" in the German
