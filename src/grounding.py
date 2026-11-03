@@ -116,12 +116,23 @@ def tokenize(text):
     ]
 
 
+def has_enough_matching_words(question_words, chunk_word_counts):
+    """Return True if a chunk contains enough of the question's words to count as relevant.
+
+    It must contain at least MIN_WORD_SHARE of them and at least MIN_MATCHED_WORDS
+    (or all of them, for a one-word question). question_words must not be empty.
+    """
+    matched = sum(1 for word in question_words if chunk_word_counts[word])
+    if matched / len(question_words) < MIN_WORD_SHARE:
+        return False
+    return matched >= min(MIN_MATCHED_WORDS, len(question_words))
+
+
 def retrieve(question, chunks, top_k=TOP_K):
     """Return the chunks that best match the question, most relevant first.
 
     Chunks are scored with BM25 and returned unchanged, so their source metadata stays attached.
-    Returns an empty list when no chunk contains at least MIN_WORD_SHARE of the question's words
-    and at least MIN_MATCHED_WORDS of them (or all of them, for a one-word question).
+    Returns an empty list when no chunk has enough matching words (see has_enough_matching_words).
     """
     question_words = set(tokenize(question))
     if not question_words or not chunks:
@@ -142,10 +153,7 @@ def retrieve(question, chunks, top_k=TOP_K):
     scored = []
     for chunk, words in zip(chunks, chunk_words):
         frequencies = Counter(words)
-        matched = sum(1 for word in question_words if frequencies[word])
-        if matched / len(question_words) < MIN_WORD_SHARE:
-            continue
-        if matched < min(MIN_MATCHED_WORDS, len(question_words)):
+        if not has_enough_matching_words(question_words, frequencies):
             continue
 
         length_factor = 1 - B + B * len(words) / average_length if average_length else 1
