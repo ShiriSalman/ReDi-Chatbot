@@ -204,6 +204,17 @@ def remove_urls(text):
     return text.strip()
 
 
+def split_not_covered_marker(answer):
+    """Remove NOT_COVERED_MARKER from the model's answer and report whether it was there.
+
+    Returns (text, covered). The marker is found in any letter case and position.
+    An answer that is only the marker becomes NOT_ENOUGH_INFO.
+    """
+    marker = re.compile(re.escape(NOT_COVERED_MARKER) + r"\s*", re.IGNORECASE)
+    covered = not marker.search(answer)
+    return marker.sub("", answer).strip() or NOT_ENOUGH_INFO, covered
+
+
 def small_talk_reply(question):
     """Return the fixed reply if the whole message is small talk, otherwise None.
 
@@ -252,9 +263,7 @@ def answer_question(question, chunks, generate):
     answer = remove_urls(generate(prompt))
 
     # The model marks answers the sources don't fully cover; the marker itself is never shown
-    marker = re.compile(re.escape(NOT_COVERED_MARKER) + r"\s*", re.IGNORECASE)
-    covered = not marker.search(answer)
-    answer = marker.sub("", answer).strip() or NOT_ENOUGH_INFO
+    answer, covered = split_not_covered_marker(answer)
 
     return AnswerResult(
         text=answer,
