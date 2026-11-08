@@ -18,6 +18,7 @@ from grounding import (
     has_enough_matching_words,
     remove_urls,
     retrieve,
+    split_not_covered_marker,
     tokenize,
 )
 
@@ -471,6 +472,14 @@ class TestNotCoveredMarker:
         assert result.enough_information is False
         assert result.text == "The sources do not say."
 
+    def test_marker_in_the_middle_is_removed_with_the_space_after_it(self):
+        answer = "The courses are free. [NOT COVERED] The sources do not mention a certificate."
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.enough_information is False
+        assert result.text == "The courses are free. The sources do not mention a certificate."
+
     # AC4
     def test_answer_that_is_only_the_marker_becomes_the_fallback_text(self):
         generate = fake_generate(f"  {NOT_COVERED_MARKER}  ")
@@ -488,6 +497,17 @@ class TestNotCoveredMarker:
 
         assert result.enough_information is True
         assert result.text == "Yes, all courses are free."
+
+    # The marker handling on its own, without a model or chunks
+    @pytest.mark.parametrize("answer, expected", [
+        ("Yes, all courses are free.", ("Yes, all courses are free.", True)),
+        ("[NOT COVERED] The sources do not say.", ("The sources do not say.", False)),
+        ("The sources do not say. [not covered]", ("The sources do not say.", False)),
+        ("Free. [NOT COVERED] No certificate info.", ("Free. No certificate info.", False)),
+        ("  [NOT COVERED]  ", (NOT_ENOUGH_INFO, False)),  # only the marker
+    ])
+    def test_split_not_covered_marker(self, answer, expected):
+        assert split_not_covered_marker(answer) == expected
 
 
 # Task 8 fix, written from specs/task8_fix_small_talk.md: "thanks" reached the model with
