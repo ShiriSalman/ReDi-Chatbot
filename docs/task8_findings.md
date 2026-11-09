@@ -221,6 +221,58 @@ Run on 2026-11-09 with the same model and 24 questions, after the iteration
   onboarding). So the page is not always unrelated: it is unrelated to a
   general "how do i apply", but can fit "apply for a course".
 
+## Run 11: after counting page titles in the ranking
+
+Run on 2026-11-09 with the same model and 24 questions, after
+`specs/task8_fix_ranking_titles.md` ("as" as a stopword, `TITLE_WEIGHT = 1`).
+
+- **23 of 24 passed** (run 10: 21). Only q10 (career support) still fails.
+- **q08 is fixed:** `/volunteer-in-berlin` is a source, and the answer is
+  about Berlin (its programs, 500+ volunteers).
+- **q09 is fixed:** `/contact` is a source. The answer lists contact people
+  by city.
+- **H is better:** "how do i apply" (q21) and "thanks, how do I apply?" (q24)
+  no longer list "Coding with AI". q02 "How do I apply for a course?" keeps
+  it, where run 10 showed it is useful.
+- **Step back for q06 "Where is ReDI School in Munich?":** the sources are
+  now `/munich` and `/course-finder`; `/contact` dropped out. The answer
+  only says "located in Munich, Bavaria", without the address that run 10
+  gave ("c/o Media Design Hochschule (EG / B)"). Likely cause: the title
+  "ReDI School Munich" pushes the Munich page's chunks up, so the contact
+  chunk with the address leaves the top 5. Not checked in detail yet. q06
+  still passes, because the catalogue only checks that `/munich` is a
+  source, not that the answer has the address. This makes E worse.
+- **Model variation, not from the code:** q15 (German) has the same sources
+  as in run 10, but this time the model marked it as not fully covered
+  (contact link), as in run 5.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
+**After run 11: title weighting reverted.** No simple fix kept both q09 and
+the q06 address (prototypes in `specs/task8_fix_ranking_titles.md`,
+"Outcome"). The live app must not get worse, so step 2 is reverted. "as" as a
+stopword stays. Expected now: q08 fixed, q09 `xfail` again, q06 with the
+address chunk, H as in run 10.
+
+## Run 12: after reverting the title weighting
+
+Run on 2026-11-09 with the same model and 24 questions. The only change
+compared to run 10 is "as" as a stopword.
+
+- **22 of 24 passed** (run 10: 21). q09 and q10 fail, as expected.
+- **q06 has its address again:** `/contact` is a source, and the answer gives
+  "c/o Media Design Hochschule (EG / B)" and says the street is missing (E,
+  as in run 10).
+- **q08 passes, but the answer is weaker than in run 11:** `/volunteer-in-berlin`
+  is a source (5th of 5), but the answer says the sources "do not
+  specifically state the online application process for Berlin" and is
+  marked as not fully covered. In run 11, with the Berlin page ranked 2nd,
+  the answer was about Berlin. Retrieval now finds the page, but low.
+- **H as in run 10:** "how do i apply" and "thanks, how do I apply?" list
+  "Coding with AI" again.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -235,10 +287,15 @@ The spec allows one focused fix at a time, each with before/after evidence.
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. ~~**G** (source list in the answer).~~ Done (run 10).
-7. **Ranking** (q08, q09, q10, the German q15 finding only FAQ chunks, and
-   **H**, the unrelated source for "apply"). H first needs a way for the
-   catalogue to notice unrelated sources.
-8. **D, E** after that. E may need overlapping chunks in the ingestion.
+7. **Ranking:** ~~q08~~ done ("as" as a stopword). Still open: q09, q10,
+   the German q15 finding only FAQ chunks, and **H** (the catalogue can't
+   notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
+   address, so it was reverted. These cases may need semantic search
+   (embeddings) instead of more keyword rules.
+8. **E:** the catalogue should check the answer content (here the Munich
+   address), so a setback like run 11 is caught by a test, not only by
+   reading. Then the street, which is in the next chunk (overlapping chunks
+   in the ingestion). **D** after that.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.

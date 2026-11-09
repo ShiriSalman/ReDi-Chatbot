@@ -69,7 +69,7 @@
     "case": "straightforward",
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/volunteer-in-berlin",
-    "known_issue": "Retrieval ranks the volunteer pages of other cities above the Berlin page"
+    "known_issue": null
   },
   {
     "id": "q09",

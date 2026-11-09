@@ -611,3 +611,11 @@ class TestSmallTalk:
         apply_chunk = make_chunk("You can apply for a course after the info day.")
 
         assert apply_chunk in retrieve(question, ALL_CHUNKS + [apply_chunk])
+
+
+# Task 8 fix, written from specs/task8_fix_ranking_titles.md: the volunteer pages of other cities
+# ranked above the Berlin page (q08), and the contact page was not in the top 5 (q09).
+class TestRankingTitles:
+    # AC1: "as" is in most chunks, so with "as" + "volunteer" every volunteer page passed the gate
+    def test_as_is_a_stopword(self):
+        assert tokenize("volunteer as a teacher") == ["volunteer", "teacher"]
