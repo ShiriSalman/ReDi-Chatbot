@@ -201,6 +201,26 @@ Run on 2026-11-09 with the same model and 24 questions, after
   - no URL in any answer, no visible "[NOT COVERED]" marker
   - the personal-information note appears only for q20
 
+## Run 10: after the extra source-list labels
+
+Run on 2026-11-09 with the same model and 24 questions, after the iteration
+"more labels (run 9)" in `specs/task8_fix_source_list_in_answer.md`.
+
+- **21 of 24 passed,** the same as runs 8 and 9. Only the known ranking cases
+  q08, q09 and q10 fail.
+- **G is fixed.** No answer contains a source-list label ("Source:",
+  "Sources:", "Links:", "Links to (the) sources:"). AC5 is met. One run can't
+  prove the model never writes a new label, but the code would now remove
+  every label seen in runs 1–9.
+- **The earlier fixes still hold:**
+  - no URL in any answer, no visible "[NOT COVERED]" marker
+  - the personal-information note appears only for q20
+- **H needs a closer look:** the "apply" questions still list "Coding with
+  AI". For q02 "How do I apply for a course?" the model used that page for
+  the course's application steps (Open Day, online application, orientation,
+  onboarding). So the page is not always unrelated: it is unrelated to a
+  general "how do i apply", but can fit "apply for a course".
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -214,8 +234,7 @@ The spec allows one focused fix at a time, each with before/after evidence.
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
-6. **G** (source list in the answer): partly fixed in code (run 9).
-   "Links to sources:" is still left.
+6. ~~**G** (source list in the answer).~~ Done (run 10).
 7. **Ranking** (q08, q09, q10, the German q15 finding only FAQ chunks, and
    **H**, the unrelated source for "apply"). H first needs a way for the
    catalogue to notice unrelated sources.
