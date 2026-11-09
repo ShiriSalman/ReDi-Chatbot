@@ -81,7 +81,7 @@ MIN_MATCHED_WORDS = 2
 
 # Common words that say nothing about what a question is about
 STOPWORDS = {
-    "a", "about", "an", "and", "are", "at", "be", "can", "do", "does", "for", "from",
+    "a", "about", "an", "and", "are", "as", "at", "be", "can", "do", "does", "for", "from",
     "how", "i", "in", "is", "it", "like", "me", "my", "of", "on", "or", "the", "there",
     "to", "what", "when", "where", "which", "who", "will", "with", "you", "your",
     # Polite and filler words from requests: with MIN_MATCHED_WORDS, "thanks, how do I
