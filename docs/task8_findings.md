@@ -252,7 +252,26 @@ Run on 2026-11-09 with the same model and 24 questions, after
 the q06 address (prototypes in `specs/task8_fix_ranking_titles.md`,
 "Outcome"). The live app must not get worse, so step 2 is reverted. "as" as a
 stopword stays. Expected now: q08 fixed, q09 `xfail` again, q06 with the
-address chunk, H as in run 10. Still to confirm with an evaluation run.
+address chunk, H as in run 10.
+
+## Run 12: after reverting the title weighting
+
+Run on 2026-11-09 with the same model and 24 questions. The only change
+compared to run 10 is "as" as a stopword.
+
+- **22 of 24 passed** (run 10: 21). q09 and q10 fail, as expected.
+- **q06 has its address again:** `/contact` is a source, and the answer gives
+  "c/o Media Design Hochschule (EG / B)" and says the street is missing (E,
+  as in run 10).
+- **q08 passes, but the answer is weaker than in run 11:** `/volunteer-in-berlin`
+  is a source (5th of 5), but the answer says the sources "do not
+  specifically state the online application process for Berlin" and is
+  marked as not fully covered. In run 11, with the Berlin page ranked 2nd,
+  the answer was about Berlin. Retrieval now finds the page, but low.
+- **H as in run 10:** "how do i apply" and "thanks, how do I apply?" list
+  "Coding with AI" again.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
 
 ## Suggested order of fixes
 
