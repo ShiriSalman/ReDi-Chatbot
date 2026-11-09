@@ -619,28 +619,3 @@ class TestRankingTitles:
     # AC1: "as" is in most chunks, so with "as" + "volunteer" every volunteer page passed the gate
     def test_as_is_a_stopword(self):
         assert tokenize("volunteer as a teacher") == ["volunteer", "teacher"]
-
-    TEXT = "Write to the team if you want to get in contact."
-
-    # AC2: the title says what the whole page is about
-    def test_title_word_ranks_a_chunk_higher(self):
-        faq_chunk = make_chunk(self.TEXT)
-        contact_chunk = make_chunk(self.TEXT, url="https://www.redi-school.org/contact", title="Contact")
-
-        # The contact chunk comes second, so it can only be first because of its title
-        assert retrieve("How can I contact the team?", [faq_chunk, contact_chunk])[0] == contact_chunk
-
-    # AC3: with the title in the gate, "Who won the last World Cup?" found sources (prototype)
-    def test_a_title_match_alone_does_not_pass_the_gate(self):
-        chunk = make_chunk("Our office is open on weekdays.", title="Contact the team")
-
-        assert retrieve("How can I contact the team?", [chunk]) == []
-
-    # AC4
-    @pytest.mark.parametrize("title", [None, ""], ids=["None", "empty"])
-    def test_chunk_without_title_is_scored_on_its_text(self, title):
-        chunk = make_chunk(self.TEXT, title=title)
-        untitled = make_chunk(self.TEXT)
-        del untitled["title"]
-
-        assert retrieve("How can I contact the team?", [chunk, untitled]) == [chunk, untitled]

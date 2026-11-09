@@ -74,11 +74,6 @@ B = 0.75
 MIN_WORD_SHARE = 0.5
 TOP_K = 5
 
-# How many times a chunk's title words are added to its words for scoring. The title says what
-# the whole page is about ("Contact", "Volunteer in Berlin"). Weights 1 to 5 gave the same
-# results on the Task 8 questions, so the smallest is used (specs/task8_fix_ranking_titles.md).
-TITLE_WEIGHT = 1
-
 # With only two content words, one accidental match is already 50 % ("Write me a poem."
 # matched pages that say "write"), so a chunk must also contain at least this many of the
 # question's words. A one-word question still needs just its one word. Tuned in Task 8.
@@ -136,19 +131,14 @@ def has_enough_matching_words(question_words, chunk_word_counts):
 def retrieve(question, chunks, top_k=TOP_K):
     """Return the chunks that best match the question, most relevant first.
 
-    Chunks are scored with BM25 on their text and title words, and returned unchanged, so their
-    source metadata stays attached. Returns an empty list when no chunk has enough matching words
-    in its text (see has_enough_matching_words).
+    Chunks are scored with BM25 and returned unchanged, so their source metadata stays attached.
+    Returns an empty list when no chunk has enough matching words (see has_enough_matching_words).
     """
     question_words = set(tokenize(question))
     if not question_words or not chunks:
         return []
 
-    text_words = [tokenize(chunk["text"]) for chunk in chunks]
-    chunk_words = [
-        words + tokenize(chunk.get("title") or "") * TITLE_WEIGHT
-        for chunk, words in zip(chunks, text_words)
-    ]
+    chunk_words = [tokenize(chunk["text"]) for chunk in chunks]
     average_length = sum(len(words) for words in chunk_words) / len(chunks)
 
     # In how many chunks each question word appears; rare words get a higher weight (IDF)
@@ -161,12 +151,10 @@ def retrieve(question, chunks, top_k=TOP_K):
     }
 
     scored = []
-    for chunk, words, text in zip(chunks, chunk_words, text_words):
-        # The gate looks at the text only: with the title, "Who won the last World Cup?" found sources
-        if not has_enough_matching_words(question_words, Counter(text)):
-            continue
-
+    for chunk, words in zip(chunks, chunk_words):
         frequencies = Counter(words)
+        if not has_enough_matching_words(question_words, frequencies):
+            continue
 
         length_factor = 1 - B + B * len(words) / average_length if average_length else 1
         score = 0.0
