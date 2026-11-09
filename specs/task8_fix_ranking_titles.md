@@ -116,3 +116,34 @@ catalogue change.
   `unexpected_url`).
 - The weight was chosen on 24 questions. A page with a misleading title
   would now rank higher too.
+
+## Outcome: step 2 reverted
+
+Run 11 (`docs/task8_findings.md`) showed a side effect the prototype did not
+check: q06 "Where is ReDI School in Munich?" lost the contact chunk with the
+address. The title "ReDI School Munich" contains all three question words
+("munich", "redi", "school"), so every chunk of the Munich page moved up and
+filled the top 5. The address chunk fell from 4th place to below 10th. q06
+still passed, because the catalogue only checks that `/munich` is a source.
+
+Prototypes on all 24 questions (retrieval only) found no simple fix:
+
+| Idea | q06 address in top 5 | Side effect |
+|---|---|---|
+| At most 1 chunk per page | yes | "how do i apply" gets volunteer pages of other cities (H worse) |
+| At most 2 chunks per page | no | H worse |
+| "redi" and "school" as stopwords | no | q14 fails |
+| Title weight 0.25–0.75 | no | at 0.25 q09 also fails |
+| "where" also scores "address" | yes | the contact page fills 4 of 5 places, `/munich` drops out, q06 fails |
+
+The owner chose that the live app must not get worse, so step 2 is reverted
+(`git revert`). Step 1 ("as" as a stopword, q08 fixed) stays.
+
+**Result:** q08 fixed; q09 is `xfail` again; q06 gets the address chunk again
+(4th place).
+
+**What this shows:** for "Where …?" questions the page about the topic
+(`/munich`) and the page with the requested fact (`/contact`, the address)
+are different pages. Keyword ranking can't tell what kind of answer is
+wanted, because "where" is a stopword. q06/E, q09 and q10 are a reason to
+look at semantic search (embeddings) later.

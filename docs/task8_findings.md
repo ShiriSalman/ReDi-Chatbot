@@ -248,6 +248,12 @@ Run on 2026-11-09 with the same model and 24 questions, after
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
 
+**After run 11: title weighting reverted.** No simple fix kept both q09 and
+the q06 address (prototypes in `specs/task8_fix_ranking_titles.md`,
+"Outcome"). The live app must not get worse, so step 2 is reverted. "as" as a
+stopword stays. Expected now: q08 fixed, q09 `xfail` again, q06 with the
+address chunk, H as in run 10. Still to confirm with an evaluation run.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -262,13 +268,15 @@ The spec allows one focused fix at a time, each with before/after evidence.
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. ~~**G** (source list in the answer).~~ Done (run 10).
-7. **Ranking:** ~~q08, q09~~ done (run 11). Still open: q10, the German q15
-   finding only FAQ chunks, and **H** (better since run 11, but the
-   catalogue still can't notice unrelated sources).
-8. **E** has become more urgent: since run 11, q06 has no address at all.
-   It needs a catalogue check for the answer content (the address), then a
-   fix (the contact chunk back in the top 5, or overlapping chunks in the
-   ingestion). **D** after that.
+7. **Ranking:** ~~q08~~ done ("as" as a stopword). Still open: q09, q10,
+   the German q15 finding only FAQ chunks, and **H** (the catalogue can't
+   notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
+   address, so it was reverted. These cases may need semantic search
+   (embeddings) instead of more keyword rules.
+8. **E:** the catalogue should check the answer content (here the Munich
+   address), so a setback like run 11 is caught by a test, not only by
+   reading. Then the street, which is in the next chunk (overlapping chunks
+   in the ingestion). **D** after that.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.
