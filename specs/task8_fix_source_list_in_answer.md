@@ -70,3 +70,27 @@ Checked by hand (after): `python src/run_evaluation.py`.
 
 - If the model writes "Sources:" in the middle of the answer with more answer
   text after it, that text is removed too. It has not been seen so far.
+
+## Iteration: more labels (run 9)
+
+**Evidence:** in run 9, q02 still ended with "Links to sources: - FAQ - Coding
+with AI: …". The code only knew "Source:" and "Sources:", so AC5 was not met.
+
+All labels the model has used in `docs/task8_results.md` across all runs
+(`git log -p`): "Sources:", "Source:", "Links to sources:",
+"Links to the sources:" and "Links:". All of them were followed by a list of
+source titles.
+
+**Change:** `remove_source_list` also removes lists that start with "Links:",
+"Links to sources:" or "Links to the sources:", with the same rules as before
+(start of a line or after the end of a sentence, any letter case).
+
+**Acceptance criteria:**
+- **AC6:** the three new labels are removed (unit tests, including the exact
+  q02 text from run 9).
+- **AC7:** "links" inside a sentence is kept ("The FAQ has links: one for each
+  city.").
+- **AC5** is checked again with `python src/run_evaluation.py`.
+
+**Still a limitation:** a label the model has never used, such as
+"References:", is not removed.
