@@ -78,7 +78,7 @@
     "case": "straightforward",
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/contact",
-    "known_issue": "The contact page is not among the top 5 retrieved chunks"
+    "known_issue": null
   },
   {
     "id": "q10",
