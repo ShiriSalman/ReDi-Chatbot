@@ -167,6 +167,23 @@ Run on 2026-11-03 with the same model and 24 questions. It adds q22
   - no API errors, URLs or visible marker
   - the personal-information note appears only for q20
 
+## Seen in the live app on Render on 2026-11-09
+
+"how can i apply" got a correct answer from the FAQ, with two problems:
+
+- **G: the model's own source list.** The answer ended with "Sources: - FAQ",
+  and the real Sources section with links followed below it. This is the
+  "Left over (low)" from runs 4 and 6, now seen by a user. Fixed in code by
+  `specs/task8_fix_source_list_in_answer.md`. Still to confirm with
+  `python src/run_evaluation.py`.
+- **H: an unrelated source for a one-word question.** The sources were FAQ and
+  "Coding with AI: Real-World Development Workflows". After the stopwords,
+  "apply" is the only content word, so any chunk containing it matches. The
+  course page says "Apply AI-assisted coding workflows", where "apply" means
+  "use". q21 "how do i apply" has the same sources but passes, because the
+  catalogue only checks that the expected page is among the sources, not that
+  nothing unrelated is.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -180,8 +197,12 @@ The spec allows one focused fix at a time, each with before/after evidence.
 4. ~~**B**~~ Done (run 3), and ~~**F**~~ done (run 4).
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
-6. **Ranking** (q08, q09, q10, and the German q15 finding only FAQ chunks).
-7. **D, E** after that. E may need overlapping chunks in the ingestion.
+6. **G** (source list in the answer): fixed in code, waiting for the
+   evaluation run.
+7. **Ranking** (q08, q09, q10, the German q15 finding only FAQ chunks, and
+   **H**, the unrelated source for "apply"). H first needs a way for the
+   catalogue to notice unrelated sources.
+8. **D, E** after that. E may need overlapping chunks in the ingestion.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.

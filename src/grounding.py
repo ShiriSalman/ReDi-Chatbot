@@ -215,6 +215,22 @@ def split_not_covered_marker(answer):
     return marker.sub("", answer).strip() or NOT_ENOUGH_INFO, covered
 
 
+# A source list the model wrote itself: "Source:" or "Sources:" at the start of a line or after
+# the end of a sentence, up to the end of the answer
+SOURCE_LIST = re.compile(r"(?:^|(?<=[.!?]))[ \t]*sources?[ \t]*:.*\Z", re.I | re.M | re.S)
+
+
+def remove_source_list(text):
+    """Remove a source list such as "Sources: - FAQ" from the end of the model's answer.
+
+    The real links are shown below the answer, so the model's own list only repeats them.
+    "source" inside a sentence is kept. Text without a source list is returned unchanged.
+    """
+    if not SOURCE_LIST.search(text):
+        return text
+    return SOURCE_LIST.sub("", text).strip()
+
+
 def small_talk_reply(question):
     """Return the fixed reply if the whole message is small talk, otherwise None.
 
@@ -264,6 +280,8 @@ def answer_question(question, chunks, generate):
 
     # The model marks answers the sources don't fully cover; the marker itself is never shown
     answer, covered = split_not_covered_marker(answer)
+    # After the marker, so a marker at the end of a source list is still found
+    answer = remove_source_list(answer) or NOT_ENOUGH_INFO
 
     return AnswerResult(
         text=answer,
