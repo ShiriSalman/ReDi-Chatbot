@@ -446,8 +446,19 @@ class TestNoSourceListInTheAnswer:
             ("Go to the Info Day. Sources: - FAQ - Contact", "Go to the Info Day."),
             ("Yes, they are free.\nSource: FAQ, Course Finder", "Yes, they are free."),
             ("Yes, they are free.\n\nsources:\n- FAQ\n- Course Finder", "Yes, they are free."),
+            # Iteration (run 9): the other labels the model used in the Task 8 runs
+            (
+                "After that, you can hand in your online application. Links to sources: - FAQ "
+                "- Coding with AI: Real-World Development Workflows",
+                "After that, you can hand in your online application.",
+            ),
+            ("Please ask a more specific question.\nLinks to the sources: FAQ, Volunteer in Aarhus",
+             "Please ask a more specific question."),
+            ("They help you enter the job market. Links: - [FAQ] - [Women Courses]",
+             "They help you enter the job market."),
         ],
-        ids=["own lines", "after a sentence", "one line", "lower case"],
+        ids=["own lines", "after a sentence", "one line", "lower case",
+             "links to sources (q02, run 9)", "links to the sources", "links"],
     )
     def test_removes_the_source_list(self, text, expected):
         assert remove_source_list(text) == expected
@@ -459,8 +470,10 @@ class TestNoSourceListInTheAnswer:
             "Yes, all courses are free.",
             "The sources do not say whether there is a certificate.",
             "The main source: the FAQ page explains how to apply.",
+            "The FAQ has links: one for each city.",
         ],
-        ids=["no list", "sources without colon", "source inside a sentence"],
+        ids=["no list", "sources without colon", "source inside a sentence",
+             "links inside a sentence"],
     )
     def test_text_without_a_source_list_is_unchanged(self, text):
         assert remove_source_list(text) == text

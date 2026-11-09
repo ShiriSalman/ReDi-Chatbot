@@ -215,9 +215,13 @@ def split_not_covered_marker(answer):
     return marker.sub("", answer).strip() or NOT_ENOUGH_INFO, covered
 
 
-# A source list the model wrote itself: "Source:" or "Sources:" at the start of a line or after
-# the end of a sentence, up to the end of the answer
-SOURCE_LIST = re.compile(r"(?:^|(?<=[.!?]))[ \t]*sources?[ \t]*:.*\Z", re.I | re.M | re.S)
+# A source list the model wrote itself, at the start of a line or after the end of a sentence,
+# up to the end of the answer. The labels are the ones it used in the Task 8 runs: "Source:",
+# "Sources:", "Links:", "Links to sources:" and "Links to the sources:"
+SOURCE_LIST = re.compile(
+    r"(?:^|(?<=[.!?]))[ \t]*(?:sources?|links(?:[ \t]+to(?:[ \t]+the)?[ \t]+sources)?)[ \t]*:.*\Z",
+    re.I | re.M | re.S,
+)
 
 
 def remove_source_list(text):
