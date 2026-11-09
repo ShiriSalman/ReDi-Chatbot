@@ -16,6 +16,7 @@ from grounding import (
     answer_question,
     build_prompt,
     has_enough_matching_words,
+    remove_source_list,
     remove_urls,
     retrieve,
     split_not_covered_marker,
@@ -428,9 +429,51 @@ class TestNoUrlsInTheAnswer:
         result = answer_question("Are the courses free?", ALL_CHUNKS, generate=generate)
 
         assert "http" not in result.text
-        assert result.text == "Yes, they are free. Sources: - FAQ"
+        # specs/task8_fix_source_list_in_answer.md: the title list is removed too
+        assert result.text == "Yes, they are free."
         assert FREE_CHUNK in result.sources
         assert result.sources[0]["url"].startswith("https://")
+
+
+# Task 8 fix, written from specs/task8_fix_source_list_in_answer.md: with the URLs removed, the
+# model's own "Sources: - FAQ" stayed in the answer, so the sources were shown twice.
+class TestNoSourceListInTheAnswer:
+    # AC1
+    @pytest.mark.parametrize(
+        "text, expected",
+        [
+            ("Go to the Info Day.\n\nSources:\n- FAQ", "Go to the Info Day."),
+            ("Go to the Info Day. Sources: - FAQ - Contact", "Go to the Info Day."),
+            ("Yes, they are free.\nSource: FAQ, Course Finder", "Yes, they are free."),
+            ("Yes, they are free.\n\nsources:\n- FAQ\n- Course Finder", "Yes, they are free."),
+        ],
+        ids=["own lines", "after a sentence", "one line", "lower case"],
+    )
+    def test_removes_the_source_list(self, text, expected):
+        assert remove_source_list(text) == expected
+
+    # AC2
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Yes, all courses are free.",
+            "The sources do not say whether there is a certificate.",
+            "The main source: the FAQ page explains how to apply.",
+        ],
+        ids=["no list", "sources without colon", "source inside a sentence"],
+    )
+    def test_text_without_a_source_list_is_unchanged(self, text):
+        assert remove_source_list(text) == text
+
+    # AC3
+    def test_the_answer_has_no_source_list_but_keeps_marker_and_sources(self):
+        answer = "The courses are free.\n\nSources:\n- FAQ [NOT COVERED]"
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.text == "The courses are free."
+        assert result.enough_information is False
+        assert FREE_CHUNK in result.sources
 
 
 # Task 8 fix, written from specs/task8_fix_contact_link_not_covered.md: the model said the
