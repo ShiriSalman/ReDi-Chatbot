@@ -57,6 +57,7 @@ Official documents that aren't on the website, such as FAQs, handbooks and appli
 | Document | Ask whom | Status | Notes |
 |----------|----------|--------|-------|
 | PDF      | Luciana  | wait for responce! |
+| Applicant Hub: a full description of the application process | Luciana | to ask | The website only has one sentence per step for online courses (`/application-process-cyberspace`, marked No in `data/sources.json`). Questions: Does this process (Applicant Hub, Prework, Application Form, Interview, Onboarding) apply to all courses or only online ones? What is the Prework, and are there deadlines or requirements? |
 | | | | |
 
 ## 5. Gaps

@@ -331,5 +331,14 @@
     "audience": null,
     "include": "No",
     "notes": "German only, blog post (dated October 9, year not shown), only about one Munich course. Says laptops can be borrowed for free."
+  },
+  {
+    "url": "https://www.redi-school.org/application-process-cyberspace",
+    "title": "Application process (online courses)",
+    "category": "Applications",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "No",
+    "notes": "Checked on 2026-11-17. Overview of the 5 steps for online (Cyberspace) courses: Applicant Hub, Prework, Application Form, Interview, Onboarding; each step page (e.g. /application-process-cyberspace/rel91z8c11pwfuoqmq9e8nwyhjcv5p-azzwb, the Applicant Hub) has one sentence only. No deadlines, requirements, costs or contacts. Looks like a blog collection (page title 'Blog 2', posts dated May 31 without a year, URLs with random IDs), so not stable. Asked ReDI whether it applies to all courses (sources.md, section 4)."
   }
 ]
