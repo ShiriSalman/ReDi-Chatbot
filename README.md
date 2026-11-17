@@ -13,6 +13,8 @@ information, and links to the sources it used.
   instead of guessing.
 - **Language:** English only.
 
+How it works step by step, with diagrams: [docs/how_it_works.md](docs/how_it_works.md).
+
 ## Before you start
 
 You need:
@@ -117,6 +119,7 @@ python -m pytest
 ## Where the decisions live
 
 - **`CLAUDE.md`:** the agreed MVP scope and the task order.
+- **`docs/how_it_works.md`:** diagrams of the structure, the ingestion and the answering flow.
 - **`sources.md`:** which sources are allowed, and which were checked and excluded.
 - **`specs/`:** one spec per task or fix, named after the task, for example
   `specs/task3_answer_grounding.md` (how answers are grounded in the sources),
