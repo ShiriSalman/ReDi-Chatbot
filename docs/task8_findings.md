@@ -294,6 +294,27 @@ compared to run 10 is "as" as a stopword.
     are they" (`xfail`). "they" also refers to an earlier question, and
     conversation memory is deferred until after the MVP.
 
+## New source: the DCP Munich Applicant Hub (2026-11-18)
+
+After `specs/task8_add_applicant_hub_source.md`. Retrieval only so far; the
+evaluation run with the model is still to do (AC6).
+
+- **Added:** the hub's start page and FAQ (26 questions). The 9 course
+  pages are listed as No: with them, their "How to apply?" sections pushed
+  the website FAQ out of the top 5 for q02, q21 and q24.
+- **Ingestion:** `clean_html` now removes `<aside>` and uses only `<main>`
+  when a page has one. Without this, GitBook's assistant, table of contents
+  and page outline were in every hub chunk.
+- **Retrieval now finds the Hub FAQ** for applying, minimum age, certificate,
+  language ("Do I need to speak German?"), laptop and hours per week.
+- **Still open, I:** no variant finds a course list. The hub start page lists
+  the courses by name, without the words "course" or "Munich". q25 and q26
+  stay `xfail`.
+- **Website changes found:** 7 website pages changed since the last ingestion
+  (Munich page −4,400 characters). Not included in this change, so the hub
+  can be measured on its own; refreshing the website content is a separate
+  step.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
