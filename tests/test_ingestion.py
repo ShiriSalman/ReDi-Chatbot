@@ -402,22 +402,29 @@ class TestSummarizeReport:
 # specs/task8_course_list_per_city.md: the Course Finder lists courses by name, and the ingestion
 # read only 20 of 74. Its items are turned into one list per city plus an overview.
 FINDER_URL = "https://www.redi-school.org/course-finder"
+# Like the real page: the intro and the course cards (class "blog-item") are in one outer <article>
 FINDER_HTML = """
 <html><body>
   <nav>Home | Courses</nav>
   <main>
-    <h1>Find your course!</h1>
-    <p>All our courses are free!</p>
-    <article><h2>Robotics</h2><p>Kids and Teens</p></article>
+    <article class="sections">
+      <h1>Find your course!</h1>
+      <p>All our courses are free!</p>
+      <article class="blog-item"><h2>Robotics</h2><p>Kids and Teens</p></article>
+    </article>
   </main>
 </body></html>
 """
-# Squarespace repeats each excerpt line: a <p> inside an <li>
-EXCERPT = "<ul><li><p>Munich - Onsite</p></li><li><p>Language: English</p></li></ul>"
 
 
-def course(title, categories, excerpt=EXCERPT, updated_ms=1789107785592):
-    return {"title": title, "categories": categories, "excerpt": excerpt, "updatedOn": updated_ms}
+def course(title, categories, updated_ms=1789107785592):
+    return {
+        "title": title,
+        "categories": categories,
+        # Details such as dates and times are left out, so a city's list fits into few chunks
+        "excerpt": "<ul><li><p>Munich - Onsite</p></li><li><p>Tue & Thu, 19:00 - 21:00</p></li></ul>",
+        "updatedOn": updated_ms,
+    }
 
 
 def finder_source(**overrides):
@@ -433,7 +440,7 @@ class TestCourseList:
         course("Python", ["Munich", "Data Analytics"]),
         course("Data Analytics", ["Munich", "Data Analytics"]),
         course("Cybersecurity", ["Cybersecurity", "Berlin", "Hamburg"]),
-        course("Job ReDI", ["Malmö"], excerpt="<ul><li><p>Språk: Svenska</p></li></ul>"),
+        course("Job ReDI", ["Malmö"]),
     ]
 
     def chunks(self, items=None):
@@ -458,9 +465,9 @@ class TestCourseList:
         assert len(munich) == 1
         assert munich[0]["title"] == "Course Finder – Munich"
         assert munich[0]["text"] == (
-            "Courses in Munich (ReDI Course Finder, 2 courses):\n"
-            "- Python (Data Analytics; Munich - Onsite; Language: English)\n"
-            "- Data Analytics (Data Analytics; Munich - Onsite; Language: English)"
+            "Courses in Munich (ReDI Course Finder, 2 courses at ReDI Munich):\n"
+            "- Python (Data Analytics)\n"
+            "- Data Analytics (Data Analytics)"
         )
 
     # AC2
@@ -469,7 +476,7 @@ class TestCourseList:
 
         for city in ["Berlin", "Hamburg"]:
             text = by_url(chunks, f"{FINDER_URL}?category={city}")[0]["text"]
-            assert "- Cybersecurity (Cybersecurity; " in text
+            assert "- Cybersecurity (Cybersecurity)" in text
 
     def test_city_names_are_encoded_in_the_link(self):
         chunks = self.chunks()
@@ -477,12 +484,14 @@ class TestCourseList:
         assert by_url(chunks, f"{FINDER_URL}?category=Malm%C3%B6")
         assert all(" " not in chunk["url"] for chunk in chunks)
 
-    # AC5
-    def test_excerpts_become_plain_text_without_repeated_lines(self):
-        text = by_url(self.chunks(), f"{FINDER_URL}?category=Malm%C3%B6")[0]["text"]
+    # AC5: the JSON titles contain HTML codes such as "&amp;"
+    def test_titles_are_plain_text_and_a_course_without_topics_has_no_brackets(self):
+        items = [course("Machine Learning &amp; AI", ["Munich"])]
 
-        assert text.endswith("- Job ReDI (Språk: Svenska)")
-        assert "<" not in text
+        text = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")[0]["text"]
+
+        assert text.endswith("\n- Machine Learning & AI")
+        assert "Tue & Thu" not in text
 
     # AC3
     def test_a_long_list_is_split_between_lines_and_every_part_has_the_header(self):
@@ -493,7 +502,9 @@ class TestCourseList:
         assert len(munich) > 1
         for number, chunk in enumerate(munich, start=1):
             header, *lines = chunk["text"].split("\n")
-            assert header == f"Courses in Munich (ReDI Course Finder, 30 courses, part {number} of {len(munich)}):"
+            # The city is named twice: once wasn't enough to rank above the city's own page (q27, q28)
+            assert header == (f"Courses in Munich (ReDI Course Finder, 30 courses at ReDI Munich, "
+                              f"part {number} of {len(munich)}):")
             assert lines and all(line.startswith("- Course number ") and line.endswith(")") for line in lines)
             assert len(chunk["text"]) <= 500
         assert sum(len(chunk["text"].split("\n")) - 1 for chunk in munich) == 30

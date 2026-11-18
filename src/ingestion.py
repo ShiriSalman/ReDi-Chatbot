@@ -3,6 +3,7 @@
 See specs/task2_content_ingestion.md for the expected behavior and
 tests/test_ingestion.py for the tests.
 """
+import html as html_module
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import quote
@@ -18,9 +19,6 @@ MAX_CHUNK_CHARS = 500
 # The Course Finder's categories mix locations and topics; these are the locations
 # (specs/task8_course_list_per_city.md). A new location must be added here.
 LOCATIONS = ["Berlin", "Munich", "NRW", "Hamburg", "Copenhagen", "Aarhus", "Malmö", "Gothenburg"]
-
-# Course details come from the excerpt, which is written by hand; long ones are cut
-MAX_DETAILS_CHARS = 150
 
 
 @dataclass
@@ -116,31 +114,25 @@ def make_chunk(text, source, url=None, title=None, last_updated="unavailable"):
 
 
 def page_intro(html):
-    """Return the course list page's own text, without its course cards (<article>)."""
+    """Return the course list page's own text, without its course cards.
+
+    Squarespace puts the intro and the cards (class "blog-item") in one outer <article>.
+    """
     soup = BeautifulSoup(html, "html.parser")
-    for card in soup("article"):
+    for card in soup.select("article.blog-item"):
         card.decompose()
     return " ".join(clean_html(str(soup)).split())
 
 
-def excerpt_text(html):
-    """Return a course excerpt as one line of plain text.
-
-    Squarespace puts a <p> inside each <li>, so the lines are taken once, from the <li>s.
-    """
-    soup = BeautifulSoup(html or "", "html.parser")
-    parts = [tag.get_text(" ", strip=True) for tag in soup.find_all("li") or soup.find_all("p")]
-    details = "; ".join(dict.fromkeys(part for part in parts if part))
-    if len(details) > MAX_DETAILS_CHARS:
-        details = details[:MAX_DETAILS_CHARS].rsplit(" ", 1)[0] + " …"
-    return details
-
-
 def course_line(item):
-    """Return "- <title> (<topics>; <details>)" for one course."""
+    """Return "- <title> (<topics>)" for one course.
+
+    Details such as dates and times are left out: with them, Berlin's list needed 11 chunks,
+    without them 3, so a city's whole list fits into the chunks the model gets.
+    """
+    title = html_module.unescape(item["title"])
     topics = ", ".join(c for c in item.get("categories") or [] if c not in LOCATIONS)
-    extras = "; ".join(part for part in [topics, excerpt_text(item.get("excerpt"))] if part)
-    return f"- {item['title']} ({extras})" if extras else f"- {item['title']}"
+    return f"- {title} ({topics})" if topics else f"- {title}"
 
 
 def newest_update(items):
@@ -190,9 +182,12 @@ def course_list_chunks(source, html, items):
     chunks = [make_chunk(piece, source, last_updated=newest_update(items)) for piece in chunk_text(overview)]
 
     for city, city_items in by_city.items():
+        # The city is named twice: named once, the list ranked below the city's own pages for
+        # "Which courses are there in Munich?" (specs/task8_course_list_per_city.md, Iteration)
         def header(part, parts):
             numbering = f", part {part} of {parts}" if parts > 1 else ""
-            return f"Courses in {city} (ReDI Course Finder, {plural(len(city_items), 'course')}{numbering}):"
+            return (f"Courses in {city} (ReDI Course Finder, {plural(len(city_items), 'course')} "
+                    f"at ReDI {city}{numbering}):")
 
         # The longest header possible, so every part stays within the chunk size
         budget = MAX_CHUNK_CHARS - len(header(99, 99)) - 1

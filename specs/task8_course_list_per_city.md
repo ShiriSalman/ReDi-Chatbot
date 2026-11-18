@@ -97,10 +97,44 @@ Checked on the real content (`tests/test_real_questions.py`):
 Checked by hand (after): `python src/run_evaluation.py`.
 - **AC9:** the answers to q25–q28 list courses by name.
 
+## Iteration: shorter lines, the city named twice (2026-11-18)
+
+The first ingestion with the real data showed three problems the unit tests
+didn't catch:
+
+- **The lists were too long.** With the excerpt details (dates, times, age),
+  Berlin's list needed 11 chunks and Munich's 9, but the model gets 5.
+  Measured: details cut to 150 characters → up to 11 chunks per city, 60 → up
+  to 6, **none → at most 3**. So a line is now only `- <title> (<topics>)`;
+  dates and times are left out (known limitation below).
+- **The intro was missing.** On the real page the intro and the course cards
+  are in one outer `<article class="sections">`; the cards have the class
+  `blog-item`. Only `article.blog-item` is removed now. The test page has the
+  same structure.
+- **HTML codes in titles** ("Machine Learning &amp; AI"): titles are unescaped.
+
+**The city named once wasn't enough.** The city lists passed the gate but
+ranked below the city's own pages ("ReDI School Munich", "Volunteer in
+Munich"), which mention the city 3–5 times per chunk. Prototype on the whole
+catalogue:
+
+| City in the list | Catalogue | q27, q28 | q06 address chunk |
+|---|---|---|---|
+| Header only | 23/28 | fail | kept |
+| On every line | 25/28 | pass | kept |
+| **Twice in the header** | **25/28** | **pass** | **kept** |
+
+The header now reads "Courses in Munich (ReDI Course Finder, 16 courses at
+ReDI Munich):" — the smaller change.
+
+**Result:** q25, q27 and q28 pass; q26 stays `xfail` ("they" has no city and
+no course word in common with the lists).
+
 ## Known limitations
 
-- The excerpt format is written by hand on the website and can differ
-  between courses; lines then have fewer details.
+- The lists have no dates, times or teaching language (see Iteration).
+  Questions about one course's schedule need its own course page, which is
+  not a source yet.
 - Some course titles are in German, Swedish or Danish because the course is
   taught in that language. They are kept, so visitors can recognise them on
   the website.
