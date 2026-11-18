@@ -273,6 +273,27 @@ compared to run 10 is "as" as a stopword.
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
 
+## Seen in the live app on Render on 2026-11-17
+
+- **I: no course list.** "which courses are they" got an honest but unhelpful
+  answer ("companies can host courses … the sources do not provide a full
+  list of all available courses"), with the contact link. Sources: FAQ,
+  ReDI School Denmark, NRW and Gothenburg; not the Course Finder, which lists
+  the courses. Checked with the real retrieval:
+  - **Side cause:** "they" is not a stopword, so the question has two content
+    words, "course" and "they". The gate needs both in one chunk, and no
+    Course Finder chunk contains "they".
+  - **Main cause:** even "Which courses does ReDI offer?" doesn't find the
+    Course Finder. Only 2 of its 13 chunks contain the word "course"; the
+    others list courses by name, date and time.
+  - **Not fixed with stopwords:** "they" alone gives the same sources as
+    "which courses are there" (FAQ, NRW, Munich), still no Course Finder.
+    Adding 28 pronouns and auxiliary verbs broke q14 and q20 (fallback
+    instead of an answer). So the code is unchanged.
+  - Recorded as q25 "Which courses does ReDI offer?" and q26 "which courses
+    are they" (`xfail`). "they" also refers to an earlier question, and
+    conversation memory is deferred until after the MVP.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -288,8 +309,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. ~~**G** (source list in the answer).~~ Done (run 10).
 7. **Ranking:** ~~q08~~ done ("as" as a stopword). Still open: q09, q10,
-   the German q15 finding only FAQ chunks, and **H** (the catalogue can't
-   notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
+   **I** (q25, q26: the Course Finder), the German q15 finding only FAQ
+   chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
 8. **E:** the catalogue should check the answer content (here the Munich

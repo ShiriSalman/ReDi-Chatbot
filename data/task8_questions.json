@@ -214,5 +214,23 @@
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/faq",
     "known_issue": null
+  },
+  {
+    "id": "q25",
+    "question": "Which courses does ReDI offer?",
+    "topic": "Courses",
+    "case": "straightforward",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/course-finder",
+    "known_issue": "The Course Finder lists courses by name; only 2 of its 13 chunks contain the word 'course'"
+  },
+  {
+    "id": "q26",
+    "question": "which courses are they",
+    "topic": "Courses",
+    "case": "unclear",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/course-finder",
+    "known_issue": "No Course Finder chunk contains both 'course' and 'they', so the gate drops the whole page"
   }
 ]
