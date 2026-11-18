@@ -53,8 +53,8 @@ def test_every_url_uses_https(sources):
         assert source["url"].startswith("https://"), source["url"]
 
 
-def test_between_10_and_25_sources_are_included(included):
-    assert 10 <= len(included) <= 25
+def test_between_10_and_40_sources_are_included(included):
+    assert 10 <= len(included) <= 40
 
 
 def test_included_sources_are_in_english(included):

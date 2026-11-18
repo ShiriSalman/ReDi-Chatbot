@@ -10,10 +10,12 @@ Tick a topic once at least one included source covers it.
  => https://www.redi-school.org/
 - [ x ] Courses offered 
 => https://www.redi-school.org/course-finder
+=> Munich: https://redi-school-1.gitbook.io/dcp-muc-applicant-hub (one page per course)
 - [ x ] Who can join, and whether it costs anything 
 => https://www.redi-school.org/course-finder
 - [ x ] How to apply and the deadlines 
 =>  https://www.redi-school.org/web-development/munich/dcp/coding-with-ai
+=> Munich: https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/frequently-asked-questions-faq
 - [ x ] Locations 
  => https://www.redi-school.org/
 - [ x ] Course format (online or in person, schedule, language) 
@@ -31,12 +33,12 @@ Tick a topic once at least one included source covers it.
 
 A source is included only if it is:
 
-- **Official and public:** ReDI's own content that anyone can see
+- **Official and public:** ReDI's own content that anyone can see. This includes pages run by ReDI staff outside redi-school.org, such as the Applicant Hub on GitBook.
 - **Stable:** not news, blog posts or events that go out of date quickly
 - **In English:** an English version exists (the MVP is English only)
 - **Not a duplicate:** if two sources say the same thing, keep the better one
 
-The limit is **10–25 included sources**.
+The limit is **10–40 included sources**. It was 25 until the DCP Munich Applicant Hub (11 pages) was added on 2026-11-18.
 
 ## 3. Sources
 
@@ -57,7 +59,7 @@ Official documents that aren't on the website, such as FAQs, handbooks and appli
 | Document | Ask whom | Status | Notes |
 |----------|----------|--------|-------|
 | PDF      | Luciana  | wait for responce! |
-| Applicant Hub: a full description of the application process | Luciana | to ask | The website only has one sentence per step for online courses (`/application-process-cyberspace`, marked No in `data/sources.json`). Questions: Does this process (Applicant Hub, Prework, Application Form, Interview, Onboarding) apply to all courses or only online ones? What is the Prework, and are there deadlines or requirements? |
+| Applicant Hub: a full description of the application process | Luciana | answered | Luciana pointed to the DCP Munich Applicant Hub (https://redi-school-1.gitbook.io/dcp-muc-applicant-hub), added as 11 sources. Still open: which locations the general hub (https://redi-school-1.gitbook.io/applicant-hub) is for. Original questions: | The website only has one sentence per step for online courses (`/application-process-cyberspace`, marked No in `data/sources.json`). Questions: Does this process (Applicant Hub, Prework, Application Form, Interview, Onboarding) apply to all courses or only online ones? What is the Prework, and are there deadlines or requirements? |
 | | | | |
 
 ## 5. Gaps

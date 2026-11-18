@@ -216,6 +216,105 @@
     "notes": "Not in the main menu, linked from Become a volunteer. 5-step process, teaching in English and Swedish. Named contacts may change."
   },
   {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub",
+    "title": "Applicant Hub – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Applicant Hub of the Digital Career Program Munich, run by ReDI staff (Luciana) on GitBook. Semester dates, application status, course levels and the course list. Changes each semester. See specs/task8_add_applicant_hub_source.md."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/frequently-asked-questions-faq",
+    "title": "Applicant Hub FAQ – DCP Munich",
+    "category": "Applications",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "26 questions for Munich applicants: minimum age 18, courses in English, certificate, laptop, hours per week, Munich area only, selection."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/backend-development-track/intro-to-code-data-and-design",
+    "title": "Intro to Code, Data, and Design – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Listed in four tracks; the backend version has the same text as the others plus a schedule table and the Orientation Quiz, so only this one is included."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/backend-development-track/python",
+    "title": "Python – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page with start and end dates, hybrid schedule and certificate conditions. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/backend-development-track/coding-with-ai",
+    "title": "Coding with AI – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Same text in the Web Development track, so only this one is included. Different from the website's Coding with AI page (3 % similar): this one has the 2027 dates and the placement test."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/data-ai-track/data-analytics",
+    "title": "Data Analytics – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/data-ai-track/machine-learning",
+    "title": "Machine Learning – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/web-development-track/web-development-advanced",
+    "title": "Web Development Advanced – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/ux-ui-design-track/ux-ui-design-fundamentals",
+    "title": "UX/UI Design Fundamentals – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/ux-ui-design-track/ux-ui-design-project-based-learning",
+    "title": "UX/UI Design Project-Based Learning – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Dates change each semester."
+  },
+  {
+    "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/cybersecurity/cybersecurity",
+    "title": "Cybersecurity – DCP Munich",
+    "category": "Courses",
+    "language": "en",
+    "audience": "Prospective students",
+    "include": "Yes",
+    "notes": "Course page. Applicants do the Prework instead of the Orientation Quiz. Dates change each semester."
+  },
+  {
     "url": "https://www.redi-school.org/blog",
     "title": "Blog",
     "category": null,
