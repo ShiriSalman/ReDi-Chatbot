@@ -1,10 +1,12 @@
-"""Downloads one source page for the ingestion pipeline (see src/ingestion.py)."""
+"""Downloads one source page, or all items of a course list, for the ingestion pipeline
+(see src/ingestion.py)."""
 from email.utils import parsedate_to_datetime
 
 import requests
 
 # Seconds to wait for a page before giving up, so one slow page can't block the run
 TIMEOUT_SECONDS = 15
+MAX_COLLECTION_PAGES = 50
 
 
 class FetchError(Exception):
@@ -24,6 +26,29 @@ def fetch_page(url, get=requests.get):
         "html": response.text,
         "last_updated": parse_last_modified(response.headers.get("Last-Modified")),
     }
+
+
+def fetch_collection(url, get=requests.get):
+    """Return every item of a Squarespace collection page, such as the Course Finder.
+
+    The page shows only 20 items and loads the rest while scrolling; its JSON version
+    (?format=json) gives them page by page. Raises FetchError on an error status.
+    """
+    items = []
+    params = {"format": "json"}
+    # A limit, so a broken pagination can't loop forever (the Course Finder had 4 pages)
+    for _ in range(MAX_COLLECTION_PAGES):
+        response = get(url, params=dict(params), timeout=TIMEOUT_SECONDS)
+        if response.status_code >= 400:
+            raise FetchError(f"HTTP {response.status_code} for {url}")
+        data = response.json()
+        items.extend(data.get("items", []))
+
+        pagination = data.get("pagination") or {}
+        if not pagination.get("nextPage"):
+            break
+        params["offset"] = pagination["nextPageOffset"]
+    return items
 
 
 def parse_last_modified(value):
