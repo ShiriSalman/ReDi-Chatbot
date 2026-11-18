@@ -7,8 +7,9 @@ from dataclasses import dataclass, field
 
 from bs4 import BeautifulSoup
 
-# Page parts that repeat on every page or aren't readable text
-UNWANTED_TAGS = ["nav", "header", "footer", "script", "style", "noscript"]
+# Page parts that repeat on every page or aren't readable text. "aside" is GitBook's assistant
+# and table of contents (specs/task8_add_applicant_hub_source.md); the ReDI website has none.
+UNWANTED_TAGS = ["nav", "header", "footer", "aside", "script", "style", "noscript"]
 
 
 @dataclass

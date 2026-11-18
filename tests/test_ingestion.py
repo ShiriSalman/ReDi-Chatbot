@@ -135,6 +135,22 @@ class TestCleanHtml:
         assert "All our courses are free." in text
         assert "Classes take place on Tuesday and Thursday evenings." in text
 
+    # specs/task8_add_applicant_hub_source.md, AC1: GitBook puts its assistant and the table of
+    # contents in <aside>, so every hub page started with the whole course list
+    def test_removes_sidebars_and_keeps_the_main_text(self):
+        html = """
+        <html><body>
+          <aside>GitBook Assistant | Python | Data Analytics | Cybersecurity</aside>
+          <main><p>You must be at least 18 years old to join ReDI School.</p></main>
+        </body></html>
+        """
+
+        text = clean_html(html)
+
+        assert "GitBook Assistant" not in text
+        assert "Data Analytics" not in text
+        assert "You must be at least 18 years old to join ReDI School." in text
+
 
 # Scenario 4: Split content into chunks
 class TestChunkText:
