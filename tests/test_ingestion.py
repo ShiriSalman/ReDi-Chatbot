@@ -151,6 +151,20 @@ class TestCleanHtml:
         assert "Data Analytics" not in text
         assert "You must be at least 18 years old to join ReDI School." in text
 
+    # AC7: GitBook adds the page outline after <main>, and the ReDI website a "0" before it
+    def test_uses_only_the_main_content_when_the_page_has_one(self):
+        html = """
+        <html><body>
+          <div>0</div>
+          <main><p>All ReDI School courses are 100% free.</p></main>
+          <div><ul><li>What is the course about?</li><li>How to apply?</li></ul></div>
+        </body></html>
+        """
+
+        text = clean_html(html)
+
+        assert text == "All ReDI School courses are 100% free."
+
 
 # Scenario 4: Split content into chunks
 class TestChunkText:

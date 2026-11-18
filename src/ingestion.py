@@ -38,14 +38,17 @@ def summarize_report(report):
 
 
 def clean_html(html):
-    """Return the relevant text of a page, without nav, header, footer, scripts and styles."""
+    """Return the relevant text of a page: its <main> content if it has one, without nav, header,
+    footer, sidebars, scripts and styles."""
     soup = BeautifulSoup(html, "html.parser")
 
     for tag in soup(UNWANTED_TAGS):
         tag.decompose()
 
-    # Use only the body, so the <title> in <head> isn't counted as page text
-    content = soup.body or soup
+    # Use only the main content when the page marks it, otherwise the body, so the <title> in
+    # <head> isn't counted as page text. GitBook adds the page outline after <main>, and the
+    # ReDI website a "0" before it (specs/task8_add_applicant_hub_source.md)
+    content = soup.find("main") or soup.body or soup
     lines = (line.strip() for line in content.get_text(separator="\n").splitlines())
     return "\n".join(line for line in lines if line)
 

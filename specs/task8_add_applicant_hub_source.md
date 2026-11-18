@@ -112,6 +112,57 @@ Checked on the real content (`tests/test_real_questions.py`, no model):
 Checked by hand (after): `python src/run_evaluation.py`.
 - **AC6:** q05 (German) and q11 (certificate) are compared with run 12.
 
+## Iteration: only the start page and FAQ, and only `<main>`
+
+Checked on 2026-11-18 after the first ingestion with all 11 pages
+(retrieval only, no model):
+
+**1. More GitBook text outside `<aside>`.** Each course page also has the
+page outline ("What is the course about? … Why should you take this course?
+Timeline …") and "Previous / Next", "Last updated", "Was this helpful?". The
+outline contains "apply", "course" and "take", so for "how do i apply" three
+of the top 5 chunks were navigation text only.
+
+- GitBook puts the outline outside `<main id="gitbook-main-content">`.
+- **Change:** `clean_html` uses only `<main>` when the page has one; pages
+  without `<main>` are cleaned as before. `<aside>` stays removed.
+- On the 24 website pages, the only text lost is a "0" outside `<main>` (a
+  counter from the website), which is noise in today's chunks too ("0 Find
+  your course!"). Single digits are ignored by retrieval anyway.
+- Inside `<main>`, a few short lines remain ("Previous", "Last updated",
+  "Was this helpful?"). Known limitation.
+
+**2. The course pages crowd out the FAQ.** Even with only `<main>`, every
+course page has a real "How to apply?" section, so 9 course pages filled the
+top 5 for "apply" questions:
+
+| Scope | Catalogue | "how do i apply" top 5 |
+|---|---|---|
+| All 11 pages | 19/26, q02, q21, q24 fail | 5 Munich course pages |
+| All 11 pages, at most 2 chunks per page | 19/26, same | same |
+| **Start page + FAQ** | **22/26, no regressions** | Hub FAQ ×2, website FAQ ×3 |
+
+The owner chose **start page + FAQ**. The 9 course pages stay in
+`data/sources.json` with `include: No` and the reason, so they can be added
+again once ranking improves (e.g. embeddings).
+
+**Still not fixed:** the course list. "Which courses does ReDI offer?" (q25),
+"which courses are they" (q26) and "Which courses are there in Munich?" don't
+find the hub start page: it lists the courses by name, without the words
+"course" or "Munich" (Munich is only in its title, and titles are not scored).
+q25 and q26 stay `xfail`.
+
+**Content changes on the website.** The first ingestion also showed that 7
+website pages changed since the last ingestion (for example the Munich page
+lost 4,400 characters). To measure the hub on its own, this change keeps the
+committed website chunks and adds only the hub chunks. Refreshing the website
+content is a separate step.
+
+**Acceptance criteria for this iteration:**
+- **AC7:** `clean_html` uses only `<main>` when the page has one (unit test).
+- **AC8:** `tests/test_real_questions.py` has no new failures; q25 and q26
+  stay `xfail`.
+
 ## Known limitations
 
 - A few lines of GitBook text stay on each page ("Skip to content", "This
