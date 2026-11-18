@@ -239,8 +239,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Listed in four tracks; the backend version has the same text as the others plus a schedule table and the Orientation Quiz, so only this one is included."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Listed in four tracks; the backend version has the same text as the others plus a schedule table and the Orientation Quiz, so only this one is included."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/backend-development-track/python",
@@ -248,8 +248,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page with start and end dates, hybrid schedule and certificate conditions. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page with start and end dates, hybrid schedule and certificate conditions. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/backend-development-track/coding-with-ai",
@@ -257,8 +257,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Same text in the Web Development track, so only this one is included. Different from the website's Coding with AI page (3 % similar): this one has the 2027 dates and the placement test."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Same text in the Web Development track, so only this one is included. Different from the website's Coding with AI page (3 % similar): this one has the 2027 dates and the placement test."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/data-ai-track/data-analytics",
@@ -266,8 +266,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/data-ai-track/machine-learning",
@@ -275,8 +275,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/web-development-track/web-development-advanced",
@@ -284,8 +284,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/ux-ui-design-track/ux-ui-design-fundamentals",
@@ -293,8 +293,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/ux-ui-design-track/ux-ui-design-project-based-learning",
@@ -302,8 +302,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Dates change each semester."
   },
   {
     "url": "https://redi-school-1.gitbook.io/dcp-muc-applicant-hub/cybersecurity/cybersecurity",
@@ -311,8 +311,8 @@
     "category": "Courses",
     "language": "en",
     "audience": "Prospective students",
-    "include": "Yes",
-    "notes": "Course page. Applicants do the Prework instead of the Orientation Quiz. Dates change each semester."
+    "include": "No",
+    "notes": "Not included for now: with all 9 course pages, their 'How to apply?' sections filled the top 5 for 'apply' questions and pushed out the FAQ (q02, q21, q24 failed). Can be added again once ranking improves. See specs/task8_add_applicant_hub_source.md, 'Iteration'. Course page. Applicants do the Prework instead of the Orientation Quiz. Dates change each semester."
   },
   {
     "url": "https://www.redi-school.org/blog",
