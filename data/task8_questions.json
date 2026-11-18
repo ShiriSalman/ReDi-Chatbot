@@ -222,7 +222,7 @@
     "case": "straightforward",
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/course-finder",
-    "known_issue": "The Course Finder lists courses by name; only 2 of its 13 chunks contain the word 'course'"
+    "known_issue": null
   },
   {
     "id": "q26",
@@ -232,5 +232,23 @@
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/course-finder",
     "known_issue": "No Course Finder chunk contains both 'course' and 'they', so the gate drops the whole page"
+  },
+  {
+    "id": "q27",
+    "question": "Which courses are there in Berlin?",
+    "topic": "Courses",
+    "case": "straightforward",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/course-finder?category=Berlin",
+    "known_issue": null
+  },
+  {
+    "id": "q28",
+    "question": "Which courses are there in Munich?",
+    "topic": "Courses",
+    "case": "straightforward",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/course-finder?category=Munich",
+    "known_issue": null
   }
 ]

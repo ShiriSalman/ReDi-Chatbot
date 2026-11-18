@@ -15,7 +15,8 @@
     "language": "en",
     "audience": "Prospective students",
     "include": "Yes",
-    "notes": "Courses, who can join, cost and course format."
+    "notes": "Courses, who can join, cost and course format. Read as a course list (all 74 courses via the page's JSON, one list per city), see specs/task8_course_list_per_city.md.",
+    "reader": "course-list"
   },
   {
     "url": "https://www.redi-school.org/web-development/munich/dcp/coding-with-ai",
