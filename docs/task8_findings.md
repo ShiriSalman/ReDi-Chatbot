@@ -315,6 +315,28 @@ evaluation run with the model is still to do (AC6).
   can be measured on its own; refreshing the website content is a separate
   step.
 
+## Run 13: after adding the Applicant Hub start page and FAQ
+
+Run on 2026-11-18 with the same model and 26 questions (q25, q26 added).
+
+- **22 of 26 passed.** Only the known cases fail: q09, q10, q25, q26.
+- **q11 (certificate) is answered now:** "Yes, you will receive a ReDI School
+  certificate if you attend regularly and complete the course." Run 12 said
+  the sources don't cover it.
+- **q05 (German) is answered now:** courses are "held in English, but you do
+  not need perfect English" (Applicant Hub FAQ). No contact link any more.
+- **Apply questions (q02, q21, q24)** combine both FAQs: the Info Day from the
+  website and "the application form … under the 'How to Apply' section of
+  each course page" from the Hub FAQ. "Coding with AI" is no longer a source
+  for them (H better).
+- **New finding J (low): a wrong paraphrase.** q11 adds "For intermediate and
+  advanced courses, attending them is mandatory to receive a certificate."
+  The Hub FAQ says the *final projects* in those courses are mandatory, not
+  attending. The rule "only attribute a statement to a source that actually
+  contains it" doesn't catch a wrong paraphrase.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
