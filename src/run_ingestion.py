@@ -6,15 +6,15 @@ Running it again refreshes the saved chunks, so this is also how the content get
 import json
 from pathlib import Path
 
-from fetching import fetch_page
-from ingestion import ingest, summarize_report
+from fetching import fetch_collection, fetch_page
+from ingestion import belongs_to, ingest, summarize_report
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 SOURCES_PATH = DATA_DIR / "sources.json"
 CHUNKS_PATH = DATA_DIR / "chunks.json"
 
 
-def run(sources_path, chunks_path, fetch=fetch_page):
+def run(sources_path, chunks_path, fetch=fetch_page, fetch_collection=fetch_collection):
     """Ingest the sources and save the chunks, keeping chunks from earlier runs."""
     sources = json.loads(Path(sources_path).read_text(encoding="utf-8"))
 
@@ -23,12 +23,14 @@ def run(sources_path, chunks_path, fetch=fetch_page):
     if chunks_path.exists():
         existing_chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
 
-    result = ingest(sources, fetch=fetch, existing_chunks=existing_chunks)
+    result = ingest(sources, fetch=fetch, existing_chunks=existing_chunks, fetch_collection=fetch_collection)
 
     # Drop chunks of sources deleted from sources.json. ingest() keeps other sources'
     # chunks on purpose, so this check needs the complete list and lives here.
-    listed_urls = {source["url"] for source in sources}
-    result.chunks = [chunk for chunk in result.chunks if chunk["url"] in listed_urls]
+    listed_urls = [source["url"] for source in sources]
+    result.chunks = [
+        chunk for chunk in result.chunks if any(belongs_to(chunk, url) for url in listed_urls)
+    ]
 
     # ensure_ascii=False keeps characters like "ö" readable in the file
     chunks_path.write_text(json.dumps(result.chunks, ensure_ascii=False, indent=2), encoding="utf-8")

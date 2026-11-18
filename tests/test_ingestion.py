@@ -3,7 +3,7 @@
 # The fetch function is passed in, so the tests never touch the network.
 import copy
 
-from ingestion import chunk_text, clean_html, ingest, summarize_report
+from ingestion import chunk_text, clean_html, course_list_chunks, ingest, summarize_report
 
 PAGE_HTML = """
 <html>
@@ -397,3 +397,149 @@ class TestSummarizeReport:
         summarize_report(report)
 
         assert report == before
+
+
+# specs/task8_course_list_per_city.md: the Course Finder lists courses by name, and the ingestion
+# read only 20 of 74. Its items are turned into one list per city plus an overview.
+FINDER_URL = "https://www.redi-school.org/course-finder"
+FINDER_HTML = """
+<html><body>
+  <nav>Home | Courses</nav>
+  <main>
+    <h1>Find your course!</h1>
+    <p>All our courses are free!</p>
+    <article><h2>Robotics</h2><p>Kids and Teens</p></article>
+  </main>
+</body></html>
+"""
+# Squarespace repeats each excerpt line: a <p> inside an <li>
+EXCERPT = "<ul><li><p>Munich - Onsite</p></li><li><p>Language: English</p></li></ul>"
+
+
+def course(title, categories, excerpt=EXCERPT, updated_ms=1789107785592):
+    return {"title": title, "categories": categories, "excerpt": excerpt, "updatedOn": updated_ms}
+
+
+def finder_source(**overrides):
+    return make_source(url=FINDER_URL, reader="course-list", **overrides)
+
+
+def by_url(chunks, url):
+    return [chunk for chunk in chunks if chunk["url"] == url]
+
+
+class TestCourseList:
+    ITEMS = [
+        course("Python", ["Munich", "Data Analytics"]),
+        course("Data Analytics", ["Munich", "Data Analytics"]),
+        course("Cybersecurity", ["Cybersecurity", "Berlin", "Hamburg"]),
+        course("Job ReDI", ["Malmö"], excerpt="<ul><li><p>Språk: Svenska</p></li></ul>"),
+    ]
+
+    def chunks(self, items=None):
+        return course_list_chunks(finder_source(), FINDER_HTML, items or self.ITEMS)
+
+    # AC4
+    def test_the_overview_names_every_city_with_its_number_of_courses(self):
+        overview = " ".join(chunk["text"] for chunk in by_url(self.chunks(), FINDER_URL))
+
+        assert "All our courses are free!" in overview
+        assert "Munich (2 courses)" in overview
+        assert "Berlin (1 course)" in overview
+        assert "Malmö (1 course)" in overview
+        # The page's own course cards are not repeated; the lists below have every course
+        assert "Robotics" not in overview
+        assert "Home | Courses" not in overview
+
+    # AC2
+    def test_each_city_gets_a_list_with_a_line_per_course(self):
+        munich = by_url(self.chunks(), f"{FINDER_URL}?category=Munich")
+
+        assert len(munich) == 1
+        assert munich[0]["title"] == "Course Finder – Munich"
+        assert munich[0]["text"] == (
+            "Courses in Munich (ReDI Course Finder, 2 courses):\n"
+            "- Python (Data Analytics; Munich - Onsite; Language: English)\n"
+            "- Data Analytics (Data Analytics; Munich - Onsite; Language: English)"
+        )
+
+    # AC2
+    def test_a_course_in_two_cities_is_in_both_lists(self):
+        chunks = self.chunks()
+
+        for city in ["Berlin", "Hamburg"]:
+            text = by_url(chunks, f"{FINDER_URL}?category={city}")[0]["text"]
+            assert "- Cybersecurity (Cybersecurity; " in text
+
+    def test_city_names_are_encoded_in_the_link(self):
+        chunks = self.chunks()
+
+        assert by_url(chunks, f"{FINDER_URL}?category=Malm%C3%B6")
+        assert all(" " not in chunk["url"] for chunk in chunks)
+
+    # AC5
+    def test_excerpts_become_plain_text_without_repeated_lines(self):
+        text = by_url(self.chunks(), f"{FINDER_URL}?category=Malm%C3%B6")[0]["text"]
+
+        assert text.endswith("- Job ReDI (Språk: Svenska)")
+        assert "<" not in text
+
+    # AC3
+    def test_a_long_list_is_split_between_lines_and_every_part_has_the_header(self):
+        items = [course(f"Course number {n}", ["Munich", "Web Development"]) for n in range(30)]
+
+        munich = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")
+
+        assert len(munich) > 1
+        for number, chunk in enumerate(munich, start=1):
+            header, *lines = chunk["text"].split("\n")
+            assert header == f"Courses in Munich (ReDI Course Finder, 30 courses, part {number} of {len(munich)}):"
+            assert lines and all(line.startswith("- Course number ") and line.endswith(")") for line in lines)
+            assert len(chunk["text"]) <= 500
+        assert sum(len(chunk["text"].split("\n")) - 1 for chunk in munich) == 30
+
+    def test_chunks_keep_the_source_information_and_the_newest_update(self):
+        items = [course("Python", ["Munich"], updated_ms=1700000000000),
+                 course("Machine Learning", ["Munich"], updated_ms=1789107785592)]
+
+        munich = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")[0]
+
+        assert munich["category"] == "Courses"
+        assert munich["language"] == "en"
+        assert munich["last_updated"] == "2026-09-11"
+
+    def test_ingest_reads_the_course_list_with_fetch_collection(self):
+        result = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML),
+                        fetch_collection=lambda url: self.ITEMS)
+
+        urls = {chunk["url"] for chunk in result.chunks}
+        assert FINDER_URL in urls
+        assert f"{FINDER_URL}?category=Munich" in urls
+        assert result.report["ingested"] == [FINDER_URL]
+
+    def test_ingesting_again_replaces_the_city_lists(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        second = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML),
+                        fetch_collection=lambda url: self.ITEMS, existing_chunks=first.chunks)
+
+        assert len(second.chunks) == len(first.chunks)
+
+    def test_a_course_list_marked_no_loses_its_city_lists(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        result = ingest([finder_source(include="No")], fetch=fake_fetch(), existing_chunks=first.chunks)
+
+        assert result.chunks == []
+
+    def test_a_failed_course_list_keeps_the_old_chunks(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        def broken(url):
+            raise ConnectionError("Timeout")
+
+        result = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=broken,
+                        existing_chunks=first.chunks)
+
+        assert result.chunks == first.chunks
+        assert result.report["failed"][0]["url"] == FINDER_URL
