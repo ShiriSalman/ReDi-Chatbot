@@ -116,15 +116,24 @@ body {
 }
 
 .conversation {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   overflow-y: auto;
   padding: 1.5rem 1.25rem;
 }
 
-/* Welcome screen */
+/* Welcome screen: centred in the free space, so there is no large gap above the input.
+   It fades out when a question is sent. */
 .welcome {
+  width: 100%;
   max-width: 44rem;
-  margin: 0 auto 1.5rem;
+  margin: auto;
+  transition: opacity 0.18s ease-out;
+}
+
+.welcome.leaving {
+  opacity: 0;
 }
 
 .welcome[hidden] {
@@ -215,30 +224,46 @@ body {
   background: var(--redi-peach-light);
 }
 
+/* Clear feedback when a question is clicked: pressed, then orange until it is sent */
+.suggestion:active {
+  transform: scale(0.97);
+}
+
+.suggestion.chosen {
+  border-color: var(--redi-orange-dark);
+  background: var(--redi-orange-dark);
+  color: #ffffff;
+}
+
+/* A small text link, so it doesn't compete with the topics */
 .welcome-contact {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  margin: 1.25rem 0 0;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
   color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .contact-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  min-height: 2.75rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: var(--radius-small);
-  background: var(--redi-teal-light);
+  gap: 0.2rem;
+  min-height: 2.75rem; /* the touch area stays 44px, the link itself looks small */
   color: var(--redi-teal-dark);
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.contact-link svg {
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
 .contact-link:hover {
-  background: var(--redi-peach-light);
+  text-decoration-thickness: 2px;
 }
 
 .welcome-note {
@@ -252,6 +277,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 100%; /* the conversation is a flex column; without this the log shrinks to its content */
   max-width: 44rem;
   margin: 0 auto;
 }
@@ -656,5 +682,11 @@ a:focus-visible {
   .waiting-mark .mark-arrow,
   .category {
     animation: none;
+  }
+
+  .welcome,
+  .suggestion:active {
+    transition: none;
+    transform: none;
   }
 }

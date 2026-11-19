@@ -345,10 +345,26 @@ input.addEventListener("keydown", (event) => {
 });
 
 // A suggested question is sent right away, exactly as written on the button
+// The clicked question turns orange and the welcome fades out for a moment, so the visitor
+// sees their choice; then it is sent. A second click in that moment is ignored.
+const CHOSEN_FEEDBACK_MS = 180;
+let choosing = false;
+
 for (const button of document.querySelectorAll(".suggestion")) {
   button.addEventListener("click", () => {
-    closeDrawer();
-    send(button.textContent.trim());
+    if (choosing) {
+      return;
+    }
+    choosing = true;
+    button.classList.add("chosen");
+    welcome.classList.add("leaving");
+    setTimeout(() => {
+      button.classList.remove("chosen");
+      welcome.classList.remove("leaving");
+      closeDrawer();
+      choosing = false;
+      send(button.textContent.trim());
+    }, CHOSEN_FEEDBACK_MS);
   });
 }
 

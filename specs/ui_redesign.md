@@ -197,6 +197,25 @@ an `<h3>` and its `button.suggestion` buttons in the HTML.
   from there is sent; New chat brings the welcome back; no horizontal
   scrolling of the page.
 
+## Iteration: final touches (2026-11-19)
+
+Requested by the owner after the tabs:
+- **Less empty space:** the welcome block is centred in the free space between
+  header and input instead of sitting at the top.
+- **Welcome text:** "Hi! How can I help you? 👋" and "Ask me anything about
+  ReDI School or choose a topic below." `test_has_a_welcome_screen` checks the
+  new wording (the old question was replaced on request).
+- **Contact ReDI:** a small underlined text link instead of a highlighted
+  button; its touch area stays 44 px.
+- **Click feedback:** a clicked suggestion is pressed in and turns orange; the
+  welcome fades out over 180 ms, then the question is sent. A second click in
+  that moment is ignored.
+- **Waiting logo:** 24 px, without a card frame; the dot pulses (60–115 %)
+  and the arrow moves 10 of the mark's 100 units (3 units were about one
+  screen pixel).
+- Unchanged: the welcome hides after the first question, and the input stays
+  at the bottom.
+
 ## Known limitations
 
 - The suggested questions are fixed in the template. When the content
