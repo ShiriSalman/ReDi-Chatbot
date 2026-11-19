@@ -5,7 +5,9 @@
 # Small fake chunks and a fake model are used, so the tests don't depend on the real content.
 import json
 
-from run_evaluation import evaluate, format_results, load_questions
+import run_evaluation
+from app import demo_generate
+from run_evaluation import PAUSE_SECONDS, evaluate, format_results, load_questions, paced
 
 FAQ_URL = "https://www.redi-school.org/faq"
 MALMO_URL = "https://www.redi-school.org/redi-school-malmo"
@@ -171,3 +173,53 @@ class TestFormatResults:
         rows = [line for line in format_results(results).splitlines() if COVERED in line]
         assert len(rows) == 1
         assert rows[0].count(" | ") == 5
+
+
+# Iteration "stay under Gemini's free-tier limit": 15 requests per minute. A fake sleep records
+# the pauses instead of waiting, so these tests stay fast.
+class TestPacing:
+    def test_the_pause_keeps_a_run_under_15_calls_per_minute(self):
+        assert 60 / PAUSE_SECONDS < 15
+
+    # AC-P1
+    def test_the_first_call_does_not_wait_and_every_later_call_does(self):
+        pauses = []
+        prompts = []
+
+        def generate(prompt):
+            prompts.append(prompt)
+            return f"answer to {prompt}"
+
+        paced_generate = paced(generate, sleep=pauses.append)
+
+        assert paced_generate("first") == "answer to first"
+        assert pauses == []
+        assert paced_generate("second") == "answer to second"
+        assert paced_generate("third") == "answer to third"
+        assert pauses == [PAUSE_SECONDS, PAUSE_SECONDS]
+        assert prompts == ["first", "second", "third"]
+
+    # AC-P2
+    def test_run_paces_gemini_calls(self, monkeypatch, tmp_path):
+        pauses = []
+        monkeypatch.setattr(run_evaluation, "choose_generate", lambda fallback: fake_generate)
+        monkeypatch.setattr(run_evaluation.time, "sleep", pauses.append)
+        cases = [make_case(COVERED, case_id="q01"), make_case(COVERED, case_id="q02")]
+        monkeypatch.setattr(run_evaluation, "load_questions", lambda: cases)
+        monkeypatch.setattr(run_evaluation, "load_chunks", lambda: CHUNKS)
+
+        run_evaluation.run(output_path=tmp_path / "results.md")
+
+        assert pauses == [PAUSE_SECONDS]
+
+    def test_run_does_not_pace_demo_mode(self, monkeypatch, tmp_path):
+        pauses = []
+        monkeypatch.setattr(run_evaluation, "choose_generate", lambda fallback: demo_generate)
+        monkeypatch.setattr(run_evaluation.time, "sleep", pauses.append)
+        cases = [make_case(COVERED, case_id="q01"), make_case(COVERED, case_id="q02")]
+        monkeypatch.setattr(run_evaluation, "load_questions", lambda: cases)
+        monkeypatch.setattr(run_evaluation, "load_chunks", lambda: CHUNKS)
+
+        run_evaluation.run(output_path=tmp_path / "results.md")
+
+        assert pauses == []
