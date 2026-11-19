@@ -138,6 +138,43 @@ copy.
 - `test_the_prompt_names_each_source_by_title_without_its_url` (AC9, changed)
 - `test_prompt_has_no_source_numbers` (AC9)
 
+## Iteration: simple lists (2026-11-19)
+
+**Why:** the owner finds lists clearer for visitors, for example for the
+courses in a city or the steps to apply. Since `specs/ui_redesign.md`
+("Iteration: readable answers", PR #73) the page shows lines starting with
+`- ` as bullet points and lines starting with `1. ` as numbered steps, built
+with `textContent`. The prompt still forbade bullet points, so lists were
+rare.
+
+**Change:** the plain-text rule in `INSTRUCTIONS` allows exactly what the
+page shows, and nothing more:
+
+- *Write the answer as plain text in short paragraphs. When you list several
+  items, such as courses, locations or steps, put each item on its own line
+  starting with "- ", or with "1. ", "2. " and so on for steps in order. Do
+  not use any other Markdown, such as asterisks, bold text or headings.*
+
+Bold and headings stay forbidden: the page doesn't render them, and the
+first evidence above (`* **From students:**`) showed raw asterisks.
+Nothing else changes: the backend already keeps line breaks
+(`remove_urls` only tidies spaces and tabs).
+
+**Acceptance criteria:**
+- **AC12:** the prompt names both list forms (`"- "` and `"1. "`) and no
+  longer forbids bullet points; it still mentions plain text and forbids
+  other Markdown such as asterisks and headings (AC1 unchanged).
+- **AC13:** an answer with a list keeps its line breaks, dashes and numbers
+  through `answer_question` (URL and source-list removal included).
+- **AC14 (by hand, owner):** a Task 8 run (`python src/run_evaluation.py`)
+  passes at least as many questions as run 16 (26 of 28). List questions
+  such as q25 ("Which courses are there in Munich?") show a list; answers
+  contain no `*`, `**` or `#`.
+
+**Tests:**
+- `test_prompt_allows_simple_lists_only` (AC12)
+- `test_an_answer_with_a_list_keeps_its_lines` (AC13)
+
 ## Out of scope
 
 - Rendering Markdown on the page. It would need a library plus sanitising and
