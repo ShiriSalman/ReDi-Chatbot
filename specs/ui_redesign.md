@@ -168,9 +168,11 @@ an `<h3>` and its `button.suggestion` buttons in the HTML.
 - **Welcome:** "Hi! What would you like to know about ReDI School?" and one
   line "Answers come from official ReDI pages, with links." (The question
   stays, because an existing test checks it.)
-- **Tabs:** six pills in one row — Applying, Courses, Costs, Locations,
-  Careers, Get involved. The active one is filled teal. On phones the row
-  scrolls sideways.
+- **Tabs:** six compact category buttons in a grid — Applying, Courses,
+  Costs, Locations, Careers, Get involved: one row on wide screens, 3 × 2 on
+  phones (owner's follow-up: a grid, not a row that scrolls). The selected one
+  is in the ReDI orange (the dark shade, for readable white text). Each
+  category has at most three questions.
 - **Panels:** only the active tab's questions show, as wrapping chips. Each
   panel keeps its full category name as a visually hidden `<h3>`.
 - **Accessibility:** `role="tablist"`, `role="tab"` with `aria-selected` and

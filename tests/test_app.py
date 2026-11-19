@@ -173,6 +173,38 @@ class TestRedesignedPage:
         assert button.has_attr("hidden")
 
 
+# specs/ui_redesign.md, "Iteration: category tabs": the categories are tabs; only the active
+# tab's questions are visible. The tests above still check that all 12 are in the HTML.
+class TestCategoryTabs:
+    def test_six_tabs_each_point_to_a_panel(self):
+        soup = page()
+        tabs = soup.select('[role="tablist"] [role="tab"]')
+
+        assert [" ".join(tab.get_text().split()) for tab in tabs] == [
+            "Applying", "Courses", "Costs", "Locations", "Careers", "Get involved"]
+        for tab in tabs:
+            panel = soup.find(id=tab["aria-controls"])
+            assert panel["role"] == "tabpanel"
+            assert panel["aria-labelledby"] == tab["id"]
+
+    def test_only_applying_is_selected_and_visible_at_the_start(self):
+        soup = page()
+
+        selected = [tab for tab in soup.select('[role="tab"]') if tab["aria-selected"] == "true"]
+        visible = [panel for panel in soup.select('[role="tabpanel"]') if not panel.has_attr("hidden")]
+        assert [tab.get_text(strip=True) for tab in selected] == ["Applying"]
+        assert [panel["id"] for panel in visible] == [selected[0]["aria-controls"]]
+        # Only the active tab is in the Tab order; arrow keys move between tabs
+        assert [tab.get("tabindex") for tab in soup.select('[role="tab"]')] == ["0"] + ["-1"] * 5
+
+    def test_the_suggestions_button_starts_hidden_and_collapsed(self):
+        button = page().find(id="suggestions-toggle")
+
+        assert button.has_attr("hidden")
+        assert button["aria-expanded"] == "false"
+        assert button["aria-label"] == "Suggestions"
+
+
 # AC2 + AC3: A question gets a grounded answer with Task 5 citations
 class TestGroundedAnswer:
     def test_supported_question_returns_answer_and_sources(self):
