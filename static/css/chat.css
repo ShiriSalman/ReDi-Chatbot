@@ -568,6 +568,12 @@ a:focus-visible {
     padding: 0 0.95rem;
   }
 
+  /* Touch targets of at least 44px (specs/ui_redesign.md) */
+  .chip,
+  .contact-callout a {
+    min-height: 2.75rem;
+  }
+
   .contact-callout {
     flex-direction: column;
     align-items: flex-start;
