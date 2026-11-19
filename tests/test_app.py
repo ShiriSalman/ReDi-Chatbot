@@ -142,6 +142,17 @@ class TestRedesignedPage:
         assert button["aria-label"] == "Send"
         assert "Send" in button.get_text()
 
+    # Follow-up from 2026-11-02: visitors are told where their question goes
+    def test_the_composer_has_the_privacy_note(self):
+        soup = page()
+        note = soup.find(id="privacy-note")
+
+        assert " ".join(note.get_text().split()) == (
+            "Please don't enter personal information. "
+            "Your question is sent to Google Gemini, an AI service, to write the answer."
+        )
+        assert "privacy-note" in soup.find("textarea", id="question")["aria-describedby"]
+
     def test_new_chat_is_hidden_until_a_conversation_starts(self):
         button = page().find(id="new-chat")
 
