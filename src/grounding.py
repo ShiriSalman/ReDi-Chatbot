@@ -133,6 +133,7 @@ def retrieve(question, chunks, top_k=TOP_K):
 
     Chunks are scored with BM25 and returned unchanged, so their source metadata stays attached.
     Returns an empty list when no chunk has enough matching words (see has_enough_matching_words).
+    A chosen part of a course list brings the list's other parts along (see complete_lists).
     """
     question_words = set(tokenize(question))
     if not question_words or not chunks:
@@ -166,7 +167,25 @@ def retrieve(question, chunks, top_k=TOP_K):
         scored.append((score, chunk))
 
     scored.sort(key=lambda pair: pair[0], reverse=True)
-    return [chunk for _, chunk in scored[:top_k]]
+    return complete_lists([chunk for _, chunk in scored[:top_k]], chunks)
+
+
+def complete_lists(selected, chunks):
+    """Replace each chosen list part by all parts of its list, in part order.
+
+    A city's course list is only useful complete, but its parts compete with each other for
+    the top places (specs/task8_complete_city_lists.md). The parts stay together at the place
+    of the best-ranked part. Chunks without "list_part" are returned as they are.
+    """
+    result = []
+    done = set()
+    for chunk in selected:
+        if not chunk.get("list_part"):
+            result.append(chunk)
+        elif chunk["url"] not in done:
+            done.add(chunk["url"])
+            result.extend(c for c in chunks if c.get("list_part") and c["url"] == chunk["url"])
+    return result
 
 
 def build_prompt(question, chunks):
