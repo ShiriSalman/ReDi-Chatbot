@@ -14,6 +14,7 @@ from llm import MODEL
 FAQ_URL = "https://www.redi-school.org/faq"
 APPLY_URL = "https://www.redi-school.org/apply"
 CHAT_JS = Path(__file__).parent.parent / "static" / "js" / "chat.js"
+FORMAT_JS = Path(__file__).parent.parent / "static" / "js" / "format.js"
 SOURCES_FILE = Path(__file__).parent.parent / "data" / "sources.json"
 
 # From specs/task6_contact_link.md
@@ -431,10 +432,18 @@ class TestSafeRendering:
         assert response.get_json()["answer"] == "<script>alert('x')</script>"
 
     def test_chat_script_does_not_use_inner_html(self):
-        # A simple guard for AC9: answers and titles must be shown with textContent
-        script = CHAT_JS.read_text(encoding="utf-8")
+        # A simple guard for AC9: answers and titles must be shown with textContent.
+        # format.js splits answers into paragraphs and lists (specs/ui_redesign.md, AC13).
+        for path in (CHAT_JS, FORMAT_JS):
+            script = path.read_text(encoding="utf-8")
 
-        assert "innerHTML" not in script
+            for unsafe in ("innerHTML", "outerHTML", "insertAdjacentHTML", "DOMParser", "document.write"):
+                assert unsafe not in script, f"{path.name} uses {unsafe}"
+
+    def test_the_formatting_script_loads_before_the_chat_script(self):
+        scripts = [tag["src"] for tag in page().find_all("script")]
+
+        assert [src.rsplit("/", 1)[-1] for src in scripts] == ["format.js", "chat.js"]
 
 
 # Contact link for unanswered questions, written from specs/task6_contact_link.md.

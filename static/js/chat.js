@@ -59,6 +59,32 @@ function scrollToQuestion() {
   }
 }
 
+// The answer as paragraphs and lists (answerBlocks in format.js). Every piece of text goes in
+// with textContent, so the formatting can't turn text from the server into HTML.
+function answerText(text) {
+  const container = document.createElement("div");
+  container.className = "answer-text";
+  for (const block of answerBlocks(text)) {
+    if (block.type === "p") {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = block.text;
+      container.appendChild(paragraph);
+      continue;
+    }
+    const list = document.createElement(block.type); // "ul" or "ol", set by format.js
+    if (block.type === "ol" && block.start !== 1) {
+      list.start = block.start; // a number, from the digits at the start of the line
+    }
+    for (const item of block.items) {
+      const listItem = document.createElement("li");
+      listItem.textContent = item;
+      list.appendChild(listItem);
+    }
+    container.appendChild(list);
+  }
+  return container;
+}
+
 // A question is a bubble; an answer or error is a card under the "ReDI Chatbot" label.
 // Returns the element that sources are added to.
 function addMessage(role, text) {
@@ -93,7 +119,8 @@ function addMessage(role, text) {
 
   const card = document.createElement("div");
   card.className = "card";
-  card.appendChild(paragraph);
+  // An answer gets paragraphs and lists; an error stays one short paragraph
+  card.appendChild(role === "assistant" ? answerText(text) : paragraph);
 
   message.append(sender, card);
   chatLog.appendChild(message);
@@ -111,11 +138,39 @@ function isSafeUrl(url) {
   }
 }
 
+// Each source list gets its own id, so its "+ N more" button can point to it (aria-controls)
+let sourceListCount = 0;
+
+// With five or more sources only the first three are shown; the button shows the rest
+function addMoreButton(section, list) {
+  const hiddenItems = [...list.children].filter((item) => item.hidden);
+  if (hiddenItems.length === 0) {
+    return;
+  }
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "more-sources";
+  button.setAttribute("aria-controls", list.id);
+  button.setAttribute("aria-expanded", "false");
+  button.textContent = `+ ${hiddenItems.length} more`;
+
+  button.addEventListener("click", () => {
+    const expand = button.getAttribute("aria-expanded") === "false";
+    for (const item of hiddenItems) {
+      item.hidden = !expand;
+    }
+    button.setAttribute("aria-expanded", String(expand));
+    button.textContent = expand ? "Show less" : `+ ${hiddenItems.length} more`;
+  });
+  section.appendChild(button);
+}
+
 function addSources(message, sources) {
   // Like Task 5: the Sources section only appears when at least one link is valid
   if (!sources.some((source) => isSafeUrl(source.url))) {
     return;
   }
+  const shownAtFirst = initialSourceCount(sources.length);
 
   const section = document.createElement("div");
   section.className = "sources";
@@ -128,8 +183,11 @@ function addSources(message, sources) {
   // Each source is a chip: a rounded link with an arrow
   const list = document.createElement("ul");
   list.className = "chips";
-  for (const source of sources) {
+  sourceListCount += 1;
+  list.id = `sources-${sourceListCount}`;
+  for (const [index, source] of sources.entries()) {
     const item = document.createElement("li");
+    item.hidden = index >= shownAtFirst;
     if (isSafeUrl(source.url)) {
       const link = document.createElement("a");
       link.className = "chip";
@@ -147,6 +205,7 @@ function addSources(message, sources) {
     list.appendChild(item);
   }
   section.appendChild(list);
+  addMoreButton(section, list);
   message.querySelector(".card").appendChild(section);
   scrollToQuestion();
 }
