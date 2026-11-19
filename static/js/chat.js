@@ -17,6 +17,8 @@ const GENERIC_ERROR = "Something went wrong while answering your question. Pleas
 const NETWORK_ERROR = "The chatbot could not be reached. Please check your connection and try again.";
 const CONTACT_FALLBACK_TITLE = "ReDI contact page";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+// The ReDI logo mark; the header image gives its address, so it's set in one place (the template)
+const LOGO_URL = document.querySelector(".brand-mark").getAttribute("src");
 
 // The visitor's last question; after an answer it is scrolled to the top, so long answers
 // are read from their first line (specs/ui_redesign.md)
@@ -75,10 +77,11 @@ function addMessage(role, text) {
 
   const sender = document.createElement("div");
   sender.className = "sender";
-  const avatar = document.createElement("span");
+  // Decorative: "ReDI Chatbot" next to it is the name
+  const avatar = document.createElement("img");
   avatar.className = "avatar";
-  avatar.setAttribute("aria-hidden", "true");
-  avatar.textContent = "ReDI";
+  avatar.src = LOGO_URL;
+  avatar.alt = "";
   sender.append(avatar, "ReDI Chatbot");
 
   const card = document.createElement("div");
@@ -165,7 +168,29 @@ function addContact(message, contact) {
   scrollToQuestion();
 }
 
-// Three dots in the conversation while waiting; screen readers get the role="status" text instead
+// The ReDI logo mark built from its shapes (same as static/img/redi-mark.svg), so its orange
+// dot and arrow can move on their own while waiting (CSS: .waiting-mark)
+function waitingMark() {
+  const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("class", "waiting-mark");
+  const shapes = [
+    ["rect", { width: 100, height: 100, fill: "#58adc4" }],
+    ["polygon", { points: "6,50 56,0 100,50 56,100", fill: "#ffffff" }],
+    ["polygon", { points: "57,8 97,50 57,92", fill: "#f15a22", class: "mark-arrow" }],
+    ["circle", { cx: 34, cy: 50, r: 14, fill: "#f15a22", class: "mark-dot" }],
+  ];
+  for (const [name, attributes] of shapes) {
+    const shape = document.createElementNS(SVG_NAMESPACE, name);
+    for (const [key, value] of Object.entries(attributes)) {
+      shape.setAttribute(key, value);
+    }
+    svg.appendChild(shape);
+  }
+  return svg;
+}
+
+// The animated logo in the conversation while waiting; screen readers get the role="status" text
 let typingIndicator = null;
 
 function showTyping() {
@@ -174,11 +199,7 @@ function showTyping() {
   typingIndicator.setAttribute("aria-hidden", "true");
   const card = document.createElement("div");
   card.className = "card";
-  for (let i = 0; i < 3; i++) {
-    const dot = document.createElement("span");
-    dot.className = "dot";
-    card.appendChild(dot);
-  }
+  card.appendChild(waitingMark());
   typingIndicator.appendChild(card);
   chatLog.appendChild(typingIndicator);
   scrollToEnd();

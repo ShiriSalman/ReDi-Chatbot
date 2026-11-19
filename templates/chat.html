@@ -4,12 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ReDI School Chatbot</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/redi-mark.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 </head>
 <body>
   <div class="app">
     <header class="app-header">
-      <div class="brand-mark" aria-hidden="true">ReDI</div>
+      <!-- Decorative: the heading next to it names the page -->
+      <img class="brand-mark" src="{{ url_for('static', filename='img/redi-mark.svg') }}" alt="" width="40" height="40">
       <div class="header-text">
         <h1>ReDI School Chatbot</h1>
         <p class="tagline">Answers from official ReDI pages, with links</p>

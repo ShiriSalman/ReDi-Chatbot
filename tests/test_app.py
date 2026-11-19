@@ -153,6 +153,19 @@ class TestRedesignedPage:
         )
         assert "privacy-note" in soup.find("textarea", id="question")["aria-describedby"]
 
+    # The ReDI logo mark: header, browser tab, and (in chat.js) avatar and waiting animation
+    def test_the_header_and_the_browser_tab_show_the_redi_logo(self):
+        soup = page()
+
+        assert soup.select_one(".app-header img.brand-mark")["src"].endswith("img/redi-mark.svg")
+        assert soup.find("link", rel="icon")["href"].endswith("img/redi-mark.svg")
+
+    def test_the_logo_file_is_served(self):
+        response = make_client().get("/static/img/redi-mark.svg")
+
+        assert response.status_code == 200
+        assert "#f15a22" in response.get_data(as_text=True)
+
     def test_new_chat_is_hidden_until_a_conversation_starts(self):
         button = page().find(id="new-chat")
 

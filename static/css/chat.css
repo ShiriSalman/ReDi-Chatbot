@@ -66,18 +66,12 @@ body {
   border-bottom: 3px solid var(--redi-orange);
 }
 
+/* The ReDI logo mark (static/img/redi-mark.svg) */
 .brand-mark {
-  display: grid;
+  display: block;
   flex-shrink: 0;
-  place-items: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 0.6rem;
-  background: var(--redi-orange-dark);
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
 }
 
 .header-text {
@@ -283,15 +277,9 @@ body {
 }
 
 .avatar {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 1.9rem;
   height: 1.9rem;
-  border-radius: 50%;
-  background: var(--redi-orange-dark);
-  color: #ffffff;
-  font-size: 0.62rem;
-  font-weight: 800;
 }
 
 .card {
@@ -388,32 +376,36 @@ body {
   background: var(--redi-orange-darker);
 }
 
-/* Typing indicator */
+/* Waiting: the ReDI logo mark, its orange dot pulsing and its arrow pushing forward */
 .typing .card {
   display: inline-flex;
-  gap: 0.3rem;
-  padding: 0.85rem 1rem;
+  padding: 0.6rem 0.8rem;
 }
 
-.dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--redi-teal);
-  animation: bounce 1.2s infinite ease-in-out;
+.waiting-mark {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
-.dot:nth-child(2) {
-  animation-delay: 0.15s;
+.waiting-mark .mark-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mark-pulse 1.2s ease-in-out infinite;
 }
 
-.dot:nth-child(3) {
-  animation-delay: 0.3s;
+.waiting-mark .mark-arrow {
+  animation: mark-push 1.2s ease-in-out infinite;
 }
 
-@keyframes bounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-  30% { transform: translateY(-0.3rem); opacity: 1; }
+@keyframes mark-pulse {
+  0%, 100% { transform: scale(0.75); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes mark-push {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
 }
 
 /* Composer */
@@ -583,8 +575,8 @@ a:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dot {
+  .waiting-mark .mark-dot,
+  .waiting-mark .mark-arrow {
     animation: none;
-    opacity: 0.8;
   }
 }
