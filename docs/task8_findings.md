@@ -337,6 +337,34 @@ Run on 2026-11-18 with the same model and 26 questions (q25, q26 added).
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
 
+## Run 14: after the course lists per city and the website refresh
+
+Run on 2026-11-19 with the same model and 28 questions (q27, q28 added).
+Changes since run 13: `specs/task8_course_list_per_city.md` and a full
+ingestion run (website refresh).
+
+- **26 of 28 passed** (the runner counts small talk as passed). Only q09,
+  q10 and q26 fail.
+- **q25 "Which courses does ReDI offer?" is answered now:** eight locations
+  with their numbers of courses (Berlin 22, Munich 16, …) and the topics.
+- **q27, q28 pass, but the lists are incomplete.** Berlin lists 8 of 22
+  courses; Munich mixes topics with courses ("Back-end Development, Web
+  Development … Foundation Courses") and misses Python, Machine Learning and
+  UX/UI. Cause: only one of the three parts of each city list reaches the top
+  5 (always the shortest, part 3). The other places go to website pages with
+  course-card text ("Berlin , User-Centered Design UX/UI Design Basics"),
+  where city, topic and title run together. The catalogue only checks that
+  one part is a source, so it doesn't catch this (like q06 in run 11).
+- **q10 (job) is answered, but thinner than it could be:** "ReDI connects you
+  to companies … career coaches". The career page ("Our Career Services":
+  mentoring, career workshops, company visits, Talent Pool, ReDI for
+  Ausbildung) is not a source. It says "career", "mentoring", "entry-level
+  positions" and rarely "job", so the FAQ wins on the word "job". A search
+  engine's AI overview answered with the career page's content, because it
+  searches by meaning.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
