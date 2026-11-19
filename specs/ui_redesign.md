@@ -21,7 +21,12 @@ visible source links, a responsive design for phones, and a simple flow.
   question is put back after an error; an empty question shows "Please enter
   a question."
 - **Same colours:** the ReDI tokens in `chat.css`, with text contrast of at
-  least 4.5:1.
+  least 4.5:1. Checked against the website's theme on 2026-11-19:
+  `--accent` #f9d6c9, `--darkAccent` #58adc4 and `--lightAccent` #f3f9fb
+  match exactly.
+- **ReDI's font fallback:** redi-school.org uses Clarkson (licensed) with the
+  fallback `"Helvetica Neue", Helvetica, Arial, sans-serif`. The chatbot uses
+  that fallback, so it looks like the website without an external font.
 
 ## Review of the current page (2026-11-18)
 
