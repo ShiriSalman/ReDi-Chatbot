@@ -15,6 +15,7 @@ from grounding import (
     NOT_ENOUGH_INFO,
     answer_question,
     build_prompt,
+    correct_spelling,
     has_enough_matching_words,
     remove_source_list,
     remove_urls,
@@ -698,3 +699,62 @@ class TestSynonyms:
     # AC3
     def test_a_question_without_synonyms_is_scored_as_before(self):
         assert retrieve("Does ReDI help me find people?", [CAREER_CHUNK, HELP_CHUNK], top_k=1) == [HELP_CHUNK]
+
+
+# Small spelling mistakes, written from specs/task8_spelling_mistakes.md.
+# A question word that appears in no chunk is corrected to a chunk word one typo away.
+class TestSpellingMistakes:
+    APPLY_CHUNK = make_chunk(
+        "To apply for a course, fill in the application form on our website.",
+        url="https://www.redi-school.org/apply",
+        title="Apply",
+    )
+    FREE_COURSES_CHUNK = make_chunk("All our courses are free of charge for every learner.")
+    TEAM_CHUNK = make_chunk(
+        "Our core team decides whether a new location opens tomorrow.",
+        url="https://www.redi-school.org/team",
+        title="Team",
+    )
+    CHUNKS = [APPLY_CHUNK, FREE_COURSES_CHUNK, TEAM_CHUNK]
+
+    # AC1
+    def test_a_correctly_spelled_question_finds_its_chunk(self):
+        assert retrieve("How can I apply for a course?", self.CHUNKS) == [self.APPLY_CHUNK]
+
+    # AC2
+    @pytest.mark.parametrize("question", [
+        "How can I aply for a corse?",        # a letter missing
+        "How can I appyl for a cuorse?",      # two letters swapped
+        "How can I applly for a coursse?",    # an extra letter
+        "How can I apphy for a course?",      # a wrong letter
+    ])
+    def test_a_question_with_spelling_mistakes_finds_the_same_chunk(self, question):
+        assert retrieve(question, self.CHUNKS) == [self.APPLY_CHUNK]
+
+    # AC3
+    def test_an_unrelated_question_still_finds_nothing(self):
+        # "weather" is two typos from "whether" and must not be corrected to it
+        assert retrieve("What will the weather be like in Tokyo tomorrow?", self.CHUNKS) == []
+
+    def test_a_word_two_typos_away_is_not_corrected(self):
+        assert correct_spelling({"weather"}, Counter({"whether": 3})) == {"weather"}
+
+    def test_a_word_without_a_close_chunk_word_is_kept(self):
+        assert correct_spelling({"tokyo"}, Counter({"course": 3})) == {"tokyo"}
+
+    # AC4
+    def test_a_known_word_is_not_changed(self):
+        # "core" is one typo from "course", but it is a real word in the chunks
+        assert correct_spelling({"core"}, Counter({"core": 1, "course": 5})) == {"core"}
+
+    def test_short_words_and_words_with_digits_are_not_corrected(self):
+        assert correct_spelling({"cos", "c0urse"}, Counter({"course": 5, "co": 1})) == {"cos", "c0urse"}
+
+    # AC5
+    def test_the_candidate_in_the_most_chunks_wins(self):
+        # "corse" is one typo from both "core" and "course"
+        assert correct_spelling({"corse"}, Counter({"core": 1, "course": 5})) == {"course"}
+
+    # AC6
+    def test_a_typo_of_a_stopword_is_dropped(self):
+        assert correct_spelling({"wich", "tehre", "course"}, Counter({"course": 5, "wish": 1})) == {"course"}
