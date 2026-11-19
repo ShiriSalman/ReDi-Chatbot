@@ -86,6 +86,80 @@ class TestChatPage:
         assert generate.prompts == []
 
 
+# specs/ui_redesign.md, AC1: the welcome screen with categories and suggested questions
+SUGGESTIONS = {
+    "Applying": ["How do I apply for a course?", "Can I apply if I'm under 18?"],
+    "Courses": ["Which courses are there in Berlin?", "Which courses are there in Munich?",
+                "Will I get a certificate?"],
+    "Costs & who can join": ["Are ReDI courses free?", "Do I need to speak German?",
+                             "Are there courses only for women?"],
+    "Locations": ["Where is ReDI School in Munich?"],
+    "Career support": ["Does ReDI help me find a job?"],
+    "Get involved": ["How can I become a volunteer at ReDI?", "How can my company support ReDI?"],
+}
+
+
+def page():
+    from bs4 import BeautifulSoup
+    return BeautifulSoup(make_client().get("/").get_data(as_text=True), "html.parser")
+
+
+class TestRedesignedPage:
+    def test_has_a_welcome_screen(self):
+        welcome = page().find(id="welcome")
+
+        assert welcome is not None
+        assert "What would you like to know about ReDI School?" in welcome.get_text()
+
+    def test_has_the_six_categories_with_their_suggested_questions(self):
+        categories = {
+            " ".join(card.find("h3").get_text().split()): [
+                " ".join(button.get_text().split()) for button in card.select("button.suggestion")
+            ]
+            for card in page().select(".category")
+        }
+
+        assert categories == SUGGESTIONS
+
+    def test_the_welcome_screen_links_to_the_contact_page(self):
+        link = page().select_one(".welcome-contact a")
+
+        assert link["href"] == CONTACT["url"]
+        assert link["rel"] == ["noopener", "noreferrer"]
+
+    def test_the_composer_is_a_textarea_with_the_limit_and_a_counter(self):
+        soup = page()
+        textarea = soup.find("textarea", id="question")
+
+        assert textarea is not None
+        assert textarea["maxlength"] == "500"
+        assert soup.find(id="counter").get_text() == "0/500"
+
+    def test_the_send_button_keeps_its_name_when_only_the_icon_shows(self):
+        button = page().find(id="send")
+
+        # On phones the text is hidden, so the name must come from aria-label
+        assert button["aria-label"] == "Send"
+        assert "Send" in button.get_text()
+
+    # Follow-up from 2026-11-02: visitors are told where their question goes
+    def test_the_composer_has_the_privacy_note(self):
+        soup = page()
+        note = soup.find(id="privacy-note")
+
+        assert " ".join(note.get_text().split()) == (
+            "Please don't enter personal information. "
+            "Your question is sent to Google Gemini, an AI service, to write the answer."
+        )
+        assert "privacy-note" in soup.find("textarea", id="question")["aria-describedby"]
+
+    def test_new_chat_is_hidden_until_a_conversation_starts(self):
+        button = page().find(id="new-chat")
+
+        assert button is not None
+        assert button.has_attr("hidden")
+
+
 # AC2 + AC3: A question gets a grounded answer with Task 5 citations
 class TestGroundedAnswer:
     def test_supported_question_returns_answer_and_sources(self):

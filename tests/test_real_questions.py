@@ -123,6 +123,33 @@ def test_a_city_list_is_retrieved_complete(case):
     assert [chunk for chunk in selected if chunk["url"] == case["expected_url"]] == parts
 
 
+# specs/ui_redesign.md, AC2: a suggested question on the welcome screen must never lead to the
+# fallback, so each one gets sources on the real content
+TEMPLATE_FILE = Path(__file__).parent.parent / "templates" / "chat.html"
+
+
+def suggested_questions():
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(TEMPLATE_FILE.read_text(encoding="utf-8"), "html.parser")
+    return [" ".join(button.get_text().split()) for button in soup.select("button.suggestion")]
+
+
+@pytest.mark.parametrize("question", suggested_questions())
+def test_every_suggested_question_gets_sources(question):
+    generate = fake_generate()
+
+    data = ask(question, generate)
+
+    assert data["sources"], question
+    assert data["answer"] not in {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
+    assert generate.prompts, question
+
+
+def test_the_page_has_suggested_questions():
+    # Without this, the parametrized test above would pass with no suggestions at all
+    assert len(suggested_questions()) == 12
+
+
 # AC3: no invented links, for every question in the set
 def test_no_invented_links():
     for case in QUESTIONS:
