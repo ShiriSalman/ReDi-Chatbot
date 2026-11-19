@@ -439,10 +439,26 @@ The spec allows one focused fix at a time, each with before/after evidence.
    chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
-8. **E:** the catalogue should check the answer content (here the Munich
-   address), so a setback like run 11 is caught by a test, not only by
-   reading. Then the street, which is in the next chunk (overlapping chunks
-   in the ingestion). **D** after that.
+8. **E (known limitation, low):** the Munich address is cut between two
+   contact-page chunks: chunk 0 ends with "…Integration Munich c/o Media
+   Design Hochschule (EG / B)", chunk 1 starts with "Neumarkter Str. 22 81673
+   München" and doesn't contain "Munich", so it isn't retrieved. Seen live on
+   2026-11-19: the answer gives the partial address, says the full address
+   isn't in the sources and offers the contact link, which is the intended
+   behaviour.
+   **Overlapping chunks tested (retrieval only, 2026-11-19), not adopted:**
+
+   | Overlap | Chunks | Failing | q06 full address |
+   |---|---|---|---|
+   | none (today) | 385 | q09, q26 | no |
+   | 80 characters | 446 | q09, **q14**, q26 | no |
+   | 120 characters | 488 | q09, **q14**, q26 | no |
+   | 160 characters | 539 | q09, **q14**, q26 | yes |
+
+   Overlap changes every chunk of every page, and each size makes q14 lose
+   its source. A real fix is chunking by section (one chunk per location on
+   the contact page), which would also help the embeddings test and the q10
+   answer (learners vs. companies on the career page). **D** after that.
 
 After each fix, run `python src/run_evaluation.py` again and compare with
 this run.
