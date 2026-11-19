@@ -9,6 +9,7 @@ With GEMINI_API_KEY set the answers come from Gemini (one call per answered ques
 otherwise from demo mode, where only retrieval, sources and the fallback can be judged.
 """
 import json
+import time
 from datetime import date
 from pathlib import Path
 
@@ -21,6 +22,28 @@ SMALL_TALK_REPLIES = {GREETING_REPLY, THANKS_REPLY, GOODBYE_REPLY}
 PROJECT_DIR = Path(__file__).parent.parent
 QUESTIONS_PATH = PROJECT_DIR / "data" / "task8_questions.json"
 RESULTS_PATH = PROJECT_DIR / "docs" / "task8_results.md"
+
+# Gemini's free tier allows 15 requests per minute; without a pause the last questions of a run
+# got 429 RESOURCE_EXHAUSTED (specs/task8_test_against_real_user_questions.md). 4.5 seconds
+# between calls means at most about 13 per minute.
+PAUSE_SECONDS = 4.5
+
+
+def paced(generate, seconds=PAUSE_SECONDS, sleep=None):
+    """Return a generate function that waits `seconds` before every call except the first.
+
+    sleep is looked up at call time (time.sleep), so tests can replace it and not wait.
+    """
+    calls = 0
+
+    def paced_generate(prompt):
+        nonlocal calls
+        if calls:
+            (sleep or time.sleep)(seconds)
+        calls += 1
+        return generate(prompt)
+
+    return paced_generate
 
 
 def load_questions(path=QUESTIONS_PATH):
@@ -104,6 +127,8 @@ def run(output_path=RESULTS_PATH):
     """Evaluate the question set with the app's real setup and save the table."""
     generate = choose_generate(demo_generate)
     mode = "demo mode" if generate is demo_generate else f"Gemini ({MODEL})"
+    if generate is not demo_generate:
+        generate = paced(generate)
     results = evaluate(load_questions(), load_chunks(), generate)
 
     report = (
