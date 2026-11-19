@@ -67,6 +67,9 @@ function addMessage(role, text) {
     return message;
   }
 
+  // The answer replaces the dots, so it doesn't appear below them
+  hideTyping();
+
   const sender = document.createElement("div");
   sender.className = "sender";
   const avatar = document.createElement("span");
@@ -159,11 +162,42 @@ function addContact(message, contact) {
   scrollToQuestion();
 }
 
+// Three dots in the conversation while waiting; screen readers get the role="status" text instead
+let typingIndicator = null;
+
+function showTyping() {
+  typingIndicator = document.createElement("div");
+  typingIndicator.className = "message message-assistant typing";
+  typingIndicator.setAttribute("aria-hidden", "true");
+  const card = document.createElement("div");
+  card.className = "card";
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    card.appendChild(dot);
+  }
+  typingIndicator.appendChild(card);
+  chatLog.appendChild(typingIndicator);
+  scrollToEnd();
+}
+
+function hideTyping() {
+  if (typingIndicator) {
+    typingIndicator.remove();
+    typingIndicator = null;
+  }
+}
+
 function setLoading(isLoading) {
   loading.hidden = !isLoading;
   sendButton.disabled = isLoading;
   input.disabled = isLoading;
   chatLog.setAttribute("aria-busy", String(isLoading));
+  if (isLoading) {
+    showTyping();
+  } else {
+    hideTyping();
+  }
 }
 
 async function askQuestion(question) {
