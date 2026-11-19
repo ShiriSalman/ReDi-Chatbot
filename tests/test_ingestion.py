@@ -3,7 +3,15 @@
 # The fetch function is passed in, so the tests never touch the network.
 import copy
 
-from ingestion import chunk_text, clean_html, course_list_chunks, ingest, summarize_report
+from ingestion import (
+    MAX_CHUNK_CHARS,
+    chunk_text,
+    clean_html,
+    course_list_chunks,
+    ingest,
+    section_chunks,
+    summarize_report,
+)
 
 PAGE_HTML = """
 <html>
@@ -567,3 +575,85 @@ class TestCourseList:
 
         assert result.chunks == first.chunks
         assert result.report["failed"][0]["url"] == FINDER_URL
+
+
+# Reading a page by its sections, written from specs/task8_contact_page_sections.md.
+# Like the real contact page: a heading per location, then the contact person, then the text.
+CONTACT_URL = "https://www.redi-school.org/contact"
+VISITING_HOURS = "Please write to us before you visit, so we can plan the visit. " * 3
+
+
+def contact_section(city, person, address):
+    return (
+        f"<h2>{city}</h2><h3>{person}</h3>"
+        f"<p>{person.split()[0].lower()}@redi-school.org</p>"
+        f"<p>Visiting address: {address}</p><p>{VISITING_HOURS}</p>"
+    )
+
+
+CONTACT_HTML = f"""
+<html><body>
+  <header>ReDI School logo</header>
+  <nav>Home | Courses | Contact</nav>
+  <main>
+    <h1>Contact us!</h1>
+    {contact_section("Berlin", "Henrik Schober", "Karl-Marx-Straße 71, 12043 Berlin")}
+    {contact_section("Munich", "Birgit Köbl", "c/o Media Design Hochschule (EG / B) Neumarkter Str. 22 81673 München")}
+    {contact_section("NRW", "Takuya Furukawa", "c/o Startplatz, Speditionstraße 15A, 40221 Düsseldorf")}
+  </main>
+  <footer>Imprint | Data Privacy Policy</footer>
+  <script>trackVisitor();</script>
+</body></html>
+"""
+
+
+class TestSections:
+    # AC1
+    def test_a_location_heading_stays_with_its_address(self):
+        chunks = section_chunks(CONTACT_HTML)
+
+        [munich] = [chunk for chunk in chunks if "Neumarkter Str. 22" in chunk]
+        assert munich.startswith("Munich Birgit Köbl")
+        [berlin] = [chunk for chunk in chunks if "Karl-Marx-Straße 71" in chunk]
+        assert berlin.startswith("Contact us! Berlin Henrik Schober")
+        assert "Munich" not in berlin
+
+    # AC2
+    def test_small_sections_are_packed_together(self):
+        html = "<main><h2>Berlin</h2><p>Open on Mondays.</p><h2>Munich</h2><p>Open on Tuesdays.</p></main>"
+
+        assert section_chunks(html) == ["Berlin Open on Mondays. Munich Open on Tuesdays."]
+
+    def test_no_chunk_is_longer_than_the_limit(self):
+        chunks = section_chunks(CONTACT_HTML)
+
+        assert len(chunks) == 3
+        assert all(len(chunk) <= MAX_CHUNK_CHARS for chunk in chunks)
+
+    # AC3
+    def test_a_section_longer_than_the_limit_is_split_and_the_next_one_starts_a_new_chunk(self):
+        long_text = "word " * 150  # 750 characters
+        html = f"<main><h2>Long</h2><p>{long_text}</p><h2>Next</h2><p>Short text.</p></main>"
+
+        chunks = section_chunks(html)
+
+        assert len(chunks) == 3
+        assert chunks[0].startswith("Long word")
+        assert chunks[-1] == "Next Short text."
+        assert all(len(chunk) <= MAX_CHUNK_CHARS for chunk in chunks)
+
+    # AC4
+    def test_navigation_footer_and_scripts_are_left_out(self):
+        text = " ".join(section_chunks(CONTACT_HTML))
+
+        for unwanted in ("ReDI School logo", "Home | Courses", "Imprint", "trackVisitor"):
+            assert unwanted not in text
+
+    # AC5
+    def test_only_a_source_with_the_sections_reader_is_read_by_sections(self):
+        by_sections = ingest([make_source(url=CONTACT_URL, reader="sections")], fetch=fake_fetch(CONTACT_HTML))
+        as_before = ingest([make_source(url=CONTACT_URL)], fetch=fake_fetch(CONTACT_HTML))
+
+        assert [chunk["text"] for chunk in by_sections.chunks] == section_chunks(CONTACT_HTML)
+        assert [chunk["text"] for chunk in as_before.chunks] == chunk_text(clean_html(CONTACT_HTML))
+        assert by_sections.chunks[0]["url"] == CONTACT_URL
