@@ -14,9 +14,86 @@
         <h1>ReDI School Chatbot</h1>
         <p class="tagline">Answers from official ReDI pages, with links</p>
       </div>
+      <button type="button" class="new-chat" id="new-chat" aria-label="New chat" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+        <span class="label">New chat</span>
+      </button>
     </header>
 
     <main class="conversation" id="conversation">
+      <!-- Shown before the first question and after "New chat" (specs/ui_redesign.md).
+           A suggested question is sent as it is written here; tests/test_real_questions.py
+           checks that each one gets sources. -->
+      <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+        <h2 id="welcome-title">Hi! What would you like to know about ReDI School?</h2>
+        <p class="lead">I answer questions using only official ReDI pages, and I show the links so you can check them. Pick a question below or type your own.</p>
+
+        <div class="categories">
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>
+              Applying
+            </h3>
+            <button type="button" class="suggestion">How do I apply for a course?</button>
+            <button type="button" class="suggestion">Can I apply if I'm under 18?</button>
+          </div>
+
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg>
+              Courses
+            </h3>
+            <button type="button" class="suggestion">Which courses are there in Berlin?</button>
+            <button type="button" class="suggestion">Which courses are there in Munich?</button>
+            <button type="button" class="suggestion">Will I get a certificate?</button>
+          </div>
+
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M21 21v-2a4 4 0 0 0-3-3.9"/></svg>
+              Costs &amp; who can join
+            </h3>
+            <button type="button" class="suggestion">Are ReDI courses free?</button>
+            <button type="button" class="suggestion">Do I need to speak German?</button>
+            <button type="button" class="suggestion">Are there courses only for women?</button>
+          </div>
+
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              Locations
+            </h3>
+            <button type="button" class="suggestion">Where is ReDI School in Munich?</button>
+          </div>
+
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Career support
+            </h3>
+            <button type="button" class="suggestion">Does ReDI help me find a job?</button>
+          </div>
+
+          <div class="category">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
+              Get involved
+            </h3>
+            <button type="button" class="suggestion">How can I become a volunteer at ReDI?</button>
+            <button type="button" class="suggestion">How can my company support ReDI?</button>
+          </div>
+        </div>
+
+        <p class="welcome-contact">
+          Can't find your question here?
+          <a class="contact-link" href="{{ contact_url }}" target="_blank" rel="noopener noreferrer">
+            Contact ReDI
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+        </p>
+        <p class="welcome-note">English only. I can't see personal information such as your application status.</p>
+      </section>
+
       <!-- New messages are announced to screen readers -->
       <section id="chat-log" class="log" role="log" aria-live="polite" aria-label="Conversation"></section>
       <p id="loading" class="visually-hidden" role="status" hidden>Looking for an answer…</p>

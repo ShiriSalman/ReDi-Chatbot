@@ -67,7 +67,8 @@ def create_app(chunks, generate):
 
     @app.get("/")
     def chat_page():
-        return render_template("chat.html")
+        # The welcome screen links to the same contact page the answers offer
+        return render_template("chat.html", contact_url=CONTACT_URL)
 
     @app.post("/api/chat")
     def chat():

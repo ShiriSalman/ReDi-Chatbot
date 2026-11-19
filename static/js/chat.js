@@ -8,6 +8,8 @@ const conversation = document.getElementById("conversation");
 const chatLog = document.getElementById("chat-log");
 const loading = document.getElementById("loading");
 const formError = document.getElementById("form-error");
+const welcome = document.getElementById("welcome");
+const newChatButton = document.getElementById("new-chat");
 
 const EMPTY_QUESTION = "Please enter a question.";
 const GENERIC_ERROR = "Something went wrong while answering your question. Please try again.";
@@ -211,17 +213,16 @@ async function askQuestion(question) {
   return { ok: response.ok, data };
 }
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+// The welcome screen is shown until the first question and again after "New chat"
+function showWelcome(visible) {
+  welcome.hidden = !visible;
+  newChatButton.hidden = visible;
+}
 
-  const question = input.value.trim();
-  if (!question) {
-    formError.textContent = EMPTY_QUESTION;
-    input.focus();
-    return;
-  }
+// Typed questions and suggested questions go through here, so both behave the same
+async function send(question) {
   formError.textContent = "";
-
+  showWelcome(false);
   addMessage("user", question);
   input.value = "";
   setLoading(true);
@@ -244,4 +245,30 @@ form.addEventListener("submit", async (event) => {
     setLoading(false);
     input.focus();
   }
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const question = input.value.trim();
+  if (!question) {
+    formError.textContent = EMPTY_QUESTION;
+    input.focus();
+    return;
+  }
+  send(question);
+});
+
+// A suggested question is sent right away, exactly as written on the button
+for (const button of document.querySelectorAll(".suggestion")) {
+  button.addEventListener("click", () => send(button.textContent.trim()));
+}
+
+newChatButton.addEventListener("click", () => {
+  chatLog.replaceChildren();
+  lastQuestion = null;
+  formError.textContent = "";
+  showWelcome(true);
+  conversation.scrollTop = 0;
+  input.focus();
 });

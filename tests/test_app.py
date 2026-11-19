@@ -86,6 +86,54 @@ class TestChatPage:
         assert generate.prompts == []
 
 
+# specs/ui_redesign.md, AC1: the welcome screen with categories and suggested questions
+SUGGESTIONS = {
+    "Applying": ["How do I apply for a course?", "Can I apply if I'm under 18?"],
+    "Courses": ["Which courses are there in Berlin?", "Which courses are there in Munich?",
+                "Will I get a certificate?"],
+    "Costs & who can join": ["Are ReDI courses free?", "Do I need to speak German?",
+                             "Are there courses only for women?"],
+    "Locations": ["Where is ReDI School in Munich?"],
+    "Career support": ["Does ReDI help me find a job?"],
+    "Get involved": ["How can I become a volunteer at ReDI?", "How can my company support ReDI?"],
+}
+
+
+def page():
+    from bs4 import BeautifulSoup
+    return BeautifulSoup(make_client().get("/").get_data(as_text=True), "html.parser")
+
+
+class TestRedesignedPage:
+    def test_has_a_welcome_screen(self):
+        welcome = page().find(id="welcome")
+
+        assert welcome is not None
+        assert "What would you like to know about ReDI School?" in welcome.get_text()
+
+    def test_has_the_six_categories_with_their_suggested_questions(self):
+        categories = {
+            " ".join(card.find("h3").get_text().split()): [
+                " ".join(button.get_text().split()) for button in card.select("button.suggestion")
+            ]
+            for card in page().select(".category")
+        }
+
+        assert categories == SUGGESTIONS
+
+    def test_the_welcome_screen_links_to_the_contact_page(self):
+        link = page().select_one(".welcome-contact a")
+
+        assert link["href"] == CONTACT["url"]
+        assert link["rel"] == ["noopener", "noreferrer"]
+
+    def test_new_chat_is_hidden_until_a_conversation_starts(self):
+        button = page().find(id="new-chat")
+
+        assert button is not None
+        assert button.has_attr("hidden")
+
+
 # AC2 + AC3: A question gets a grounded answer with Task 5 citations
 class TestGroundedAnswer:
     def test_supported_question_returns_answer_and_sources(self):
