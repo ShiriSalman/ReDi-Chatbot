@@ -213,6 +213,10 @@ Requested by the owner after the tabs:
 - **Waiting logo:** 24 px, without a card frame; the dot pulses (60–115 %)
   and the arrow moves 10 of the mark's 100 units (3 units were about one
   screen pixel).
+- **Reduced motion:** with Windows "Animation effects" off (the owner's
+  setting), the browser reports `prefers-reduced-motion: reduce` and the logo
+  stood still, so waiting wasn't visible. Now the dot fades slowly in and out
+  (opacity 0.25–1, 1.6 s) without moving; the arrow stays still.
 - Unchanged: the welcome hides after the first question, and the input stays
   at the bottom.
 
