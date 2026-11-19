@@ -52,7 +52,8 @@
     "language": "en",
     "audience": "All",
     "include": "Yes",
-    "notes": "Also the link for \"I don't know\" answers."
+    "reader": "sections",
+    "notes": "Also the link for \"I don't know\" answers. Read by its sections (specs/task8_contact_page_sections.md), so each location's address stays in one chunk."
   },
   {
     "url": "https://www.redi-school.org/faq",

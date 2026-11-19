@@ -56,6 +56,166 @@
     "last_updated": "unavailable"
   },
   {
+    "text": "Find your course! All our courses are free! Here you can look around and find out if we have interesting courses for you. ReDI School offers courses in 8 locations: Berlin (22 courses), Munich (16 courses), NRW (15 courses), Hamburg (10 courses), Copenhagen (9 courses), Aarhus (10 courses), Malmö (9 courses), Gothenburg (3 courses). Topics: New with a computer, Data Analytics, Web Development, Kids and Teens, User-Centered Design, Cybersecurity, Back-end Development, marketing and communication,",
+    "url": "https://www.redi-school.org/course-finder",
+    "title": "Course Finder",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-17"
+  },
+  {
+    "text": "Foundation Courses, Cloud Computing, Artificial Intelligence, Java Development, Cloud and Infrastructure.",
+    "url": "https://www.redi-school.org/course-finder",
+    "title": "Course Finder",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-17"
+  },
+  {
+    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 1 of 3):\n- Cybersecurity (Cybersecurity)\n- 3D Printing Workshop (Kids and Teens)\n- Future-Me | Schulprogramm (Kids and Teens)\n- Coding Camp (Kids and Teens)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Sunday Classes (Kids and Teens)\n- Data Circle (Data Analytics)\n- Data Analytics with Python (Data Analytics)\n- UX/UI Design Basics (User-Centered Design)",
+    "url": "https://www.redi-school.org/course-finder?category=Berlin",
+    "title": "Course Finder – Berlin",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-09-10",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 2 of 3):\n- UX/UI Design Intermediate (User-Centered Design)\n- Coding Fundamentals\n- Full Stack Circle (Web Development)\n- Digital Citizenship (Kids and Teens)\n- AG’s Children Planet Code | Schulprogramm (Kids and Teens)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)",
+    "url": "https://www.redi-school.org/course-finder?category=Berlin",
+    "title": "Course Finder – Berlin",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-09-10",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 3 of 3):\n- JavaScript (Web Development)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
+    "url": "https://www.redi-school.org/course-finder?category=Berlin",
+    "title": "Course Finder – Berlin",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-09-10",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 1 of 3):\n- Coding with AI: Real-World Development Workflows (Web Development, Back-end Development)\n- Fit für IT-Ausbildung (Foundation Courses)\n- Robotics – Baue und Programmiere Roboter (Kids and Teens)\n- Python – Lerne Programmieren (Kids and Teens)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Computer Basics 3 (Deutsch) (New with a computer)",
+    "url": "https://www.redi-school.org/course-finder?category=Munich",
+    "title": "Course Finder – Munich",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-10-19",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 2 of 3):\n- UX/UI Design I - Fundamentals (User-Centered Design, Web Development)\n- UX/UI Design II - Project Based Learning (User-Centered Design, Web Development)\n- Introduction to Code, Data and Design (Back-end Development, Data Analytics)\n- Intro to Coding, Data and Design (Foundation Courses)\n- Data Analytics (Data Analytics)\n- Machine Learning (Data Analytics)\n- Python (Data Analytics, Back-end Development)",
+    "url": "https://www.redi-school.org/course-finder?category=Munich",
+    "title": "Course Finder – Munich",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-10-19",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 3 of 3):\n- Back-End Development (Back-end Development)\n- Web Development Fundamentals (Web Development, Java Development)",
+    "url": "https://www.redi-school.org/course-finder?category=Munich",
+    "title": "Course Finder – Munich",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-10-19",
+    "list_part": true
+  },
+  {
+    "text": "Courses in NRW (ReDI Course Finder, 15 courses at ReDI NRW, part 1 of 2):\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Cybersecurity (Cybersecurity)\n- Data Circle (Data Analytics)\n- Full Stack Circle (Web Development)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)",
+    "url": "https://www.redi-school.org/course-finder?category=NRW",
+    "title": "Course Finder – NRW",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-07-13",
+    "list_part": true
+  },
+  {
+    "text": "Courses in NRW (ReDI Course Finder, 15 courses at ReDI NRW, part 2 of 2):\n- JavaScript (Web Development)\n- Social Media Marketing (marketing and communication)\n- Introduction to Digital Marketing (marketing and communication)\n- Erstellung und Durchführung von Präsentationen (marketing and communication)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
+    "url": "https://www.redi-school.org/course-finder?category=NRW",
+    "title": "Course Finder – NRW",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-07-13",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Hamburg (ReDI Course Finder, 10 courses at ReDI Hamburg):\n- Cybersecurity (Cybersecurity)\n- Data Circle (Data Analytics)\n- Full Stack Circle (Web Development)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)\n- JavaScript (Web Development)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
+    "url": "https://www.redi-school.org/course-finder?category=Hamburg",
+    "title": "Course Finder – Hamburg",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-07-13",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Copenhagen (ReDI Course Finder, 9 courses at ReDI Copenhagen, part 1 of 2):\n- AI Integrations in Workflows (Web Development)\n- Web Application Development using GenAI (Web Development)\n- Introduction to Data Analytics (Data Analytics)\n- AI Intermediate (Data Analytics)\n- User Experience (User-Centered Design)\n- Digital Product Design (User-Centered Design)\n- Introduction to Programming (Web Development)\n- Cloud Computing Fundamentals (Cloud Computing)",
+    "url": "https://www.redi-school.org/course-finder?category=Copenhagen",
+    "title": "Course Finder – Copenhagen",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-16",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Copenhagen (ReDI Course Finder, 9 courses at ReDI Copenhagen, part 2 of 2):\n- Cybersecurity Fundamentals (Cybersecurity)",
+    "url": "https://www.redi-school.org/course-finder?category=Copenhagen",
+    "title": "Course Finder – Copenhagen",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-16",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Aarhus (ReDI Course Finder, 10 courses at ReDI Aarhus, part 1 of 2):\n- Computerkursus for begyndere (niveau 1) (New with a computer)\n- Computerkursus for begyndere (niveau 2) (New with a computer)\n- Computerkursus for begyndere (niveau 3) (New with a computer)\n- Introduction To Python (Data Analytics)\n- Data Analytics (Data Analytics)\n- Agentic AI Systems (Data Analytics)\n- Introduction to JavaScript (Web Development)\n- JavaScript w. Typescript (Web Development)",
+    "url": "https://www.redi-school.org/course-finder?category=Aarhus",
+    "title": "Course Finder – Aarhus",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-17",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Aarhus (ReDI Course Finder, 10 courses at ReDI Aarhus, part 2 of 2):\n- UX/UI Design Basics (User-Centered Design)\n- Introduction to Cybersecurity (Cybersecurity)",
+    "url": "https://www.redi-school.org/course-finder?category=Aarhus",
+    "title": "Course Finder – Aarhus",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-11-17",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Malmö (ReDI Course Finder, 9 courses at ReDI Malmö, part 1 of 2):\n- Job ReDI: Navigating professional networks and the job market in Sweden\n- Jobbredo: Hur man använder digitala verktyg för att söka jobb i Sverige\n- B.F.F. - Bygga Färdigheten för Framtiden\n- Introduktion till dator: Grundläggande 2 (New with a computer)\n- Introduktion till dator: Grundläggande 1 (New with a computer)\n- UX/UI Design Intermediate (User-Centered Design)\n- Introduction to Data Analytics (Data Analytics)",
+    "url": "https://www.redi-school.org/course-finder?category=Malm%C3%B6",
+    "title": "Course Finder – Malmö",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-09-11",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Malmö (ReDI Course Finder, 9 courses at ReDI Malmö, part 2 of 2):\n- AI Fundamentals (Artificial Intelligence)\n- Cybersecurity Fundamentals (Cybersecurity)",
+    "url": "https://www.redi-school.org/course-finder?category=Malm%C3%B6",
+    "title": "Course Finder – Malmö",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-09-11",
+    "list_part": true
+  },
+  {
+    "text": "Courses in Gothenburg (ReDI Course Finder, 3 courses at ReDI Gothenburg):\n- Introduction to Computers: The Basics (Tynnered) (New with a computer)\n- Introduction to Computers: The Basics (Evening) (New with a computer)\n- Introduction to Computers: The Basics (Afternoon) (New with a computer)",
+    "url": "https://www.redi-school.org/course-finder?category=Gothenburg",
+    "title": "Course Finder – Gothenburg",
+    "category": "Courses",
+    "language": "en",
+    "last_updated": "2026-08-09",
+    "list_part": true
+  },
+  {
     "text": "Coding with AI: Real-World Development Workflows Munich | Web Development and Back-End Development Courses 2 sessions / week This is a FREE course check next steps ReDI Career Track: Web Development and Back-End Development Become a Software Developer Introduction to Code, Data and Design Python Backend Development with Python Coding with AI Introduction to Code, Data and Design Web Development Fundamentals Coding with AI Course Overview This is a project-based course for learners with prior",
     "url": "https://www.redi-school.org/web-development/munich/dcp/coding-with-ai",
     "title": "Coding with AI: Real-World Development Workflows",
@@ -288,7 +448,7 @@
     "last_updated": "unavailable"
   },
   {
-    "text": "Contact us! Donations Antje Hinze donations@redi-school.org DONATE TO REDI Berlin Dr. Henrik Schober-Oschmann henrik@redi-school.org Visiting address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 1st floor, right 12043 Berlin Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany Munich Birgit Köbl birgit@redi-school.org NEW - Visiting address: ReDI School of Digital Integration Munich c/o Media Design Hochschule (EG / B)",
+    "text": "Contact us! Donations Antje Hinze donations@redi-school.org DONATE TO REDI Berlin Dr. Henrik Schober-Oschmann henrik@redi-school.org Visiting address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 1st floor, right 12043 Berlin Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany",
     "url": "https://www.redi-school.org/contact",
     "title": "Contact",
     "category": "Contact",
@@ -296,7 +456,7 @@
     "last_updated": "unavailable"
   },
   {
-    "text": "Neumarkter Str. 22 81673 München Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany NRW Takuya Furukawa takuya@redi-school.org Visiting address: ReDI School of Digital Integration NRW c/o Startplatz Düsseldorf GmbH Speditionstraße 15A 40221 Düsseldorf Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany Hamburg Takuya Furukawa takuya@redi-school.org Visiting address: Our office is",
+    "text": "Munich Birgit Köbl birgit@redi-school.org NEW - Visiting address: ReDI School of Digital Integration Munich c/o Media Design Hochschule (EG / B) Neumarkter Str. 22 81673 München Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany",
     "url": "https://www.redi-school.org/contact",
     "title": "Contact",
     "category": "Contact",
@@ -304,7 +464,7 @@
     "last_updated": "unavailable"
   },
   {
-    "text": "located in the Otto Group Campus in Hamburg. Contact me for a visiting appointment. Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany Denmark ReDI School Denmark Vibe Lindgård Bach vibe@redi-school.org All media and partner inquiries: +45 22 26 01 84 All learner inquiries: +45 26 25 34 49 Copenhagen office: ReDI School of Digital Integration Bådehavnsgade 42P 2450 København SV Denmark Aarhus office: ReDI School of Digital Integration Mejlgade 53",
+    "text": "NRW Takuya Furukawa takuya@redi-school.org Visiting address: ReDI School of Digital Integration NRW c/o Startplatz Düsseldorf GmbH Speditionstraße 15A 40221 Düsseldorf Germany Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany",
     "url": "https://www.redi-school.org/contact",
     "title": "Contact",
     "category": "Contact",
@@ -312,7 +472,23 @@
     "last_updated": "unavailable"
   },
   {
-    "text": "8000 Aarhus C Denmark Sweden ReDI Sweden team malmo@redi-school.org Visiting address: ReDI School of Digital Integration Malmö Stormgatan 14 211 20 Malmö Sweden Official address: Fläderbärsgatan 18 212 29 Malmö Sweden ReDI Digital Programs Pierluigi Delgiudice pierluigi@redi-school.org",
+    "text": "Hamburg Takuya Furukawa takuya@redi-school.org Visiting address: Our office is located in the Otto Group Campus in Hamburg. Contact me for a visiting appointment. Official address: ReDI School of Digital Integration gGmbH Karl-Marx-Straße 71, 12043 Berlin Germany",
+    "url": "https://www.redi-school.org/contact",
+    "title": "Contact",
+    "category": "Contact",
+    "language": "en",
+    "last_updated": "unavailable"
+  },
+  {
+    "text": "Denmark ReDI School Denmark Vibe Lindgård Bach vibe@redi-school.org All media and partner inquiries: +45 22 26 01 84 All learner inquiries: +45 26 25 34 49 Copenhagen office: ReDI School of Digital Integration Bådehavnsgade 42P 2450 København SV Denmark Aarhus office: ReDI School of Digital Integration Mejlgade 53 8000 Aarhus C Denmark",
+    "url": "https://www.redi-school.org/contact",
+    "title": "Contact",
+    "category": "Contact",
+    "language": "en",
+    "last_updated": "unavailable"
+  },
+  {
+    "text": "Sweden ReDI Sweden team malmo@redi-school.org Visiting address: ReDI School of Digital Integration Malmö Stormgatan 14 211 20 Malmö Sweden Official address: Fläderbärsgatan 18 212 29 Malmö Sweden ReDI Digital Programs Pierluigi Delgiudice pierluigi@redi-school.org",
     "url": "https://www.redi-school.org/contact",
     "title": "Contact",
     "category": "Contact",
@@ -2934,165 +3110,5 @@
     "category": "Applications",
     "language": "en",
     "last_updated": "unavailable"
-  },
-  {
-    "text": "Find your course! All our courses are free! Here you can look around and find out if we have interesting courses for you. ReDI School offers courses in 8 locations: Berlin (22 courses), Munich (16 courses), NRW (15 courses), Hamburg (10 courses), Copenhagen (9 courses), Aarhus (10 courses), Malmö (9 courses), Gothenburg (3 courses). Topics: New with a computer, Data Analytics, Web Development, Kids and Teens, User-Centered Design, Cybersecurity, Back-end Development, marketing and communication,",
-    "url": "https://www.redi-school.org/course-finder",
-    "title": "Course Finder",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-17"
-  },
-  {
-    "text": "Foundation Courses, Cloud Computing, Artificial Intelligence, Java Development, Cloud and Infrastructure.",
-    "url": "https://www.redi-school.org/course-finder",
-    "title": "Course Finder",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-17"
-  },
-  {
-    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 1 of 3):\n- Cybersecurity (Cybersecurity)\n- 3D Printing Workshop (Kids and Teens)\n- Future-Me | Schulprogramm (Kids and Teens)\n- Coding Camp (Kids and Teens)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Sunday Classes (Kids and Teens)\n- Data Circle (Data Analytics)\n- Data Analytics with Python (Data Analytics)\n- UX/UI Design Basics (User-Centered Design)",
-    "url": "https://www.redi-school.org/course-finder?category=Berlin",
-    "title": "Course Finder – Berlin",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-09-10",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 2 of 3):\n- UX/UI Design Intermediate (User-Centered Design)\n- Coding Fundamentals\n- Full Stack Circle (Web Development)\n- Digital Citizenship (Kids and Teens)\n- AG’s Children Planet Code | Schulprogramm (Kids and Teens)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)",
-    "url": "https://www.redi-school.org/course-finder?category=Berlin",
-    "title": "Course Finder – Berlin",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-09-10",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Berlin (ReDI Course Finder, 22 courses at ReDI Berlin, part 3 of 3):\n- JavaScript (Web Development)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
-    "url": "https://www.redi-school.org/course-finder?category=Berlin",
-    "title": "Course Finder – Berlin",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-09-10",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 1 of 3):\n- Coding with AI: Real-World Development Workflows (Web Development, Back-end Development)\n- Fit für IT-Ausbildung (Foundation Courses)\n- Robotics – Baue und Programmiere Roboter (Kids and Teens)\n- Python – Lerne Programmieren (Kids and Teens)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Computer Basics 3 (Deutsch) (New with a computer)",
-    "url": "https://www.redi-school.org/course-finder?category=Munich",
-    "title": "Course Finder – Munich",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-10-19",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 2 of 3):\n- UX/UI Design I - Fundamentals (User-Centered Design, Web Development)\n- UX/UI Design II - Project Based Learning (User-Centered Design, Web Development)\n- Introduction to Code, Data and Design (Back-end Development, Data Analytics)\n- Intro to Coding, Data and Design (Foundation Courses)\n- Data Analytics (Data Analytics)\n- Machine Learning (Data Analytics)\n- Python (Data Analytics, Back-end Development)",
-    "url": "https://www.redi-school.org/course-finder?category=Munich",
-    "title": "Course Finder – Munich",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-10-19",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Munich (ReDI Course Finder, 16 courses at ReDI Munich, part 3 of 3):\n- Back-End Development (Back-end Development)\n- Web Development Fundamentals (Web Development, Java Development)",
-    "url": "https://www.redi-school.org/course-finder?category=Munich",
-    "title": "Course Finder – Munich",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-10-19",
-    "list_part": true
-  },
-  {
-    "text": "Courses in NRW (ReDI Course Finder, 15 courses at ReDI NRW, part 1 of 2):\n- Computer Basics 2 (Deutsch) (New with a computer)\n- Computer Basics 1 (Deutsch) (New with a computer)\n- Cybersecurity (Cybersecurity)\n- Data Circle (Data Analytics)\n- Full Stack Circle (Web Development)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)",
-    "url": "https://www.redi-school.org/course-finder?category=NRW",
-    "title": "Course Finder – NRW",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-07-13",
-    "list_part": true
-  },
-  {
-    "text": "Courses in NRW (ReDI Course Finder, 15 courses at ReDI NRW, part 2 of 2):\n- JavaScript (Web Development)\n- Social Media Marketing (marketing and communication)\n- Introduction to Digital Marketing (marketing and communication)\n- Erstellung und Durchführung von Präsentationen (marketing and communication)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
-    "url": "https://www.redi-school.org/course-finder?category=NRW",
-    "title": "Course Finder – NRW",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-07-13",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Hamburg (ReDI Course Finder, 10 courses at ReDI Hamburg):\n- Cybersecurity (Cybersecurity)\n- Data Circle (Data Analytics)\n- Full Stack Circle (Web Development)\n- Full Stack Web Development Bootcamp (Web Development)\n- Python Foundations (Data Analytics)\n- Data Analytics (Data Analytics)\n- Machine Learning & AI (Data Analytics)\n- HTML and CSS (Web Development)\n- JavaScript (Web Development)\n- IT Infrastructure Foundations (Cloud and Infrastructure)",
-    "url": "https://www.redi-school.org/course-finder?category=Hamburg",
-    "title": "Course Finder – Hamburg",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-07-13",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Copenhagen (ReDI Course Finder, 9 courses at ReDI Copenhagen, part 1 of 2):\n- AI Integrations in Workflows (Web Development)\n- Web Application Development using GenAI (Web Development)\n- Introduction to Data Analytics (Data Analytics)\n- AI Intermediate (Data Analytics)\n- User Experience (User-Centered Design)\n- Digital Product Design (User-Centered Design)\n- Introduction to Programming (Web Development)\n- Cloud Computing Fundamentals (Cloud Computing)",
-    "url": "https://www.redi-school.org/course-finder?category=Copenhagen",
-    "title": "Course Finder – Copenhagen",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-16",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Copenhagen (ReDI Course Finder, 9 courses at ReDI Copenhagen, part 2 of 2):\n- Cybersecurity Fundamentals (Cybersecurity)",
-    "url": "https://www.redi-school.org/course-finder?category=Copenhagen",
-    "title": "Course Finder – Copenhagen",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-16",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Aarhus (ReDI Course Finder, 10 courses at ReDI Aarhus, part 1 of 2):\n- Computerkursus for begyndere (niveau 1) (New with a computer)\n- Computerkursus for begyndere (niveau 2) (New with a computer)\n- Computerkursus for begyndere (niveau 3) (New with a computer)\n- Introduction To Python (Data Analytics)\n- Data Analytics (Data Analytics)\n- Agentic AI Systems (Data Analytics)\n- Introduction to JavaScript (Web Development)\n- JavaScript w. Typescript (Web Development)",
-    "url": "https://www.redi-school.org/course-finder?category=Aarhus",
-    "title": "Course Finder – Aarhus",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-17",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Aarhus (ReDI Course Finder, 10 courses at ReDI Aarhus, part 2 of 2):\n- UX/UI Design Basics (User-Centered Design)\n- Introduction to Cybersecurity (Cybersecurity)",
-    "url": "https://www.redi-school.org/course-finder?category=Aarhus",
-    "title": "Course Finder – Aarhus",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-11-17",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Malmö (ReDI Course Finder, 9 courses at ReDI Malmö, part 1 of 2):\n- Job ReDI: Navigating professional networks and the job market in Sweden\n- Jobbredo: Hur man använder digitala verktyg för att söka jobb i Sverige\n- B.F.F. - Bygga Färdigheten för Framtiden\n- Introduktion till dator: Grundläggande 2 (New with a computer)\n- Introduktion till dator: Grundläggande 1 (New with a computer)\n- UX/UI Design Intermediate (User-Centered Design)\n- Introduction to Data Analytics (Data Analytics)",
-    "url": "https://www.redi-school.org/course-finder?category=Malm%C3%B6",
-    "title": "Course Finder – Malmö",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-09-11",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Malmö (ReDI Course Finder, 9 courses at ReDI Malmö, part 2 of 2):\n- AI Fundamentals (Artificial Intelligence)\n- Cybersecurity Fundamentals (Cybersecurity)",
-    "url": "https://www.redi-school.org/course-finder?category=Malm%C3%B6",
-    "title": "Course Finder – Malmö",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-09-11",
-    "list_part": true
-  },
-  {
-    "text": "Courses in Gothenburg (ReDI Course Finder, 3 courses at ReDI Gothenburg):\n- Introduction to Computers: The Basics (Tynnered) (New with a computer)\n- Introduction to Computers: The Basics (Evening) (New with a computer)\n- Introduction to Computers: The Basics (Afternoon) (New with a computer)",
-    "url": "https://www.redi-school.org/course-finder?category=Gothenburg",
-    "title": "Course Finder – Gothenburg",
-    "category": "Courses",
-    "language": "en",
-    "last_updated": "2026-08-09",
-    "list_part": true
   }
 ]
