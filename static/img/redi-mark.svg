@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="ReDI School">
+  <!-- The ReDI School logo mark, redrawn from redi-school.org with simple shapes (specs/ui_redesign.md) -->
+  <rect width="100" height="100" fill="#58adc4"/>
+  <polygon points="6,50 56,0 100,50 56,100" fill="#ffffff"/>
+  <polygon points="57,8 97,50 57,92" fill="#f15a22"/>
+  <circle cx="34" cy="50" r="14" fill="#f15a22"/>
+</svg>
