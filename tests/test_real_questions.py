@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from app import create_app, load_chunks
-from grounding import GOODBYE_REPLY, GREETING_REPLY, NOT_ENOUGH_INFO, THANKS_REPLY
+from grounding import GOODBYE_REPLY, GREETING_REPLY, NOT_ENOUGH_INFO, THANKS_REPLY, retrieve
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 QUESTIONS_FILE = DATA_DIR / "task8_questions.json"
@@ -106,6 +106,21 @@ def test_real_question(case):
         assert data["enough_information"] is True
         if case["expected_url"]:
             assert case["expected_url"] in [source["url"] for source in data["sources"]]
+
+
+# specs/task8_complete_city_lists.md, AC5: run 14 passed q27 and q28 with only one of three list
+# parts, so the answers listed part of the courses. Every part must be retrieved.
+CITY_LIST_CASES = [case for case in QUESTIONS if "?category=" in (case["expected_url"] or "")]
+
+
+@pytest.mark.parametrize("case", [as_param(case) for case in CITY_LIST_CASES])
+def test_a_city_list_is_retrieved_complete(case):
+    parts = [chunk for chunk in CHUNKS if chunk["url"] == case["expected_url"]]
+
+    selected = retrieve(case["question"], CHUNKS)
+
+    assert parts
+    assert [chunk for chunk in selected if chunk["url"] == case["expected_url"]] == parts
 
 
 # AC3: no invented links, for every question in the set
