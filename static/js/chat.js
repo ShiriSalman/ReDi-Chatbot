@@ -10,6 +10,7 @@ const loading = document.getElementById("loading");
 const formError = document.getElementById("form-error");
 const welcome = document.getElementById("welcome");
 const newChatButton = document.getElementById("new-chat");
+const counter = document.getElementById("counter");
 
 const EMPTY_QUESTION = "Please enter a question.";
 const GENERIC_ERROR = "Something went wrong while answering your question. Please try again.";
@@ -225,6 +226,7 @@ async function send(question) {
   showWelcome(false);
   addMessage("user", question);
   input.value = "";
+  updateComposer();
   setLoading(true);
 
   try {
@@ -243,6 +245,8 @@ async function send(question) {
     input.value = question;
   } finally {
     setLoading(false);
+    // After an error the question is back in the box, so the counter and height follow it
+    updateComposer();
     input.focus();
   }
 }
@@ -257,6 +261,27 @@ form.addEventListener("submit", (event) => {
     return;
   }
   send(question);
+});
+
+// The box grows with the text (up to its CSS max-height) and the counter shows the 500 limit
+const MAX_LENGTH = Number(input.getAttribute("maxlength"));
+const NEAR_LIMIT = MAX_LENGTH - 50;
+
+function updateComposer() {
+  input.style.height = "auto";
+  input.style.height = `${input.scrollHeight}px`;
+  counter.textContent = `${input.value.length}/${MAX_LENGTH}`;
+  counter.classList.toggle("near-limit", input.value.length >= NEAR_LIMIT);
+}
+
+input.addEventListener("input", updateComposer);
+
+// Enter sends, Shift+Enter adds a line; not while an input method is composing a word
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    form.requestSubmit();
+  }
 });
 
 // A suggested question is sent right away, exactly as written on the button

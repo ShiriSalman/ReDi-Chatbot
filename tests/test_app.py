@@ -127,6 +127,21 @@ class TestRedesignedPage:
         assert link["href"] == CONTACT["url"]
         assert link["rel"] == ["noopener", "noreferrer"]
 
+    def test_the_composer_is_a_textarea_with_the_limit_and_a_counter(self):
+        soup = page()
+        textarea = soup.find("textarea", id="question")
+
+        assert textarea is not None
+        assert textarea["maxlength"] == "500"
+        assert soup.find(id="counter").get_text() == "0/500"
+
+    def test_the_send_button_keeps_its_name_when_only_the_icon_shows(self):
+        button = page().find(id="send")
+
+        # On phones the text is hidden, so the name must come from aria-label
+        assert button["aria-label"] == "Send"
+        assert "Send" in button.get_text()
+
     def test_new_chat_is_hidden_until_a_conversation_starts(self):
         button = page().find(id="new-chat")
 
