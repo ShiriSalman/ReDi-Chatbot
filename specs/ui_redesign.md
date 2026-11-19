@@ -220,9 +220,58 @@ Requested by the owner after the tabs:
 - Unchanged: the welcome hides after the first question, and the input stays
   at the bottom.
 
+## Iteration: readable answers (2026-11-19)
+
+Requested by the owner: long answers should be easier to read, lists should
+look like lists, and the sources should take less space.
+
+**Constraint:** the Flask API, Gemini, the sources and the retrieval don't
+change in this step. The prompt still asks for plain paragraphs; allowing
+lists in the prompt is a **separate step** (its own PR and Task 8 evaluation
+run), so a change in the evaluation can be traced to the prompt or to the
+page.
+
+**Decisions (owner):** lists are clearer for visitors, so lists are wanted
+(prompt in the next step); show three sources at first; this PR starts after
+the final touches were merged.
+
+**Design:**
+- **Paragraphs:** the answer is split at empty lines into real paragraphs
+  with space between them; line height 1.6; at most about 65 characters per
+  line on wide screens.
+- **Lists:** a line starting with `- `, `* ` or `• ` is a bullet point; a
+  line starting with a number and `.` or `)` (for example `1. `) is a
+  numbered step. Following lines of the same kind form one list; a numbered
+  list starts at its first number. A line indented under a list item belongs
+  to that item.
+- **Nothing else is interpreted:** no bold, links or headings. `**`, `<b>`
+  or `<script>` stay visible as text. The parser (`static/js/format.js`)
+  returns plain data; `chat.js` builds `<p>`, `<ul>`, `<ol>` and `<li>` with
+  `createElement` and fills them with `textContent`, so no text from the
+  server is ever parsed as HTML.
+- **Sources:** smaller chips. With up to four sources all are shown; with
+  five or more, the first three are shown and a **"+ N more"** button shows
+  the rest (`aria-expanded`, `aria-controls`); after that it reads **"Show
+  less"**. The hidden chips stay in the HTML with `hidden`. The order is the
+  server's.
+- Unchanged: questions on the right, answers on the left; the contact
+  callout; errors.
+
+**Acceptance criteria:**
+- **AC12** (`tests/js/format.test.cjs`, Node's built-in test runner, run by
+  `tests/test_format_js.py`): paragraphs, bullet and numbered lists, a list
+  right after a sentence, mixed text, the numbered start, indented
+  continuation lines, `\r\n`, empty answers, and `<script>` kept as text;
+  the number of sources shown at first (all up to 4, else 3).
+- **AC13:** the `innerHTML` guard also covers `format.js`; all existing tests
+  pass.
+- **AC14** (by hand, 390 and 1280 px): a long answer with a list is readable;
+  "+ N more" and "Show less" work with mouse and keyboard; no horizontal
+  scrolling.
+
 ## Known limitations
 
 - The suggested questions are fixed in the template. When the content
   changes, AC2 shows if one stops working.
-- The page has no JavaScript unit tests; the behaviour is checked by hand
-  (AC4–AC7), as in Task 6.
+- Apart from the answer parser (AC12), the page has no JavaScript unit tests;
+  the behaviour is checked by hand (AC4–AC7, AC11, AC14), as in Task 6.
