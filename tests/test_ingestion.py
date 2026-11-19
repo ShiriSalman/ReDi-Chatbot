@@ -3,7 +3,7 @@
 # The fetch function is passed in, so the tests never touch the network.
 import copy
 
-from ingestion import chunk_text, clean_html, ingest, summarize_report
+from ingestion import chunk_text, clean_html, course_list_chunks, ingest, summarize_report
 
 PAGE_HTML = """
 <html>
@@ -134,6 +134,36 @@ class TestCleanHtml:
 
         assert "All our courses are free." in text
         assert "Classes take place on Tuesday and Thursday evenings." in text
+
+    # specs/task8_add_applicant_hub_source.md, AC1: GitBook puts its assistant and the table of
+    # contents in <aside>, so every hub page started with the whole course list
+    def test_removes_sidebars_and_keeps_the_main_text(self):
+        html = """
+        <html><body>
+          <aside>GitBook Assistant | Python | Data Analytics | Cybersecurity</aside>
+          <main><p>You must be at least 18 years old to join ReDI School.</p></main>
+        </body></html>
+        """
+
+        text = clean_html(html)
+
+        assert "GitBook Assistant" not in text
+        assert "Data Analytics" not in text
+        assert "You must be at least 18 years old to join ReDI School." in text
+
+    # AC7: GitBook adds the page outline after <main>, and the ReDI website a "0" before it
+    def test_uses_only_the_main_content_when_the_page_has_one(self):
+        html = """
+        <html><body>
+          <div>0</div>
+          <main><p>All ReDI School courses are 100% free.</p></main>
+          <div><ul><li>What is the course about?</li><li>How to apply?</li></ul></div>
+        </body></html>
+        """
+
+        text = clean_html(html)
+
+        assert text == "All ReDI School courses are 100% free."
 
 
 # Scenario 4: Split content into chunks
@@ -367,3 +397,160 @@ class TestSummarizeReport:
         summarize_report(report)
 
         assert report == before
+
+
+# specs/task8_course_list_per_city.md: the Course Finder lists courses by name, and the ingestion
+# read only 20 of 74. Its items are turned into one list per city plus an overview.
+FINDER_URL = "https://www.redi-school.org/course-finder"
+# Like the real page: the intro and the course cards (class "blog-item") are in one outer <article>
+FINDER_HTML = """
+<html><body>
+  <nav>Home | Courses</nav>
+  <main>
+    <article class="sections">
+      <h1>Find your course!</h1>
+      <p>All our courses are free!</p>
+      <article class="blog-item"><h2>Robotics</h2><p>Kids and Teens</p></article>
+    </article>
+  </main>
+</body></html>
+"""
+
+
+def course(title, categories, updated_ms=1789107785592):
+    return {
+        "title": title,
+        "categories": categories,
+        # Details such as dates and times are left out, so a city's list fits into few chunks
+        "excerpt": "<ul><li><p>Munich - Onsite</p></li><li><p>Tue & Thu, 19:00 - 21:00</p></li></ul>",
+        "updatedOn": updated_ms,
+    }
+
+
+def finder_source(**overrides):
+    return make_source(url=FINDER_URL, reader="course-list", **overrides)
+
+
+def by_url(chunks, url):
+    return [chunk for chunk in chunks if chunk["url"] == url]
+
+
+class TestCourseList:
+    ITEMS = [
+        course("Python", ["Munich", "Data Analytics"]),
+        course("Data Analytics", ["Munich", "Data Analytics"]),
+        course("Cybersecurity", ["Cybersecurity", "Berlin", "Hamburg"]),
+        course("Job ReDI", ["Malmö"]),
+    ]
+
+    def chunks(self, items=None):
+        return course_list_chunks(finder_source(), FINDER_HTML, items or self.ITEMS)
+
+    # AC4
+    def test_the_overview_names_every_city_with_its_number_of_courses(self):
+        overview = " ".join(chunk["text"] for chunk in by_url(self.chunks(), FINDER_URL))
+
+        assert "All our courses are free!" in overview
+        assert "Munich (2 courses)" in overview
+        assert "Berlin (1 course)" in overview
+        assert "Malmö (1 course)" in overview
+        # The page's own course cards are not repeated; the lists below have every course
+        assert "Robotics" not in overview
+        assert "Home | Courses" not in overview
+
+    # AC2
+    def test_each_city_gets_a_list_with_a_line_per_course(self):
+        munich = by_url(self.chunks(), f"{FINDER_URL}?category=Munich")
+
+        assert len(munich) == 1
+        assert munich[0]["title"] == "Course Finder – Munich"
+        assert munich[0]["text"] == (
+            "Courses in Munich (ReDI Course Finder, 2 courses at ReDI Munich):\n"
+            "- Python (Data Analytics)\n"
+            "- Data Analytics (Data Analytics)"
+        )
+
+    # AC2
+    def test_a_course_in_two_cities_is_in_both_lists(self):
+        chunks = self.chunks()
+
+        for city in ["Berlin", "Hamburg"]:
+            text = by_url(chunks, f"{FINDER_URL}?category={city}")[0]["text"]
+            assert "- Cybersecurity (Cybersecurity)" in text
+
+    def test_city_names_are_encoded_in_the_link(self):
+        chunks = self.chunks()
+
+        assert by_url(chunks, f"{FINDER_URL}?category=Malm%C3%B6")
+        assert all(" " not in chunk["url"] for chunk in chunks)
+
+    # AC5: the JSON titles contain HTML codes such as "&amp;"
+    def test_titles_are_plain_text_and_a_course_without_topics_has_no_brackets(self):
+        items = [course("Machine Learning &amp; AI", ["Munich"])]
+
+        text = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")[0]["text"]
+
+        assert text.endswith("\n- Machine Learning & AI")
+        assert "Tue & Thu" not in text
+
+    # AC3
+    def test_a_long_list_is_split_between_lines_and_every_part_has_the_header(self):
+        items = [course(f"Course number {n}", ["Munich", "Web Development"]) for n in range(30)]
+
+        munich = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")
+
+        assert len(munich) > 1
+        for number, chunk in enumerate(munich, start=1):
+            header, *lines = chunk["text"].split("\n")
+            # The city is named twice: once wasn't enough to rank above the city's own page (q27, q28)
+            assert header == (f"Courses in Munich (ReDI Course Finder, 30 courses at ReDI Munich, "
+                              f"part {number} of {len(munich)}):")
+            assert lines and all(line.startswith("- Course number ") and line.endswith(")") for line in lines)
+            assert len(chunk["text"]) <= 500
+        assert sum(len(chunk["text"].split("\n")) - 1 for chunk in munich) == 30
+
+    def test_chunks_keep_the_source_information_and_the_newest_update(self):
+        items = [course("Python", ["Munich"], updated_ms=1700000000000),
+                 course("Machine Learning", ["Munich"], updated_ms=1789107785592)]
+
+        munich = by_url(self.chunks(items), f"{FINDER_URL}?category=Munich")[0]
+
+        assert munich["category"] == "Courses"
+        assert munich["language"] == "en"
+        assert munich["last_updated"] == "2026-09-11"
+
+    def test_ingest_reads_the_course_list_with_fetch_collection(self):
+        result = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML),
+                        fetch_collection=lambda url: self.ITEMS)
+
+        urls = {chunk["url"] for chunk in result.chunks}
+        assert FINDER_URL in urls
+        assert f"{FINDER_URL}?category=Munich" in urls
+        assert result.report["ingested"] == [FINDER_URL]
+
+    def test_ingesting_again_replaces_the_city_lists(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        second = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML),
+                        fetch_collection=lambda url: self.ITEMS, existing_chunks=first.chunks)
+
+        assert len(second.chunks) == len(first.chunks)
+
+    def test_a_course_list_marked_no_loses_its_city_lists(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        result = ingest([finder_source(include="No")], fetch=fake_fetch(), existing_chunks=first.chunks)
+
+        assert result.chunks == []
+
+    def test_a_failed_course_list_keeps_the_old_chunks(self):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        def broken(url):
+            raise ConnectionError("Timeout")
+
+        result = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=broken,
+                        existing_chunks=first.chunks)
+
+        assert result.chunks == first.chunks
+        assert result.report["failed"][0]["url"] == FINDER_URL

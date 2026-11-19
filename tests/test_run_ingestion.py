@@ -109,6 +109,23 @@ def test_removes_chunks_of_a_source_deleted_from_the_list(tmp_path):
     assert urls == {"https://www.redi-school.org/faq"}
 
 
+# specs/task8_course_list_per_city.md: city lists link to the source URL plus "?category=<city>",
+# so they must not count as chunks of a deleted source
+def test_keeps_the_city_lists_of_a_course_list(tmp_path):
+    finder = dict(SOURCES[0], url="https://www.redi-school.org/course-finder", title="Course Finder",
+                  category="Courses", reader="course-list")
+    chunks_path = tmp_path / "chunks.json"
+    items = [{"title": "Python", "categories": ["Munich", "Data Analytics"]}]
+
+    run(write_sources(tmp_path, [finder]), chunks_path, fetch=fetch_ok, fetch_collection=lambda url: items)
+
+    urls = {chunk["url"] for chunk in read_chunks(chunks_path)}
+    assert urls == {
+        "https://www.redi-school.org/course-finder",
+        "https://www.redi-school.org/course-finder?category=Munich",
+    }
+
+
 # Scenario 8: Handle an unavailable source
 def test_keeps_the_saved_chunks_of_a_source_that_fails_on_the_next_run(tmp_path):
     sources_path = write_sources(tmp_path)

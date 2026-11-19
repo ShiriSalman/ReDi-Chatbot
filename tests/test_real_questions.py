@@ -22,11 +22,17 @@ if not CHUNKS_FILE.exists():
 
 QUESTIONS = json.loads(QUESTIONS_FILE.read_text(encoding="utf-8"))
 CHUNKS = load_chunks(CHUNKS_FILE)
-APPROVED_URLS = {
-    source["url"]
-    for source in json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
-    if source["include"] == "Yes"
-}
+SOURCES = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))
+APPROVED_URLS = {source["url"] for source in SOURCES if source["include"] == "Yes"}
+# specs/task8_course_list_per_city.md: a course list's city chunks link to its URL plus
+# "?category=<city>". The code builds that link, so it is approved for these sources only.
+COURSE_LIST_URLS = {url for url in APPROVED_URLS
+                    for source in SOURCES if source["url"] == url and source.get("reader") == "course-list"}
+
+
+def is_approved(url):
+    base, _, query = url.partition("?")
+    return url in APPROVED_URLS or (base in COURSE_LIST_URLS and query.startswith("category="))
 
 FIELDS = {"id", "question", "topic", "case", "expected", "expected_url", "known_issue"}
 
@@ -74,7 +80,7 @@ class TestQuestionSet:
     def test_expected_urls_are_approved_sources(self):
         for case in QUESTIONS:
             if case["expected_url"]:
-                assert case["expected_url"] in APPROVED_URLS, case["id"]
+                assert is_approved(case["expected_url"]), case["id"]
 
 
 # AC3 and AC4: each question through POST /api/chat, on the real content
@@ -106,4 +112,4 @@ def test_real_question(case):
 def test_no_invented_links():
     for case in QUESTIONS:
         for source in ask(case["question"])["sources"]:
-            assert source["url"] in APPROVED_URLS, (case["id"], source["url"])
+            assert is_approved(source["url"]), (case["id"], source["url"])

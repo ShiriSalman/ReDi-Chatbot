@@ -273,6 +273,70 @@ compared to run 10 is "as" as a stopword.
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
 
+## Seen in the live app on Render on 2026-11-17
+
+- **I: no course list.** "which courses are they" got an honest but unhelpful
+  answer ("companies can host courses … the sources do not provide a full
+  list of all available courses"), with the contact link. Sources: FAQ,
+  ReDI School Denmark, NRW and Gothenburg; not the Course Finder, which lists
+  the courses. Checked with the real retrieval:
+  - **Side cause:** "they" is not a stopword, so the question has two content
+    words, "course" and "they". The gate needs both in one chunk, and no
+    Course Finder chunk contains "they".
+  - **Main cause:** even "Which courses does ReDI offer?" doesn't find the
+    Course Finder. Only 2 of its 13 chunks contain the word "course"; the
+    others list courses by name, date and time.
+  - **Not fixed with stopwords:** "they" alone gives the same sources as
+    "which courses are there" (FAQ, NRW, Munich), still no Course Finder.
+    Adding 28 pronouns and auxiliary verbs broke q14 and q20 (fallback
+    instead of an answer). So the code is unchanged.
+  - Recorded as q25 "Which courses does ReDI offer?" and q26 "which courses
+    are they" (`xfail`). "they" also refers to an earlier question, and
+    conversation memory is deferred until after the MVP.
+
+## New source: the DCP Munich Applicant Hub (2026-11-18)
+
+After `specs/task8_add_applicant_hub_source.md`. Retrieval only so far; the
+evaluation run with the model is still to do (AC6).
+
+- **Added:** the hub's start page and FAQ (26 questions). The 9 course
+  pages are listed as No: with them, their "How to apply?" sections pushed
+  the website FAQ out of the top 5 for q02, q21 and q24.
+- **Ingestion:** `clean_html` now removes `<aside>` and uses only `<main>`
+  when a page has one. Without this, GitBook's assistant, table of contents
+  and page outline were in every hub chunk.
+- **Retrieval now finds the Hub FAQ** for applying, minimum age, certificate,
+  language ("Do I need to speak German?"), laptop and hours per week.
+- **Still open, I:** no variant finds a course list. The hub start page lists
+  the courses by name, without the words "course" or "Munich". q25 and q26
+  stay `xfail`.
+- **Website changes found:** 7 website pages changed since the last ingestion
+  (Munich page −4,400 characters). Not included in this change, so the hub
+  can be measured on its own; refreshing the website content is a separate
+  step.
+
+## Run 13: after adding the Applicant Hub start page and FAQ
+
+Run on 2026-11-18 with the same model and 26 questions (q25, q26 added).
+
+- **22 of 26 passed.** Only the known cases fail: q09, q10, q25, q26.
+- **q11 (certificate) is answered now:** "Yes, you will receive a ReDI School
+  certificate if you attend regularly and complete the course." Run 12 said
+  the sources don't cover it.
+- **q05 (German) is answered now:** courses are "held in English, but you do
+  not need perfect English" (Applicant Hub FAQ). No contact link any more.
+- **Apply questions (q02, q21, q24)** combine both FAQs: the Info Day from the
+  website and "the application form … under the 'How to Apply' section of
+  each course page" from the Hub FAQ. "Coding with AI" is no longer a source
+  for them (H better).
+- **New finding J (low): a wrong paraphrase.** q11 adds "For intermediate and
+  advanced courses, attending them is mandatory to receive a certificate."
+  The Hub FAQ says the *final projects* in those courses are mandatory, not
+  attending. The rule "only attribute a statement to a source that actually
+  contains it" doesn't catch a wrong paraphrase.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -288,8 +352,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. ~~**G** (source list in the answer).~~ Done (run 10).
 7. **Ranking:** ~~q08~~ done ("as" as a stopword). Still open: q09, q10,
-   the German q15 finding only FAQ chunks, and **H** (the catalogue can't
-   notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
+   **I** (q25, q26: the Course Finder), the German q15 finding only FAQ
+   chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
 8. **E:** the catalogue should check the answer content (here the Munich
