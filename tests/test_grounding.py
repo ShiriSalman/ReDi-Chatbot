@@ -673,3 +673,28 @@ class TestCompleteLists:
     # AC4
     def test_an_unrelated_question_still_gets_nothing(self):
         assert retrieve("Who won the last World Cup?", [PART_1, PART_2, PART_3]) == []
+
+
+# Task 8 fix, written from specs/task8_job_career_synonyms.md: q10 "Does ReDI help me find a job?"
+# missed the career page, which says "career" rather than "job".
+CAREER_CHUNK = make_chunk(
+    "ReDI career services help learners find mentors and company contacts.",
+    url="https://www.redi-school.org/our-career-support", title="Our Career Services",
+)
+HELP_CHUNK = make_chunk("ReDI can help you find people.")
+
+
+class TestSynonyms:
+    QUESTION = "Does ReDI help me find a job?"
+
+    # AC1
+    def test_a_synonym_counts_for_the_ranking(self):
+        assert retrieve(self.QUESTION, [HELP_CHUNK, CAREER_CHUNK], top_k=1) == [CAREER_CHUNK]
+
+    # AC2: "job" alone; the career chunk matches only through the synonym
+    def test_a_synonym_alone_does_not_pass_the_gate(self):
+        assert retrieve("job?", [CAREER_CHUNK]) == []
+
+    # AC3
+    def test_a_question_without_synonyms_is_scored_as_before(self):
+        assert retrieve("Does ReDI help me find people?", [CAREER_CHUNK, HELP_CHUNK], top_k=1) == [HELP_CHUNK]

@@ -87,7 +87,7 @@
     "case": "straightforward",
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/our-career-support",
-    "known_issue": "FAQ and course pages rank above the career support page"
+    "known_issue": null
   },
   {
     "id": "q11",

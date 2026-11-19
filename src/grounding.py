@@ -79,6 +79,11 @@ TOP_K = 5
 # question's words. A one-word question still needs just its one word. Tuned in Task 8.
 MIN_MATCHED_WORDS = 2
 
+# Words that also count for the ranking when a question uses the key word. The career page says
+# "career", visitors ask about a "job" (q10). Add a pair only with a Task 8 question that needs it
+# (specs/task8_job_career_synonyms.md).
+SYNONYMS = {"job": ["career"]}
+
 # Common words that say nothing about what a question is about
 STOPWORDS = {
     "a", "about", "an", "and", "are", "as", "at", "be", "can", "do", "does", "for", "from",
@@ -139,12 +144,17 @@ def retrieve(question, chunks, top_k=TOP_K):
     if not question_words or not chunks:
         return []
 
+    # Synonyms count for the ranking only; the gate below uses the question's own words
+    scored_words = question_words | {
+        synonym for word in question_words for synonym in SYNONYMS.get(word, [])
+    }
+
     chunk_words = [tokenize(chunk["text"]) for chunk in chunks]
     average_length = sum(len(words) for words in chunk_words) / len(chunks)
 
-    # In how many chunks each question word appears; rare words get a higher weight (IDF)
+    # In how many chunks each scored word appears; rare words get a higher weight (IDF)
     chunk_counts = {
-        word: sum(1 for words in chunk_words if word in words) for word in question_words
+        word: sum(1 for words in chunk_words if word in words) for word in scored_words
     }
     idf = {
         word: math.log((len(chunks) - count + 0.5) / (count + 0.5) + 1)
@@ -159,7 +169,7 @@ def retrieve(question, chunks, top_k=TOP_K):
 
         length_factor = 1 - B + B * len(words) / average_length if average_length else 1
         score = 0.0
-        for word in question_words:
+        for word in scored_words:
             frequency = frequencies[word]
             if frequency:
                 # Each extra mention adds less, so repeated text does not win on its own
