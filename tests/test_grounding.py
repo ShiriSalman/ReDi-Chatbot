@@ -374,6 +374,32 @@ class TestAnswerFormat:
     def test_prompt_asks_to_attribute_statements_only_to_supporting_sources(self):
         assert "actually contains it" in self.PROMPT.lower()
 
+    # AC12 (iteration "simple lists"): the page shows "- " and "1. " lines as lists
+    # (static/js/format.js), so the prompt allows exactly those and no other Markdown
+    def test_prompt_allows_simple_lists_only(self):
+        lowered = self.PROMPT.lower()
+
+        assert 'starting with "- "' in lowered
+        assert '"1. "' in lowered
+        assert "bullet points" not in lowered
+        assert "do not use any other markdown, such as asterisks, bold text or headings" in lowered
+
+    # AC13: URL and source-list removal must not flatten the list
+    def test_an_answer_with_a_list_keeps_its_lines(self):
+        answer = (
+            "There are three steps:\n"
+            "1. Choose a course.\n"
+            "2. Apply online.\n"
+            "\n"
+            "Courses include:\n"
+            "- Python\n"
+            "- Data Analytics"
+        )
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.text == answer
+
     # specs/task8_fix_english_answers.md: "Sind die Kurse kostenlos?" got a German answer
     def test_prompt_asks_to_always_answer_in_english(self):
         assert "always answer in english" in self.PROMPT.lower()
