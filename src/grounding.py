@@ -121,6 +121,46 @@ def tokenize(text):
     ]
 
 
+# Spelling mistakes (specs/task8_spelling_mistakes.md): shorter words are never corrected,
+# because many short words are one typo apart ("cos", "cost", "most")
+MIN_CORRECTED_LENGTH = 4
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
+
+
+def one_typo_away(word):
+    """Return every string that is one typo away from word: one letter missing, one extra,
+    one wrong, or two neighbouring letters swapped (Peter Norvig's "edits1")."""
+    splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+    missing = [left + right[1:] for left, right in splits if right]
+    swapped = [left + right[1] + right[0] + right[2:] for left, right in splits if len(right) > 1]
+    wrong = [left + letter + right[1:] for left, right in splits if right for letter in LETTERS]
+    extra = [left + letter + right for left, right in splits for letter in LETTERS]
+    return set(missing + swapped + wrong + extra)
+
+
+def correct_spelling(question_words, chunk_counts):
+    """Correct small spelling mistakes in the question's words, using the chunks' words.
+
+    chunk_counts says in how many chunks each word appears. A word found in the chunks is
+    kept. An unknown word one typo from a stopword ("wich") is dropped like a stopword;
+    otherwise it becomes the chunk word one typo away that appears in the most chunks
+    ("corse" -> "course"). Short words, words with digits and words without a close
+    chunk word are kept as they are.
+    """
+    corrected = set()
+    for word in question_words:
+        if word in chunk_counts or len(word) < MIN_CORRECTED_LENGTH or not word.isalpha():
+            corrected.add(word)
+            continue
+        candidates = one_typo_away(word)
+        if candidates & STOPWORDS:
+            continue
+        known = [candidate for candidate in candidates if candidate in chunk_counts]
+        # The most common candidate wins; ties go to the alphabetically first, so it's repeatable
+        corrected.add(min(known, key=lambda c: (-chunk_counts[c], c)) if known else word)
+    return corrected
+
+
 def has_enough_matching_words(question_words, chunk_word_counts):
     """Return True if a chunk contains enough of the question's words to count as relevant.
 
@@ -144,21 +184,24 @@ def retrieve(question, chunks, top_k=TOP_K):
     if not question_words or not chunks:
         return []
 
+    chunk_words = [tokenize(chunk["text"]) for chunk in chunks]
+    average_length = sum(len(words) for words in chunk_words) / len(chunks)
+
+    # In how many chunks each word appears; rare words get a higher weight (IDF)
+    chunk_counts = Counter(word for words in chunk_words for word in set(words))
+
+    # "aply" -> "apply": small spelling mistakes are corrected with the chunks' own words
+    question_words = correct_spelling(question_words, chunk_counts)
+    if not question_words:
+        return []
+
     # Synonyms count for the ranking only; the gate below uses the question's own words
     scored_words = question_words | {
         synonym for word in question_words for synonym in SYNONYMS.get(word, [])
     }
-
-    chunk_words = [tokenize(chunk["text"]) for chunk in chunks]
-    average_length = sum(len(words) for words in chunk_words) / len(chunks)
-
-    # In how many chunks each scored word appears; rare words get a higher weight (IDF)
-    chunk_counts = {
-        word: sum(1 for words in chunk_words if word in words) for word in scored_words
-    }
     idf = {
-        word: math.log((len(chunks) - count + 0.5) / (count + 0.5) + 1)
-        for word, count in chunk_counts.items()
+        word: math.log((len(chunks) - chunk_counts[word] + 0.5) / (chunk_counts[word] + 0.5) + 1)
+        for word in scored_words
     }
 
     scored = []
