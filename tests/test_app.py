@@ -109,7 +109,9 @@ class TestRedesignedPage:
         welcome = page().find(id="welcome")
 
         assert welcome is not None
-        assert "What would you like to know about ReDI School?" in welcome.get_text()
+        # Wording changed on request (specs/ui_redesign.md, "Iteration: final touches")
+        assert "Hi! How can I help you?" in welcome.get_text()
+        assert "Ask me anything about ReDI School or choose a topic below." in welcome.get_text()
 
     def test_has_the_six_categories_with_their_suggested_questions(self):
         categories = {
