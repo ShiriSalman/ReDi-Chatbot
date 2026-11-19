@@ -28,59 +28,52 @@
            checks that each one gets sources. -->
       <section class="welcome" id="welcome" aria-labelledby="welcome-title">
         <h2 id="welcome-title">Hi! What would you like to know about ReDI School?</h2>
-        <p class="lead">I answer questions using only official ReDI pages, and I show the links so you can check them. Pick a question below or type your own.</p>
+        <p class="lead">Answers come from official ReDI pages, with links.</p>
 
-        <div class="categories">
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>
-              Applying
-            </h3>
+        <!-- The topics move into the drawer above the input when the Suggestions button opens it -->
+        <div class="topics" id="topics">
+          <div class="tabs" role="tablist" aria-label="Topics">
+            <button type="button" class="tab" role="tab" id="tab-applying" aria-controls="panel-applying" aria-selected="true" tabindex="0">Applying</button>
+            <button type="button" class="tab" role="tab" id="tab-courses" aria-controls="panel-courses" aria-selected="false" tabindex="-1">Courses</button>
+            <button type="button" class="tab" role="tab" id="tab-costs" aria-controls="panel-costs" aria-selected="false" tabindex="-1">Costs</button>
+            <button type="button" class="tab" role="tab" id="tab-locations" aria-controls="panel-locations" aria-selected="false" tabindex="-1">Locations</button>
+            <button type="button" class="tab" role="tab" id="tab-careers" aria-controls="panel-careers" aria-selected="false" tabindex="-1">Careers</button>
+            <button type="button" class="tab" role="tab" id="tab-involved" aria-controls="panel-involved" aria-selected="false" tabindex="-1">Get involved</button>
+          </div>
+
+          <!-- Each panel keeps its full category name for screen readers -->
+          <div class="category" role="tabpanel" id="panel-applying" aria-labelledby="tab-applying">
+            <h3 class="visually-hidden">Applying</h3>
             <button type="button" class="suggestion">How do I apply for a course?</button>
             <button type="button" class="suggestion">Can I apply if I'm under 18?</button>
           </div>
 
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg>
-              Courses
-            </h3>
+          <div class="category" role="tabpanel" id="panel-courses" aria-labelledby="tab-courses" hidden>
+            <h3 class="visually-hidden">Courses</h3>
             <button type="button" class="suggestion">Which courses are there in Berlin?</button>
             <button type="button" class="suggestion">Which courses are there in Munich?</button>
             <button type="button" class="suggestion">Will I get a certificate?</button>
           </div>
 
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M21 21v-2a4 4 0 0 0-3-3.9"/></svg>
-              Costs &amp; who can join
-            </h3>
+          <div class="category" role="tabpanel" id="panel-costs" aria-labelledby="tab-costs" hidden>
+            <h3 class="visually-hidden">Costs &amp; who can join</h3>
             <button type="button" class="suggestion">Are ReDI courses free?</button>
             <button type="button" class="suggestion">Do I need to speak German?</button>
             <button type="button" class="suggestion">Are there courses only for women?</button>
           </div>
 
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
-              Locations
-            </h3>
+          <div class="category" role="tabpanel" id="panel-locations" aria-labelledby="tab-locations" hidden>
+            <h3 class="visually-hidden">Locations</h3>
             <button type="button" class="suggestion">Where is ReDI School in Munich?</button>
           </div>
 
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Career support
-            </h3>
+          <div class="category" role="tabpanel" id="panel-careers" aria-labelledby="tab-careers" hidden>
+            <h3 class="visually-hidden">Career support</h3>
             <button type="button" class="suggestion">Does ReDI help me find a job?</button>
           </div>
 
-          <div class="category">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
-              Get involved
-            </h3>
+          <div class="category" role="tabpanel" id="panel-involved" aria-labelledby="tab-involved" hidden>
+            <h3 class="visually-hidden">Get involved</h3>
             <button type="button" class="suggestion">How can I become a volunteer at ReDI?</button>
             <button type="button" class="suggestion">How can my company support ReDI?</button>
           </div>
@@ -102,19 +95,28 @@
     </main>
 
     <form id="chat-form" class="composer" novalidate>
+      <!-- Opened by the Suggestions button during a conversation; holds the topics then -->
+      <div class="suggestion-drawer" id="suggestion-drawer" hidden></div>
+
       <div class="composer-row">
+        <button type="button" class="suggestions-toggle" id="suggestions-toggle" aria-label="Suggestions"
+                aria-expanded="false" aria-controls="suggestion-drawer" hidden>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V18h6v-1.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>
+        </button>
         <label for="question" class="visually-hidden">Your question</label>
         <!-- Enter sends, Shift+Enter adds a line (static/js/chat.js) -->
         <textarea id="question" name="question" rows="1" autocomplete="off" maxlength="500"
                   placeholder="Ask about ReDI School…" aria-describedby="form-error privacy-note"></textarea>
         <button id="send" class="send" type="submit" aria-label="Send">
-          <span class="label">Send</span>
+          <span class="visually-hidden">Send</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
         </button>
       </div>
       <p id="form-error" class="form-error" role="alert"></p>
       <div class="composer-meta">
+        <svg class="lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         <span id="privacy-note">Please don't enter personal information. Your question is sent to Google Gemini, an AI service, to write the answer.</span>
+        <!-- Only visible from 400 characters (static/js/chat.js) -->
         <span class="counter" id="counter" aria-hidden="true">0/500</span>
       </div>
     </form>

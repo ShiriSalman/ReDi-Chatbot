@@ -146,6 +146,57 @@ Each step is one commit; the full test suite runs after each.
 6. Responsive and accessibility pass (screenshots).
 7. Privacy note (+ its test first).
 
+## Iteration: category tabs (2026-11-19)
+
+The six cards with all 12 questions filled the whole desktop screen and about
+three phone screens before the input. The owner asked for a shorter welcome,
+compact tabs, suggestions per tab, a cleaner input, and the chat as the main
+focus.
+
+**Constraint:** the backend, the API and the existing tests don't change. The
+tabs only change what is *visible*: every category stays a `.category` with
+an `<h3>` and its `button.suggestion` buttons in the HTML.
+
+**Decisions (owner chose the recommended options):**
+- Default tab: **Applying**.
+- After the first message: a **Suggestions** button next to the input opens
+  the tabs above it, without leaving the conversation.
+- **SVG icons**, no emoji (emoji look different on every device).
+- Own PR on top of the first redesign.
+
+**Design:**
+- **Welcome:** "Hi! What would you like to know about ReDI School?" and one
+  line "Answers come from official ReDI pages, with links." (The question
+  stays, because an existing test checks it.)
+- **Tabs:** six compact category buttons in a grid — Applying, Courses,
+  Costs, Locations, Careers, Get involved: one row on wide screens, 3 × 2 on
+  phones (owner's follow-up: a grid, not a row that scrolls). The selected one
+  is in the ReDI orange (the dark shade, for readable white text). Each
+  category has at most three questions.
+- **Panels:** only the active tab's questions show, as wrapping chips. Each
+  panel keeps its full category name as a visually hidden `<h3>`.
+- **Accessibility:** `role="tablist"`, `role="tab"` with `aria-selected` and
+  `aria-controls`, `role="tabpanel"`; Left/Right/Home/End move between tabs;
+  only the active tab is in the Tab order.
+- **Input:** one rounded container with the Suggestions button, the text box
+  and a round Send button inside. The counter is only visible from 400
+  characters (it stays in the HTML). The privacy note gets a lock icon; its
+  text doesn't change.
+- **Send** is not disabled when the box is empty, so an empty question still
+  shows "Please enter a question."
+
+**Acceptance criteria:**
+- **AC8:** six tabs, each pointing to a panel with `aria-controls`; only
+  Applying is selected and visible at the start (unit test).
+- **AC9:** the Suggestions button exists, starts hidden and collapsed
+  (`aria-expanded="false"`) (unit test).
+- **AC10:** all existing tests pass unchanged.
+- **AC11** (by hand, 390 and 1280 px): switching tabs shows that tab's
+  questions; arrow keys move between tabs; after the first answer the
+  Suggestions button opens and closes the tabs above the input; a suggestion
+  from there is sent; New chat brings the welcome back; no horizontal
+  scrolling of the page.
+
 ## Known limitations
 
 - The suggested questions are fixed in the template. When the content

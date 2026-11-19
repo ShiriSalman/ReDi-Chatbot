@@ -11,6 +11,13 @@ const formError = document.getElementById("form-error");
 const welcome = document.getElementById("welcome");
 const newChatButton = document.getElementById("new-chat");
 const counter = document.getElementById("counter");
+const topics = document.getElementById("topics");
+const tabList = topics.querySelector('[role="tablist"]');
+const tabs = [...tabList.querySelectorAll('[role="tab"]')];
+const drawer = document.getElementById("suggestion-drawer");
+const suggestionsToggle = document.getElementById("suggestions-toggle");
+// Where the topics go back to when the drawer closes: right after the welcome's lead line
+const welcomeTopicsPlace = welcome.querySelector(".lead");
 
 const EMPTY_QUESTION = "Please enter a question.";
 const GENERIC_ERROR = "Something went wrong while answering your question. Please try again.";
@@ -235,10 +242,38 @@ async function askQuestion(question) {
   return { ok: response.ok, data };
 }
 
-// The welcome screen is shown until the first question and again after "New chat"
+// The welcome screen is shown until the first question and again after "New chat".
+// During a conversation the topics are reached with the Suggestions button instead.
 function showWelcome(visible) {
   welcome.hidden = !visible;
   newChatButton.hidden = visible;
+  suggestionsToggle.hidden = visible;
+  closeDrawer();
+}
+
+// The topics (tabs and questions) live in the welcome screen; the Suggestions button moves
+// them into the drawer above the input, so there is one copy with its listeners
+function openDrawer() {
+  drawer.appendChild(topics);
+  drawer.hidden = false;
+  suggestionsToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeDrawer() {
+  welcomeTopicsPlace.after(topics);
+  drawer.hidden = true;
+  suggestionsToggle.setAttribute("aria-expanded", "false");
+}
+
+// Tabs: one is selected and shows its panel; only the selected tab is in the Tab order
+function selectTab(tab) {
+  for (const other of tabs) {
+    const selected = other === tab;
+    other.setAttribute("aria-selected", String(selected));
+    other.tabIndex = selected ? 0 : -1;
+    document.getElementById(other.getAttribute("aria-controls")).hidden = !selected;
+  }
+  tab.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 // Typed questions and suggested questions go through here, so both behave the same
@@ -284,15 +319,19 @@ form.addEventListener("submit", (event) => {
   send(question);
 });
 
-// The box grows with the text (up to its CSS max-height) and the counter shows the 500 limit
+// The box grows with the text (up to its CSS max-height). The counter shows the 500 limit,
+// visible from 400 characters and red from 450; Send looks quieter while the box is empty.
 const MAX_LENGTH = Number(input.getAttribute("maxlength"));
+const SHOW_COUNTER = MAX_LENGTH - 100;
 const NEAR_LIMIT = MAX_LENGTH - 50;
 
 function updateComposer() {
   input.style.height = "auto";
   input.style.height = `${input.scrollHeight}px`;
   counter.textContent = `${input.value.length}/${MAX_LENGTH}`;
+  counter.classList.toggle("visible", input.value.length >= SHOW_COUNTER);
   counter.classList.toggle("near-limit", input.value.length >= NEAR_LIMIT);
+  form.classList.toggle("has-text", input.value.trim() !== "");
 }
 
 input.addEventListener("input", updateComposer);
@@ -307,8 +346,41 @@ input.addEventListener("keydown", (event) => {
 
 // A suggested question is sent right away, exactly as written on the button
 for (const button of document.querySelectorAll(".suggestion")) {
-  button.addEventListener("click", () => send(button.textContent.trim()));
+  button.addEventListener("click", () => {
+    closeDrawer();
+    send(button.textContent.trim());
+  });
 }
+
+for (const tab of tabs) {
+  tab.addEventListener("click", () => selectTab(tab));
+}
+
+// Arrow keys, Home and End move between tabs (the usual keyboard pattern for tabs)
+tabList.addEventListener("keydown", (event) => {
+  const index = tabs.indexOf(document.activeElement);
+  const targets = {
+    ArrowRight: (index + 1) % tabs.length,
+    ArrowLeft: (index - 1 + tabs.length) % tabs.length,
+    Home: 0,
+    End: tabs.length - 1,
+  };
+  if (index === -1 || !(event.key in targets)) {
+    return;
+  }
+  event.preventDefault();
+  const tab = tabs[targets[event.key]];
+  selectTab(tab);
+  tab.focus();
+});
+
+suggestionsToggle.addEventListener("click", () => {
+  if (drawer.hidden) {
+    openDrawer();
+  } else {
+    closeDrawer();
+  }
+});
 
 newChatButton.addEventListener("click", () => {
   chatLog.replaceChildren();
