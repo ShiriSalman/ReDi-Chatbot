@@ -36,6 +36,33 @@ For each question: question | expected behavior | actual answer | sources | pass
 ## Important limitation
 demo_generate() does not produce a real grounded answer. In demo mode, evaluate retrieval, source selection, fallback, and API behavior only. Evaluate answer quality and hallucinations only after a real model is connected and tested. The enough_information flag means matching chunks were retrieved, not that the generated answer is correct.
 
+## Iteration: stay under Gemini's free-tier limit (2026-11-19)
+
+**Evidence:** in the run for the list prompt (branch `list-answers-prompt`),
+the last 3 questions got "Something went wrong" instead of an answer. The
+log shows `429 RESOURCE_EXHAUSTED`: "Generate content requests per minute
+limit exceeded on Free Tier", limit 15 for `gemini-3.5-flash-lite`, retry in
+25–35 s. The runner sends the questions back to back, and the SDK's retries
+come back within the same minute. So the run measured the quota, not the
+answers.
+
+**Change:** with Gemini, `run_evaluation.py` waits **4.5 seconds before every
+model call except the first**, so a run makes at most about 13 calls per
+minute. Questions that don't reach the model (small talk, fallback) don't
+wait. In demo mode nothing waits. A run of 28 questions takes about two to
+three minutes.
+
+**Acceptance criteria:**
+- **AC-P1:** `paced(generate)` calls `generate` with the same prompt and
+  returns its answer; the first call doesn't wait, every later call first
+  waits 4.5 seconds.
+- **AC-P2:** `run()` paces the calls with Gemini and doesn't pace them in demo
+  mode.
+- **AC-P3 (by hand, owner):** a full run with Gemini shows no "Something went
+  wrong" answers.
+
+The tests replace the waiting with a fake, so they stay fast.
+
 ## Definition of done
 - [ ] Question set and expected outcomes documented.
 - [ ] At least 10 cases run and results recorded.
