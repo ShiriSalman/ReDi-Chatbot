@@ -619,3 +619,57 @@ class TestRankingTitles:
     # AC1: "as" is in most chunks, so with "as" + "volunteer" every volunteer page passed the gate
     def test_as_is_a_stopword(self):
         assert tokenize("volunteer as a teacher") == ["volunteer", "teacher"]
+
+
+# Task 8 fix, written from specs/task8_complete_city_lists.md: a city's course list has up to
+# 3 parts, but only one reached the top 5, so answers listed part of the courses (run 14).
+MUNICH_LIST = "https://www.redi-school.org/course-finder?category=Munich"
+
+
+def list_part(number, course):
+    return make_chunk(
+        f"Courses in Munich (ReDI Course Finder, 3 courses at ReDI Munich, part {number} of 3):\n- {course}",
+        url=MUNICH_LIST, title="Course Finder – Munich", category="Courses", list_part=True,
+    )
+
+
+PART_1 = list_part(1, "Python (Data Analytics)")
+PART_2 = list_part(2, "Machine Learning (Data Analytics)")
+PART_3 = list_part(3, "UX/UI Design (User-Centered Design)")
+MUNICH_PAGE = make_chunk(
+    "ReDI Munich offers courses in Munich, Munich and Bavaria.",
+    url="https://www.redi-school.org/munich", title="ReDI School Munich", category="Locations",
+)
+
+
+class TestCompleteLists:
+    QUESTION = "Which courses are there in Munich?"
+
+    # AC2
+    def test_one_retrieved_part_brings_the_whole_list_in_part_order(self):
+        # top_k=1: retrieval alone would return only the best part
+        selected = retrieve(self.QUESTION, [PART_1, PART_2, PART_3], top_k=1)
+
+        assert selected == [PART_1, PART_2, PART_3]
+
+    # AC2
+    def test_the_parts_stay_together_at_the_place_of_the_best_part(self):
+        chunks = [PART_1, PART_2, PART_3, MUNICH_PAGE]
+
+        selected = retrieve(self.QUESTION, chunks, top_k=2)
+
+        parts = [index for index, chunk in enumerate(selected) if chunk.get("list_part")]
+        assert [selected[index] for index in parts] == [PART_1, PART_2, PART_3]
+        assert parts == list(range(parts[0], parts[0] + 3))
+        assert MUNICH_PAGE in selected
+
+    # AC3
+    def test_chunks_without_list_part_bring_nothing_along(self):
+        faq_1 = make_chunk("Courses in Munich are free for everyone in Munich.")
+        faq_2 = make_chunk("Courses take place in the evening.")
+
+        assert retrieve(self.QUESTION, [faq_1, faq_2], top_k=1) == [faq_1]
+
+    # AC4
+    def test_an_unrelated_question_still_gets_nothing(self):
+        assert retrieve("Who won the last World Cup?", [PART_1, PART_2, PART_3]) == []

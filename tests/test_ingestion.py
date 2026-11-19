@@ -509,6 +509,19 @@ class TestCourseList:
             assert len(chunk["text"]) <= 500
         assert sum(len(chunk["text"].split("\n")) - 1 for chunk in munich) == 30
 
+    # specs/task8_complete_city_lists.md, AC1: only the parts of a city list are marked, so
+    # retrieval can bring the other parts along
+    def test_only_city_list_parts_are_marked(self):
+        chunks = self.chunks()
+
+        for chunk in chunks:
+            if "?category=" in chunk["url"]:
+                assert chunk["list_part"] is True
+            else:
+                assert "list_part" not in chunk
+        page = ingest([make_source()], fetch=fake_fetch()).chunks
+        assert all("list_part" not in chunk for chunk in page)
+
     def test_chunks_keep_the_source_information_and_the_newest_update(self):
         items = [course("Python", ["Munich"], updated_ms=1700000000000),
                  course("Machine Learning", ["Munich"], updated_ms=1789107785592)]

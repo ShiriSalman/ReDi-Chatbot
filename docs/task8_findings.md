@@ -343,8 +343,8 @@ Run on 2026-11-19 with the same model and 28 questions (q27, q28 added).
 Changes since run 13: `specs/task8_course_list_per_city.md` and a full
 ingestion run (website refresh).
 
-- **26 of 28 passed** (the runner counts small talk as passed). Only q09,
-  q10 and q26 fail.
+- **25 of 28 passed.** Only q09, q10 and q26 fail. (First recorded here as
+  26; corrected after checking `docs/task8_results.md`.)
 - **q25 "Which courses does ReDI offer?" is answered now:** eight locations
   with their numbers of courses (Berlin 22, Munich 16, …) and the topics.
 - **q27, q28 pass, but the lists are incomplete.** Berlin lists 8 of 22
@@ -364,6 +364,21 @@ ingestion run (website refresh).
   searches by meaning.
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
+
+## Run 15: after giving the model the whole city list
+
+Run on 2026-11-19 with the same model and 28 questions, after
+`specs/task8_complete_city_lists.md`.
+
+- **25 of 28 passed,** the same as run 14. Only q09, q10 and q26 fail.
+- **The city lists are complete now (AC7):**
+  - q27: "There are 22 courses available at ReDI Berlin", followed by all 22
+    by name.
+  - q28: "there are 16 courses available", followed by all 16 by name,
+    including Python, Machine Learning and both UX/UI courses. No topics are
+    listed as courses any more.
+- The new catalogue check (every part of the city list retrieved) passes for
+  q27 and q28; it failed before the change.
 
 ## Suggested order of fixes
 

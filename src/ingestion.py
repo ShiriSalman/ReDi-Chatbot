@@ -193,13 +193,17 @@ def course_list_chunks(source, html, items):
         budget = MAX_CHUNK_CHARS - len(header(99, 99)) - 1
         parts = split_lines([course_line(item) for item in city_items], budget)
         for number, lines in enumerate(parts, start=1):
-            chunks.append(make_chunk(
+            chunk = make_chunk(
                 "\n".join([header(number, len(parts))] + lines),
                 source,
                 url=f"{source['url']}?category={quote(city)}",
                 title=f"{source['title']} – {city}",
                 last_updated=newest_update(city_items),
-            ))
+            )
+            # Only useful complete: retrieval brings the other parts along
+            # (specs/task8_complete_city_lists.md)
+            chunk["list_part"] = True
+            chunks.append(chunk)
     return chunks
 
 
