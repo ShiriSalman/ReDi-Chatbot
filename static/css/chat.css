@@ -326,12 +326,42 @@ body {
 }
 
 .card {
-  padding: 0.9rem 1.1rem;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--border);
   border-left: 4px solid var(--redi-teal);
   border-radius: 0.25rem var(--radius) var(--radius) var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+/* Readable answers (specs/ui_redesign.md, "Iteration: readable answers"): real paragraphs and
+   lists with space between them, and lines of at most about 65 characters */
+.answer-text {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+.message .answer-text > * + * {
+  margin-top: 0.75rem;
+}
+
+.answer-text ul,
+.answer-text ol {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.answer-text li {
+  overflow-wrap: anywhere;
+}
+
+.answer-text li + li {
+  margin-top: 0.3rem;
+}
+
+.answer-text li::marker {
+  color: var(--redi-teal-dark);
+  font-weight: 700;
 }
 
 .message-error .card {
@@ -364,19 +394,48 @@ body {
   list-style: none;
 }
 
+/* Compact chips: the sources are there to check, the answer stays the main thing */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-height: 2.25rem;
-  padding: 0.3rem 0.7rem;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.65rem;
   border: 1px solid #bfdde6;
   border-radius: 999px;
   background: var(--redi-teal-light);
   color: var(--redi-teal-dark);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.3;
   text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.chip svg {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* "+ 2 more" / "Show less" below the chips */
+.more-sources {
+  min-height: 2rem;
+  margin-top: 0.3rem;
+  padding: 0.2rem 0.15rem;
+  border: none;
+  background: none;
+  color: var(--redi-teal-dark);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.more-sources:hover {
+  text-decoration-thickness: 2px;
 }
 
 .chip:hover {
@@ -672,8 +731,13 @@ a:focus-visible {
 
   /* Touch targets of at least 44px (specs/ui_redesign.md) */
   .chip,
+  .more-sources,
   .contact-callout a {
     min-height: 2.75rem;
+  }
+
+  .card {
+    padding: 0.9rem 1rem;
   }
 
   .contact-callout {
