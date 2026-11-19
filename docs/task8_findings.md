@@ -380,6 +380,46 @@ Run on 2026-11-19 with the same model and 28 questions, after
 - The new catalogue check (every part of the city list retrieved) passes for
   q27 and q28; it failed before the change.
 
+## Embeddings tested, not adopted (2026-11-19)
+
+Tested for q09 and q10 with `gemini-embedding-001` (retrieval only): the gate
+stays, the chunks that pass it are ordered by meaning instead of BM25.
+
+- **Worse overall:** 8–10 failing catalogue questions instead of 3 (q01, q06,
+  q07, q08, q25, q27, q28 get worse; "Which courses are there in Berlin?"
+  gets volunteer pages).
+- **q10 not fixed;** q09 fixed only when the title is embedded with the text.
+- **Likely cause:** the chunks are 500-character pieces cut mid-sentence,
+  often with menu or card text, so their embeddings carry little meaning.
+- **Decision:** not now. Worth testing again only after the chunks are split
+  by section or heading. Details: `specs/task8_job_career_synonyms.md`.
+
+Instead, a single synonym ("job" also scores "career", ranking only) fixes
+q10 without side effects.
+
+## Run 16: after the job-career synonym
+
+Run on 2026-11-19 with the same model and 28 questions, after
+`specs/task8_job_career_synonyms.md`.
+
+- **25 of 28 passed,** but one failure is not from the code: q02 "How do I
+  apply for a course?" got the error message because Gemini answered
+  `504 DEADLINE_EXCEEDED`. The app handled it as designed (logged, friendly
+  message). q02 passed in every earlier run. Without the timeout: 26 of 28,
+  only q09 and q26 fail.
+- **q10 passes and uses the career page:** "According to Our Career
+  Services, you can join the ReDI Talent Pool … tech companies can …
+  offer entry-level positions to graduates or give them guidance".
+- **But q10 is only partly right (low):**
+  - part of it is written for companies ("offer jobs to the community and
+    browse ReDI jobseekers"), because the retrieved chunk is the one about
+    the Talent Pool and partners;
+  - mentoring, career workshops and company visits are missing;
+  - it adds "you can join as a career coach" from Volunteer in Copenhagen,
+    which is about volunteering, not about help for learners.
+- **The earlier fixes still hold:** no source list, URL or visible marker;
+  the personal-information note appears only for q20.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
