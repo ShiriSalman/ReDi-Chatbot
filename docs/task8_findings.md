@@ -443,6 +443,25 @@ lists", #74), small spelling mistakes (`specs/task8_spelling_mistakes.md`,
   explain a difference in this run. Its own checks are in its spec.
 - **The earlier fixes still hold:** no source list, URL or visible marker.
 
+## Run 18: after reading the contact page by sections
+
+Run on 2026-11-20 with the same model and 28 questions, after
+`specs/task8_contact_page_sections.md` (#77). The re-ingestion changed only
+the contact page's chunks (387 instead of 385 chunks in total).
+
+- **27 of 28 passed,** the best result so far; only q26 fails (it needs
+  conversation memory, after the MVP). No error answers.
+- **E is fixed:** "Where is ReDI School in Munich?" gets "c/o Media Design
+  Hochschule (EG / B), Neumarkter Str. 22, 81673 München, Germany", plus the
+  official address in Berlin. The Munich contact chunk is ranked first.
+- **q09 passes for the first time** ("How can I contact ReDI?"): the first
+  contact chunk is shorter and more focused, so the contact page reaches the
+  top 5. Quality note (low): the answer lists specific contacts (partnerships,
+  Tech Talks, volunteering in Berlin, Hamburg and NRW) but not the contact
+  persons per location.
+- **Sections on all pages were measured and not adopted:** 24 of 28 in the
+  retrieval-only check (q10 and q14 lose their source). See the spec.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -457,12 +476,15 @@ The spec allows one focused fix at a time, each with before/after evidence.
 5. ~~**The personal-information rule is applied too broadly** ("how do i
    apply" in the live app, q15 in run 5). Narrow its wording.~~ Done (run 7).
 6. ~~**G** (source list in the answer).~~ Done (run 10).
-7. **Ranking:** ~~q08~~ done ("as" as a stopword). Still open: q09, q10,
+7. **Ranking:** ~~q08~~ done ("as" as a stopword), ~~q09~~ done (run 18,
+   contact page by sections). Still open: q10,
    **I** (q25, q26: the Course Finder), the German q15 finding only FAQ
    chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
-8. **E (known limitation, low):** the Munich address is cut between two
+8. ~~**E**~~ Done (run 18): the contact page is read by its sections
+   (`specs/task8_contact_page_sections.md`). The history:
+   **E (known limitation, low):** the Munich address is cut between two
    contact-page chunks: chunk 0 ends with "…Integration Munich c/o Media
    Design Hochschule (EG / B)", chunk 1 starts with "Neumarkter Str. 22 81673
    München" and doesn't contain "Munich", so it isn't retrieved. Seen live on
