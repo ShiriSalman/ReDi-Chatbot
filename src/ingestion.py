@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
 # Page parts that repeat on every page or aren't readable text. "aside" is GitBook's assistant
 # and table of contents (specs/task8_add_applicant_hub_source.md); the ReDI website has none.
@@ -46,9 +46,9 @@ def summarize_report(report):
     return summary
 
 
-def clean_html(html):
-    """Return the relevant text of a page: its <main> content if it has one, without nav, header,
-    footer, sidebars, scripts and styles."""
+def main_content(html):
+    """Return the part of a page with its relevant content, without nav, header, footer,
+    sidebars, scripts and styles."""
     soup = BeautifulSoup(html, "html.parser")
 
     for tag in soup(UNWANTED_TAGS):
@@ -57,9 +57,85 @@ def clean_html(html):
     # Use only the main content when the page marks it, otherwise the body, so the <title> in
     # <head> isn't counted as page text. GitBook adds the page outline after <main>, and the
     # ReDI website a "0" before it (specs/task8_add_applicant_hub_source.md)
-    content = soup.find("main") or soup.body or soup
+    return soup.find("main") or soup.body or soup
+
+
+def clean_html(html):
+    """Return the relevant text of a page: its <main> content if it has one, without nav, header,
+    footer, sidebars, scripts and styles."""
+    content = main_content(html)
     lines = (line.strip() for line in content.get_text(separator="\n").splitlines())
     return "\n".join(line for line in lines if line)
+
+
+# Where a page with "reader": "sections" is divided (specs/task8_contact_page_sections.md)
+SECTION_HEADINGS = ["h1", "h2", "h3"]
+
+
+def sections(html):
+    """Return the page's text split at its headings, one text per section.
+
+    A section that has only its heading and no text of its own (the contact page's
+    "<h2>Munich</h2>" before "<h3>Birgit Köbl</h3>") goes with the next section, because
+    a heading belongs to the text after it.
+    """
+    result = []
+    waiting_heading = ""
+    for heading, body in heading_and_body_parts(main_content(html)):
+        if heading and not body:
+            waiting_heading = f"{waiting_heading} {heading}".strip()
+            continue
+        text = " ".join(part for part in (waiting_heading, heading, body) if part)
+        if text:
+            result.append(text)
+        waiting_heading = ""
+    if waiting_heading:
+        result.append(waiting_heading)
+    return result
+
+
+def heading_and_body_parts(content):
+    """Walk through the content in page order and return (heading text, body text) pairs:
+    one pair per heading, plus one for any text before the first heading."""
+    parts = [{"heading": [], "body": []}]
+    current_heading = None
+    for element in content.descendants:
+        if isinstance(element, Tag) and element.name in SECTION_HEADINGS:
+            parts.append({"heading": [], "body": []})
+            current_heading = element
+        elif isinstance(element, NavigableString) and not isinstance(element, Comment):
+            text = element.strip()
+            if text:
+                in_heading = current_heading is not None and current_heading in element.parents
+                parts[-1]["heading" if in_heading else "body"].append(text)
+    return [(" ".join(" ".join(part["heading"]).split()), " ".join(" ".join(part["body"]).split()))
+            for part in parts]
+
+
+def section_chunks(html, max_chars=MAX_CHUNK_CHARS):
+    """Pack the page's whole sections into chunks of at most max_chars, in page order.
+
+    A section is only cut (with chunk_text) when it alone is longer than max_chars; the next
+    section then starts a new chunk.
+    """
+    chunks = []
+    current = ""
+    for text in sections(html):
+        if len(text) > max_chars:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.extend(chunk_text(text, max_chars))
+            continue
+        candidate = f"{current} {text}" if current else text
+        if len(candidate) <= max_chars:
+            current = candidate
+        else:
+            chunks.append(current)
+            current = text
+    if current:
+        chunks.append(current)
+    return chunks
 
 
 def chunk_text(text, max_chars=MAX_CHUNK_CHARS):
@@ -212,7 +288,8 @@ def ingest(sources, fetch, existing_chunks=None, fetch_collection=None):
 
     fetch(url) returns {"html": ..., "last_updated": ...} or raises an error.
     A source with "reader": "course-list" is also read with fetch_collection(url), which
-    returns its items (see course_list_chunks).
+    returns its items (see course_list_chunks). A source with "reader": "sections" is
+    chunked by its headings (see section_chunks).
     Chunks in existing_chunks are kept, except those of a source that is ingested again.
     """
     result = IngestionResult()
@@ -235,10 +312,13 @@ def ingest(sources, fetch, existing_chunks=None, fetch_collection=None):
                 new_chunks = course_list_chunks(source, page["html"], fetch_collection(url))
             else:
                 last_updated = page.get("last_updated") or "unavailable"
-                new_chunks = [
-                    make_chunk(piece, source, last_updated=last_updated)
-                    for piece in chunk_text(clean_html(page["html"]))
-                ]
+                # "reader": "sections" keeps a heading and its text together
+                # (specs/task8_contact_page_sections.md); other pages are cut every 500 characters
+                if source.get("reader") == "sections":
+                    pieces = section_chunks(page["html"])
+                else:
+                    pieces = chunk_text(clean_html(page["html"]))
+                new_chunks = [make_chunk(piece, source, last_updated=last_updated) for piece in pieces]
         except Exception as error:
             # Old chunks of this source stay, so a temporary outage loses nothing
             result.report["failed"].append({"url": url, "reason": f"{type(error).__name__}: {error}"})

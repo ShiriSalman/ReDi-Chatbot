@@ -155,3 +155,11 @@ def test_no_invented_links():
     for case in QUESTIONS:
         for source in ask(case["question"])["sources"]:
             assert is_approved(source["url"]), (case["id"], source["url"])
+
+
+# specs/task8_contact_page_sections.md, AC7 (finding E): the contact page is read by its
+# sections, so the Munich street is in the same chunk as "Munich" and is retrieved
+def test_the_munich_street_address_is_retrieved():
+    texts = [chunk["text"] for chunk in retrieve("Where is ReDI School in Munich?", CHUNKS)]
+
+    assert any("Neumarkter Str. 22" in text for text in texts)
