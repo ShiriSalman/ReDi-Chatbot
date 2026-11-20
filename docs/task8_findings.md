@@ -420,6 +420,29 @@ Run on 2026-11-19 with the same model and 28 questions, after
 - **The earlier fixes still hold:** no source list, URL or visible marker;
   the personal-information note appears only for q20.
 
+## Run 17: after lists in answers, spelling correction and pacing
+
+Run on 2026-11-19 with the same model and 28 questions, after three PRs:
+lists in answers (`specs/task8_fix_answer_format.md`, "Iteration: simple
+lists", #74), small spelling mistakes (`specs/task8_spelling_mistakes.md`,
+#75) and pacing of evaluation runs
+(`specs/task8_test_against_real_user_questions.md`, #76).
+
+- **A run before the pacing was invalid:** 23 of 28, because the last 3
+  questions got `429 RESOURCE_EXHAUSTED` (free tier: 15 requests per minute),
+  not because of the list prompt. With 4.5 s between calls, this run had no
+  error answers.
+- **26 of 28 passed;** only the known q09 and q26 fail, as in run 16 without
+  its timeout.
+- **Lists:** 6 answers use them: the three course questions, q09, "Do I need
+  to speak German?" and "How can my company support ReDI?". The city lists
+  are complete: Berlin 22 of 22 courses, Munich 16 of 16, one per line.
+- **No other Markdown:** no `*`, `**` or `#` in any answer.
+- **Spelling correction:** it changes the retrieval of none of the 28
+  questions (checked with and without it on the real chunks), so it can't
+  explain a difference in this run. Its own checks are in its spec.
+- **The earlier fixes still hold:** no source list, URL or visible marker.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
