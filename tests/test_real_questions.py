@@ -163,3 +163,15 @@ def test_the_munich_street_address_is_retrieved():
     texts = [chunk["text"] for chunk in retrieve("Where is ReDI School in Munich?", CHUNKS)]
 
     assert any("Neumarkter Str. 22" in text for text in texts)
+
+
+# specs/task8_spelling_mistakes.md, AC12: questions with typos typed on the live page
+@pytest.mark.parametrize("question, expected_url", [
+    ("how di i aply", "https://www.redi-school.org/faq"),
+    ("how du i apply", "https://www.redi-school.org/faq"),
+    ("how to be a voulenteer", "https://www.redi-school.org/become-a-volunteer-at-redi-school"),
+])
+def test_a_misspelled_live_page_question_finds_its_page(question, expected_url):
+    urls = [chunk["url"] for chunk in retrieve(question, CHUNKS)]
+
+    assert expected_url in urls

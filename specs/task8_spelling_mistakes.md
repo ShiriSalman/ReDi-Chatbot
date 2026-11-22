@@ -82,3 +82,75 @@ answers only from the retrieved sources.
   not `fre` (3 letters, which is also one typo from "for", "fee" and "few").
 - Only English letters a–z are tried; `Munchen` is not corrected to
   `münchen`.
+
+## Iteration: short typos of stopwords, two typos in long words (2026-11-23)
+
+### Problem
+
+Three questions typed on the live page got the fallback:
+
+- "how di i aply" and "how du i apply": `aply` was corrected, but `di`/`du`
+  have fewer than 4 letters, so they stayed. They appear in no chunk, and with
+  two question words the gate needs both in the same chunk.
+- "how to be a voulenteer": `voulenteer` is **two** typos from `volunteer`
+  (`ul`/`lu` swapped plus an extra `e`), so it wasn't corrected.
+
+### Change
+
+`correct_spelling()` now handles each unknown word in this order (new or
+changed steps in bold):
+
+1. A word that appears in a chunk is kept.
+2. A word with digits is kept.
+3. **A word one typo from a stopword is dropped, whatever its length**
+   (`di`, `du` → `do`; before, only words with 4 or more letters).
+4. A word with fewer than 4 letters is kept.
+5. If chunk words are one typo away, the word becomes the one in the most
+   chunks.
+6. **Otherwise, if the word has at least 8 letters (`MIN_TWO_TYPO_LENGTH`) and
+   chunk words are two typos away, it becomes the one of those in the most
+   chunks** (`voulenteer` → `volunteer`). Two typos = one typo of a word that
+   is one typo away (Norvig's "edits2").
+7. Otherwise the word is kept.
+
+A one-typo candidate always wins over a two-typo candidate.
+
+### Why unrelated questions stay unrelated
+
+- Step 3 makes a misspelled question behave like its correct spelling: "how
+  old ar yu" now finds the same chunks as "how old are you" already did. No
+  new kind of match: a dropped word is one a correctly spelled question
+  wouldn't have.
+- Short words are still never *corrected* to a chunk word (`fre`, `cos`).
+- Two typos only for long words: they have few neighbours two typos away.
+  `weather` (7 letters) still doesn't become `whether`.
+
+### Acceptance criteria (`TestSpellingMistakes`, `tests/test_real_questions.py`)
+
+- **AC8:** "how di i aply" and "how du i apply" find the same chunk as "how
+  do I apply"; `di` and `du` are dropped.
+- **AC9:** a short unknown word that isn't one typo from a stopword is kept,
+  so an unrelated question with it still finds nothing.
+- **AC10:** a word with at least 8 letters is corrected across two typos
+  ("how to be a voulenteer" finds the volunteer chunk); a shorter word is not.
+- **AC11:** a one-typo candidate wins over a more common two-typo candidate.
+- **AC12:** on the real content, the three live-page questions find the FAQ
+  and the volunteer page.
+
+### Check on the real content (2026-11-23, 387 chunks)
+
+- All 28 Task 8 questions retrieve exactly the same pages as before.
+- The three live-page questions went from no sources to the same pages as the
+  correct spelling.
+- 15 unrelated questions (weather, poem, football, pizza, cake, bitcoin,
+  "how do i fix my tv", "recomend a restaurnt", "wht is the wether in berln",
+  …) still find nothing.
+- Cost: building the two-typo candidates takes about 0.3–0.4 s per unknown
+  word of 8+ letters without a one-typo match. Correctly spelled questions
+  never pay it.
+
+### Known limitations (still)
+
+- Short words are dropped or kept, never corrected: "fre" in "Are ReDI corses
+  fre?" is dropped as a typo of "for", not read as "free".
+- `scholarchip` stays as it is: "scholarship" appears in no chunk.
