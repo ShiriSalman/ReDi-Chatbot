@@ -3,6 +3,7 @@
 # The generate function (the LLM call) is passed in, so the tests never call a real model.
 # Whether the model really follows the rules is checked with real questions in Task 8;
 # these tests check that our code gives it the right context and instructions.
+import time
 from collections import Counter
 
 import pytest
@@ -784,3 +785,58 @@ class TestSpellingMistakes:
     # AC6
     def test_a_typo_of_a_stopword_is_dropped(self):
         assert correct_spelling({"wich", "tehre", "course"}, Counter({"course": 5, "wish": 1})) == {"course"}
+
+    # AC8 (iteration: questions typed on the live page)
+    @pytest.mark.parametrize("question", ["how di i aply", "how du i apply"])
+    def test_a_short_typo_of_a_stopword_is_dropped_too(self, question):
+        assert retrieve(question, self.CHUNKS) == [self.APPLY_CHUNK]
+
+    def test_short_typos_of_stopwords_are_dropped(self):
+        assert correct_spelling({"di", "du", "apply"}, Counter({"apply": 5})) == {"apply"}
+
+    # AC9
+    def test_a_short_unknown_word_that_is_no_stopword_typo_is_kept(self):
+        # "tv" is one typo from "to" and is dropped; "zq" is close to no stopword and stays
+        assert correct_spelling({"zq", "tv", "course"}, Counter({"course": 5})) == {"zq", "course"}
+
+    def test_an_unrelated_question_with_a_short_word_still_finds_nothing(self):
+        assert retrieve("how do i fix my tv", self.CHUNKS) == []
+
+    # AC10
+    VOLUNTEER_CHUNK = make_chunk(
+        "Become a volunteer and share your knowledge with our learners.",
+        url="https://www.redi-school.org/become-a-volunteer-at-redi-school",
+        title="Become a volunteer",
+    )
+
+    def test_a_long_word_two_typos_away_is_corrected(self):
+        assert correct_spelling({"voulenteer"}, Counter({"volunteer": 3})) == {"volunteer"}
+
+    def test_a_long_word_with_two_typos_finds_its_chunk(self):
+        chunks = self.CHUNKS + [self.VOLUNTEER_CHUNK]
+
+        assert retrieve("how to be a voulenteer", chunks) == [self.VOLUNTEER_CHUNK]
+
+    def test_a_word_under_eight_letters_is_not_corrected_across_two_typos(self):
+        # "vlunter" (7 letters) is two typos from "volunteer" and stays as it is
+        assert correct_spelling({"vlunter"}, Counter({"volunteer": 3})) == {"vlunter"}
+
+    def test_a_word_over_fifteen_letters_is_not_corrected_across_two_typos(self):
+        # 17 letters, two typos from "volunteergroups"; kept, because building the two-typo
+        # candidates of long words is too costly
+        word = "volunteerxxgroups"
+        assert correct_spelling({word}, Counter({"volunteergroups": 3})) == {word}
+
+    # AC13: one very long word must not fill the memory
+    def test_a_very_long_word_is_handled_quickly(self):
+        start = time.perf_counter()
+
+        assert retrieve("a" * 10 + "b" * 490, self.CHUNKS) == []
+        assert time.perf_counter() - start < 2
+
+    # AC11
+    def test_a_one_typo_candidate_wins_over_a_two_typo_candidate(self):
+        # "registraton" is one typo from "registration", two from "registrations"
+        counts = Counter({"registration": 1, "registrations": 9})
+
+        assert correct_spelling({"registraton"}, counts) == {"registration"}

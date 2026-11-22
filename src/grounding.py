@@ -124,6 +124,12 @@ def tokenize(text):
 # Spelling mistakes (specs/task8_spelling_mistakes.md): shorter words are never corrected,
 # because many short words are one typo apart ("cos", "cost", "most")
 MIN_CORRECTED_LENGTH = 4
+# Long words have few neighbours two typos away, so they are corrected across two typos
+# ("voulenteer" -> "volunteer"); "weather" (7 letters) must not become "whether"
+MIN_TWO_TYPO_LENGTH = 8
+# The two-typo candidates grow with the square of the word's length: a 500-letter word
+# (allowed by MAX_QUESTION_LENGTH) would give hundreds of millions and fill the memory
+MAX_TWO_TYPO_LENGTH = 15
 LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
@@ -138,24 +144,38 @@ def one_typo_away(word):
     return set(missing + swapped + wrong + extra)
 
 
+def two_typos_away(word):
+    """Return every string that is two typos away from word: one typo of each string that
+    is one typo away (Norvig's "edits2"). For a 10-letter word that's over 100,000 strings,
+    so it is only used for long words without a closer match."""
+    return {second for first in one_typo_away(word) for second in one_typo_away(first)}
+
+
 def correct_spelling(question_words, chunk_counts):
     """Correct small spelling mistakes in the question's words, using the chunks' words.
 
     chunk_counts says in how many chunks each word appears. A word found in the chunks is
-    kept. An unknown word one typo from a stopword ("wich") is dropped like a stopword;
-    otherwise it becomes the chunk word one typo away that appears in the most chunks
-    ("corse" -> "course"). Short words, words with digits and words without a close
-    chunk word are kept as they are.
+    kept. An unknown word one typo from a stopword ("wich", "du") is dropped like a stopword.
+    Otherwise it becomes the chunk word one typo away that appears in the most chunks
+    ("corse" -> "course"); a long word without one becomes the most common chunk word two
+    typos away ("voulenteer" -> "volunteer"). Short words, words with digits and words
+    without a close chunk word are kept as they are.
     """
     corrected = set()
     for word in question_words:
-        if word in chunk_counts or len(word) < MIN_CORRECTED_LENGTH or not word.isalpha():
+        if word in chunk_counts or not word.isalpha():
             corrected.add(word)
             continue
         candidates = one_typo_away(word)
+        # Checked before the length, so short typos like "di" and "du" are dropped too
         if candidates & STOPWORDS:
             continue
+        if len(word) < MIN_CORRECTED_LENGTH:
+            corrected.add(word)
+            continue
         known = [candidate for candidate in candidates if candidate in chunk_counts]
+        if not known and MIN_TWO_TYPO_LENGTH <= len(word) <= MAX_TWO_TYPO_LENGTH:
+            known = [candidate for candidate in two_typos_away(word) if candidate in chunk_counts]
         # The most common candidate wins; ties go to the alphabetically first, so it's repeatable
         corrected.add(min(known, key=lambda c: (-chunk_counts[c], c)) if known else word)
     return corrected
