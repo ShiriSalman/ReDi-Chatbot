@@ -3,6 +3,7 @@
 # The generate function (the LLM call) is passed in, so the tests never call a real model.
 # Whether the model really follows the rules is checked with real questions in Task 8;
 # these tests check that our code gives it the right context and instructions.
+import time
 from collections import Counter
 
 import pytest
@@ -819,6 +820,19 @@ class TestSpellingMistakes:
     def test_a_word_under_eight_letters_is_not_corrected_across_two_typos(self):
         # "vlunter" (7 letters) is two typos from "volunteer" and stays as it is
         assert correct_spelling({"vlunter"}, Counter({"volunteer": 3})) == {"vlunter"}
+
+    def test_a_word_over_fifteen_letters_is_not_corrected_across_two_typos(self):
+        # 17 letters, two typos from "volunteergroups"; kept, because building the two-typo
+        # candidates of long words is too costly
+        word = "volunteerxxgroups"
+        assert correct_spelling({word}, Counter({"volunteergroups": 3})) == {word}
+
+    # AC13: one very long word must not fill the memory
+    def test_a_very_long_word_is_handled_quickly(self):
+        start = time.perf_counter()
+
+        assert retrieve("a" * 10 + "b" * 490, self.CHUNKS) == []
+        assert time.perf_counter() - start < 2
 
     # AC11
     def test_a_one_typo_candidate_wins_over_a_two_typo_candidate(self):

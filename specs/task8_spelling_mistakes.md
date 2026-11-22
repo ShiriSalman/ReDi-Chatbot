@@ -107,10 +107,10 @@ changed steps in bold):
 4. A word with fewer than 4 letters is kept.
 5. If chunk words are one typo away, the word becomes the one in the most
    chunks.
-6. **Otherwise, if the word has at least 8 letters (`MIN_TWO_TYPO_LENGTH`) and
-   chunk words are two typos away, it becomes the one of those in the most
-   chunks** (`voulenteer` → `volunteer`). Two typos = one typo of a word that
-   is one typo away (Norvig's "edits2").
+6. **Otherwise, if the word has 8 to 15 letters (`MIN_TWO_TYPO_LENGTH`,
+   `MAX_TWO_TYPO_LENGTH`) and chunk words are two typos away, it becomes the
+   one of those in the most chunks** (`voulenteer` → `volunteer`). Two typos =
+   one typo of a word that is one typo away (Norvig's "edits2").
 7. Otherwise the word is kept.
 
 A one-typo candidate always wins over a two-typo candidate.
@@ -136,6 +136,16 @@ A one-typo candidate always wins over a two-typo candidate.
 - **AC11:** a one-typo candidate wins over a more common two-typo candidate.
 - **AC12:** on the real content, the three live-page questions find the FAQ
   and the volunteer page.
+- **AC13:** a word over 15 letters is not corrected across two typos, and a
+  question with one 500-letter word is answered in under 2 seconds.
+
+### Why the upper limit
+
+The number of two-typo candidates grows with the square of the word's length:
+about 170,000 for 11 letters, but hundreds of millions for one 500-letter word,
+which `MAX_QUESTION_LENGTH` allows. The first full test run without the limit
+filled the computer's memory. Real typos in words over 15 letters are rare, and
+such a word is simply kept as it is.
 
 ### Check on the real content (2026-11-23, 387 chunks)
 
