@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pytest
 
+import app as app_module
 from app import create_app, demo_generate, load_chunks, log_startup
+from rate_limit import RateLimiter
 from grounding import NOT_ENOUGH_INFO
 from llm import MODEL
 
@@ -58,8 +60,8 @@ def fake_generate(answer="Yes, ReDI courses are free of charge."):
     return generate
 
 
-def make_client(chunks=CHUNKS, generate=None):
-    app = create_app(chunks=chunks, generate=generate or fake_generate())
+def make_client(chunks=CHUNKS, generate=None, rate_limiter=None):
+    app = create_app(chunks=chunks, generate=generate or fake_generate(), rate_limiter=rate_limiter)
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -461,6 +463,87 @@ class TestModelBusy:
             ask(make_client(generate=failing_generate(FakeGeminiError(429))), SUPPORTED_QUESTION)
 
         assert "429 RESOURCE_EXHAUSTED" in caplog.text
+
+
+# specs/rate_limit_per_visitor.md: at most 5 questions per minute per visitor, counted only
+# when Gemini would be called. A fake clock stands in for time.
+class FakeClock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+VISITOR_LIMIT_MESSAGE = "You're asking very quickly. Please wait a moment and try again."
+
+
+class TestVisitorLimit:
+    def setup_method(self):
+        self.clock = FakeClock()
+        self.generate = fake_generate()
+        self.client = make_client(generate=self.generate,
+                                  rate_limiter=RateLimiter(5, 60, clock=self.clock))
+
+    def ask_as(self, visitor, question=SUPPORTED_QUESTION):
+        return self.client.post("/api/chat", json={"question": question},
+                                headers={"X-Forwarded-For": f"{visitor}, 10.0.0.1"})
+
+    # AC5
+    def test_the_sixth_question_in_a_minute_gets_a_wait_message_without_calling_gemini(self):
+        statuses = [self.ask_as("203.0.113.5").status_code for _ in range(5)]
+        sixth = self.ask_as("203.0.113.5")
+
+        assert statuses == [200] * 5
+        assert sixth.status_code == 429
+        assert sixth.get_json() == {"error": VISITOR_LIMIT_MESSAGE}
+        assert len(self.generate.prompts) == 5
+
+    # AC6
+    def test_the_visitor_can_ask_again_a_minute_later(self):
+        for _ in range(6):
+            self.ask_as("203.0.113.5")
+
+        self.clock.now += 60
+
+        assert self.ask_as("203.0.113.5").status_code == 200
+
+    # AC7
+    def test_every_visitor_has_their_own_limit(self):
+        for _ in range(6):
+            self.ask_as("203.0.113.5")
+
+        assert self.ask_as("198.51.100.7").status_code == 200
+
+    def test_without_the_header_the_connection_address_is_the_visitor(self):
+        def ask_from(address):
+            return self.client.post("/api/chat", json={"question": SUPPORTED_QUESTION},
+                                    environ_base={"REMOTE_ADDR": address})
+
+        for _ in range(5):
+            ask_from("192.0.2.1")
+
+        assert ask_from("192.0.2.1").status_code == 429
+        assert ask_from("192.0.2.2").status_code == 200
+
+    # AC8
+    def test_small_talk_and_unanswerable_questions_do_not_count(self):
+        for _ in range(10):
+            assert self.ask_as("203.0.113.5", "thanks").status_code == 200
+            assert self.ask_as("203.0.113.5", UNRELATED_QUESTION).status_code == 200
+
+        assert self.ask_as("203.0.113.5").status_code == 200
+        assert len(self.generate.prompts) == 1
+
+    # AC9
+    def test_without_a_rate_limiter_there_is_no_limit(self):
+        client = make_client()
+
+        assert all(ask(client, SUPPORTED_QUESTION).status_code == 200 for _ in range(8))
+
+    def test_the_served_app_allows_five_questions_per_minute(self):
+        assert app_module.rate_limiter.limit == 5
+        assert app_module.rate_limiter.window_seconds == 60
 
 
 # AC9: Safe rendering (backend side, plus a check on the browser script)
