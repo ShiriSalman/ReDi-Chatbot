@@ -228,13 +228,43 @@ between attempts. On Render, gunicorn's `--graceful-timeout` is set above it
 - `test_uses_gemini_with_the_key_from_gemini_api_key` now checks only the
   `api_key` argument, because the client also receives `http_options`.
 
+## Iteration: a message for the used-up quota (429)
+
+**Evidence:** in a Task 8 run on 2026-11-19, three questions got
+`ClientError: 429 RESOURCE_EXHAUSTED` ("Generate content requests per minute
+limit exceeded on Free Tier", limit 15 for `gemini-3.5-flash-lite`, "Please
+retry in 35 s"). The SDK's 3 attempts all fell within the same minute, and
+the visitor saw `SERVER_ERROR` ("Something went wrong … Please try again"),
+which suggests trying again right away. The live app on Render has the same
+limit, shared by all visitors.
+
+**Decision (owner, 2026-11-20):** a separate message for 429, then a limit
+per visitor (`specs/rate_limit_per_visitor.md`).
+
+**Change (`src/app.py` only):**
+- When answering fails with an error whose `code` is `429`, the app answers
+  with **status 429** and `error`: *"The chatbot is getting a lot of
+  questions right now. Please wait a minute and try again."*
+  (`MODEL_BUSY`). The error is still logged.
+- The app checks the attribute (`getattr(error, "code", None) == 429`), so it
+  doesn't import Google's SDK; demo mode and the tests work without it.
+  `google.genai.errors.ClientError` has `code` as an `int` (checked with the
+  installed SDK, 2.32.0).
+- Every other error keeps the 500 `SERVER_ERROR`.
+- The page needs no change: it shows `error` in the red card and puts the
+  question back in the box for any non-OK status.
+
+**Acceptance criteria (`tests/test_app.py`, `TestModelBusy`):**
+- **AC13:** an error with `code = 429` gives status 429 and `MODEL_BUSY`,
+  without internal details.
+- **AC14:** an error with another `code` (for example 503), or none, still
+  gives 500 `SERVER_ERROR`.
+- **AC15:** the 429 is logged like other errors.
+
 ## Later (not in this spec)
 
 - **Response validation beyond empty text**, for example checking the finish
   reason or handling a cut-off answer.
-- **A separate message for 429** ("The chatbot is busy, please try again in
-  a minute"). This would be a new visitor message, so it is the owner's
-  decision.
 
 ## To verify before implementing
 

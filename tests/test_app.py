@@ -420,6 +420,49 @@ class TestGenerationFailure:
         assert ask(client, SUPPORTED_QUESTION).status_code == 200
 
 
+# specs/gemini_error_handling.md, "Iteration: a message for the used-up quota (429)".
+# Gemini's ClientError carries the HTTP status as error.code; a small fake stands in for it.
+class FakeGeminiError(Exception):
+    def __init__(self, code):
+        super().__init__(f"{code} RESOURCE_EXHAUSTED. You exceeded your current quota (key sk-secret-123)")
+        self.code = code
+
+
+def failing_generate(error):
+    def generate(prompt):
+        raise error
+    return generate
+
+
+class TestModelBusy:
+    # AC13
+    def test_a_used_up_quota_gets_status_429_and_a_wait_message(self):
+        response = ask(make_client(generate=failing_generate(FakeGeminiError(429))), SUPPORTED_QUESTION)
+
+        assert response.status_code == 429
+        assert response.get_json() == {
+            "error": "The chatbot is getting a lot of questions right now. Please wait a minute and try again."
+        }
+        assert "sk-secret-123" not in response.get_data(as_text=True)
+
+    # AC14
+    @pytest.mark.parametrize("error", [FakeGeminiError(503), RuntimeError("no code at all")])
+    def test_other_errors_keep_the_generic_500(self, error):
+        response = ask(make_client(generate=failing_generate(error)), SUPPORTED_QUESTION)
+
+        assert response.status_code == 500
+        assert response.get_json() == {
+            "error": "Something went wrong while answering your question. Please try again."
+        }
+
+    # AC15
+    def test_a_used_up_quota_is_logged(self, caplog):
+        with caplog.at_level(logging.ERROR):
+            ask(make_client(generate=failing_generate(FakeGeminiError(429))), SUPPORTED_QUESTION)
+
+        assert "429 RESOURCE_EXHAUSTED" in caplog.text
+
+
 # AC9: Safe rendering (backend side, plus a check on the browser script)
 class TestSafeRendering:
     def test_html_in_the_answer_is_returned_as_plain_json_text(self):
