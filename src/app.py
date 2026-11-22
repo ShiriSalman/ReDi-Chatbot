@@ -28,6 +28,10 @@ QUESTION_TOO_LONG = "Please keep your question under 500 characters."
 MAX_QUESTION_LENGTH = 500
 CONTENT_UNAVAILABLE = "ReDI information is temporarily unavailable. Please try again later."
 SERVER_ERROR = "Something went wrong while answering your question. Please try again."
+# Gemini's free tier allows 15 requests per minute for everyone together; trying again right
+# away doesn't help (specs/gemini_error_handling.md, "Iteration: a message for the used-up quota")
+MODEL_BUSY = "The chatbot is getting a lot of questions right now. Please wait a minute and try again."
+QUOTA_EXCEEDED = 429
 
 # Offered when retrieval finds nothing, so the visitor can ask ReDI directly.
 # The URL is an approved source in data/sources.json; tests/test_app.py checks that.
@@ -89,9 +93,13 @@ def create_app(chunks, generate):
 
         try:
             result = answer_question(question, chunks, generate)
-        except Exception:
+        except Exception as error:
             # The details go to the server log only, never to the visitor
             app.logger.exception("Answering a question failed")
+            # Gemini's errors carry the HTTP status as "code"; checking the attribute means
+            # this module doesn't need to import Google's SDK
+            if getattr(error, "code", None) == QUOTA_EXCEEDED:
+                return jsonify(error=MODEL_BUSY), QUOTA_EXCEEDED
             return jsonify(error=SERVER_ERROR), 500
 
         response = {
