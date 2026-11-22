@@ -462,6 +462,19 @@ the contact page's chunks (387 instead of 385 chunks in total).
 - **Sections on all pages were measured and not adopted:** 24 of 28 in the
   retrieval-only check (q10 and q14 lose their source). See the spec.
 
+## Run 19: after correcting short stopword typos and two-typo words
+
+Run on 2026-11-23 with the same model and 28 questions, after the spelling
+iteration in `specs/task8_spelling_mistakes.md` (#81) and the per-visitor
+limit (#80, not active in the evaluation).
+
+- **27 of 28 passed,** the same as run 18; only q26 fails (it needs
+  conversation memory, after the MVP). No error answers.
+- As expected: the retrieval-only check had already shown that all 28
+  questions retrieve the same pages as before. The change only helps
+  misspelled questions such as "how du i apply" and "how to be a
+  voulenteer", seen on the live page.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
