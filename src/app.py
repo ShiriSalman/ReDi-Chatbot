@@ -16,6 +16,7 @@ from flask import Flask, jsonify, render_template, request
 from citations import collect_citations
 from grounding import answer_question
 from llm import MODEL, choose_generate
+from rate_limit import RateLimiter
 
 PROJECT_DIR = Path(__file__).parent.parent
 CHUNKS_PATH = PROJECT_DIR / "data" / "chunks.json"
@@ -32,6 +33,26 @@ SERVER_ERROR = "Something went wrong while answering your question. Please try a
 # away doesn't help (specs/gemini_error_handling.md, "Iteration: a message for the used-up quota")
 MODEL_BUSY = "The chatbot is getting a lot of questions right now. Please wait a minute and try again."
 QUOTA_EXCEEDED = 429
+
+# One visitor may not use up the shared quota alone (specs/rate_limit_per_visitor.md).
+# Only questions that reach Gemini count.
+QUESTIONS_PER_MINUTE = 5
+VISITOR_LIMIT = "You're asking very quickly. Please wait a moment and try again."
+
+
+class VisitorLimitReached(Exception):
+    """Raised instead of calling the model when a visitor has asked too often."""
+
+
+def visitor_key(request):
+    """Return the visitor's IP address: the first X-Forwarded-For entry, else the connection's.
+
+    On Render every request comes through a proxy, which adds the address it sees at the end
+    of X-Forwarded-For. How many proxies there are isn't documented, so the first entry is
+    used: counting from the end could give a proxy address shared by many visitors.
+    """
+    first_forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    return first_forwarded or request.remote_addr or "unknown"
 
 # Offered when retrieval finds nothing, so the visitor can ask ReDI directly.
 # The URL is an approved source in data/sources.json; tests/test_app.py checks that.
@@ -57,11 +78,13 @@ def load_chunks(path=CHUNKS_PATH):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def create_app(chunks, generate):
+def create_app(chunks, generate, rate_limiter=None):
     """Build the Flask app.
 
     chunks are the ingested ReDI chunks. generate(prompt) calls the model and returns
     its answer, so tests and demo mode can pass in their own function.
+    rate_limiter (a RateLimiter) limits the model calls per visitor; without it there is
+    no limit, as in the tests and the local evaluation runs.
     """
     app = Flask(
         __name__,
@@ -91,8 +114,19 @@ def create_app(chunks, generate):
         if not chunks:
             return jsonify(error=CONTENT_UNAVAILABLE), 503
 
+        # The limit is checked right before the model call, so small talk and questions the
+        # sources don't cover never count
+        def limited_generate(prompt):
+            if rate_limiter is not None and not rate_limiter.allow(visitor_key(request)):
+                raise VisitorLimitReached()
+            return generate(prompt)
+
         try:
-            result = answer_question(question, chunks, generate)
+            result = answer_question(question, chunks, limited_generate)
+        except VisitorLimitReached:
+            # Logged without the address: it is personal data and stays in memory only
+            app.logger.info("A visitor reached the limit of %d questions per minute", QUESTIONS_PER_MINUTE)
+            return jsonify(error=VISITOR_LIMIT), 429
         except Exception as error:
             # The details go to the server log only, never to the visitor
             app.logger.exception("Answering a question failed")
@@ -138,7 +172,8 @@ def log_startup(app, chunks, generate):
 # gunicorn loads this module-level variable called "app" ("app:app" in the Dockerfile, on Render)
 chunks = load_chunks()
 generate = choose_generate(demo_generate)
-app = create_app(chunks, generate)
+rate_limiter = RateLimiter(QUESTIONS_PER_MINUTE, window_seconds=60)
+app = create_app(chunks, generate, rate_limiter=rate_limiter)
 log_startup(app, chunks, generate)
 
 if __name__ == "__main__":
