@@ -1,5 +1,4 @@
 # Tests for the Gemini connection, written from specs/gemini_error_handling.md.
-# src/llm.py does not exist yet, so every test fails until it is written.
 # A fake client stands in for Gemini, so the tests never call the network and need no API key.
 # The errors are real SDK classes, built without a request, so the tests check the exact
 # exceptions Gemini raises.

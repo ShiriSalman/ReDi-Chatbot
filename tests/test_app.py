@@ -1,5 +1,4 @@
 # Tests for the chat web app, written from specs/task6_chat_interface.md.
-# src/app.py does not exist yet, so every test fails until it is written.
 # The app gets its chunks and generate function passed in, so no real model or data file is used.
 import json
 import logging

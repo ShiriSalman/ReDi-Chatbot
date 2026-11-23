@@ -1,5 +1,4 @@
 # Tests for fetch_page, which downloads one source for the ingestion pipeline.
-# src/fetching.py does not exist yet, so every test fails until it is written.
 # The get function is passed in, so the tests never touch the network.
 import pytest
 

@@ -66,7 +66,8 @@ but the answer text is a placeholder that says it is not a real answer.
 ## How to know it worked
 
 1. Open http://127.0.0.1:5000 in your browser.
-2. You see the page **"ReDI School Chatbot"** with a text field ("For example: How do I apply?").
+2. You see the page **"ReDI School Chatbot"** with the welcome message **"Hi! How can I help
+   you?"**, topic tabs with suggested questions, and a text field ("Ask about ReDI School…").
 3. Ask **"How do I apply?"**. You should get:
    - an answer (with `GEMINI_API_KEY`) or the demo-mode placeholder (without it)
    - a **Sources** section below the answer with links to ReDI pages, for example the FAQ

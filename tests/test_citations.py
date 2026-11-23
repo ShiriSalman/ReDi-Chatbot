@@ -1,5 +1,4 @@
 # Tests for citation and sourcing behavior, written from specs/task5_citation_sourcing.md.
-# src/citations.py does not exist yet, so every test fails until it is written.
 # The tests use fixed AnswerResult objects or a fake generate function, so no real model is called.
 import pytest
 

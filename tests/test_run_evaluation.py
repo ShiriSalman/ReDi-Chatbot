@@ -1,5 +1,4 @@
 # Tests for the Task 8 evaluation runner, written from specs/task8_test_against_real_user_questions.md.
-# src/run_evaluation.py does not exist yet, so every test fails until it is written.
 # The runner sends each question through POST /api/chat and records the evidence the spec asks for:
 # question | expected | actual answer | sources | pass/fail | notes.
 # Small fake chunks and a fake model are used, so the tests don't depend on the real content.

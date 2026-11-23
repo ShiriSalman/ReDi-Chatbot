@@ -1,5 +1,4 @@
 # Tests for the Render deployment files, written from specs/task9_deploy_render.md.
-# Dockerfile and .dockerignore don't exist yet, so these tests fail until they are written.
 # Docker isn't installed on the development machine, so the image itself is first built on
 # Render; these tests guard the parts that would otherwise only fail there.
 import re
