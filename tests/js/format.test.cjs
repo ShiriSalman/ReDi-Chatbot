@@ -1,6 +1,6 @@
 // Tests for static/js/format.js (specs/ui_redesign.md, "Iteration: readable answers", AC12).
-// Run with Node's built-in test runner: node --test tests/js/
-// Jest (the leftover practice setup) skips tests/js/ (package.json, testPathIgnorePatterns).
+// Run with Node's built-in test runner: node --test tests/js/ (no npm packages needed).
+// tests/test_format_js.py runs them as part of python -m pytest.
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { answerBlocks, initialSourceCount } = require("../../static/js/format.js");
