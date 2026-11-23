@@ -20,9 +20,11 @@ API_KEY_VARIABLE = "GEMINI_API_KEY"
 # Without these the SDK tries once and waits without limit. With them it retries
 # network errors, timeouts, 429 and 5xx (for example 503 "high demand") with growing
 # pauses; a wrong key or model (4xx) is not retried. TIMEOUT_MS is per attempt and in
-# milliseconds; a long answer took 56 seconds.
-TIMEOUT_MS = 60_000
-RETRY_ATTEMPTS = 3  # including the first try
+# milliseconds. 3 x 60 seconds let visitors wait about 3 minutes when Gemini was
+# overloaded, so it is 2 x 45 seconds now (specs/gemini_error_handling.md). The page gives
+# up later than this worst case (GIVE_UP_MS in static/js/chat.js).
+TIMEOUT_MS = 45_000
+RETRY_ATTEMPTS = 2  # including the first try
 
 
 def make_gemini_generate(client, model=MODEL):

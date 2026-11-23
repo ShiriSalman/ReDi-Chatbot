@@ -22,6 +22,14 @@ const welcomeTopicsPlace = welcome.querySelector(".lead");
 const EMPTY_QUESTION = "Please enter a question.";
 const GENERIC_ERROR = "Something went wrong while answering your question. Please try again.";
 const NETWORK_ERROR = "The chatbot could not be reached. Please check your connection and try again.";
+const STILL_WORKING = "Still working on it. The chatbot is busy right now, so this can take up to a minute.";
+const TOO_SLOW = "This is taking too long. Please try again in a moment.";
+// Long waits (specs/gemini_error_handling.md): the note comes after 15 seconds, and the page
+// gives up after 100 seconds, later than the server's worst case (2 x 45 s in src/llm.py)
+const STILL_WORKING_MS = 15_000;
+const GIVE_UP_MS = 100_000;
+// The hidden status text from the template, restored after a long wait changed it
+const LOADING_TEXT = loading.textContent;
 const CONTACT_FALLBACK_TITLE = "ReDI contact page";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 // The ReDI logo mark; the header image gives its address, so it's set in one place (the template)
@@ -290,15 +298,34 @@ function setLoading(isLoading) {
   }
 }
 
-async function askQuestion(question) {
+async function askQuestion(question, signal) {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question }),
+    signal,
   });
-  // An error page that is not JSON still gets a friendly message
-  const data = await response.json().catch(() => ({}));
+  // An error page that is not JSON still gets a friendly message; giving up while the
+  // answer is still arriving counts as giving up, not as a broken answer
+  const data = await response.json().catch((error) => {
+    if (error.name === "AbortError") {
+      throw error;
+    }
+    return {};
+  });
   return { ok: response.ok, data };
+}
+
+// After STILL_WORKING_MS: a visible note under the waiting logo, and the same words for
+// screen readers through the role="status" text
+function showStillWorking() {
+  if (typingIndicator) {
+    const note = document.createElement("p");
+    note.className = "still-working";
+    note.textContent = STILL_WORKING;
+    typingIndicator.querySelector(".card").appendChild(note);
+  }
+  loading.textContent = STILL_WORKING;
 }
 
 // The welcome screen is shown until the first question and again after "New chat".
@@ -343,9 +370,12 @@ async function send(question) {
   input.value = "";
   updateComposer();
   setLoading(true);
+  const controller = new AbortController();
+  const stillWorkingTimer = setTimeout(showStillWorking, STILL_WORKING_MS);
+  const giveUpTimer = setTimeout(() => controller.abort(), GIVE_UP_MS);
 
   try {
-    const { ok, data } = await askQuestion(question);
+    const { ok, data } = await askQuestion(question, controller.signal);
     if (ok) {
       const message = addMessage("assistant", data.answer);
       addSources(message, data.sources || []);
@@ -355,10 +385,13 @@ async function send(question) {
       // Give the question back so the visitor can try again without retyping it
       input.value = question;
     }
-  } catch {
-    addMessage("error", NETWORK_ERROR);
+  } catch (error) {
+    addMessage("error", error.name === "AbortError" ? TOO_SLOW : NETWORK_ERROR);
     input.value = question;
   } finally {
+    clearTimeout(stillWorkingTimer);
+    clearTimeout(giveUpTimer);
+    loading.textContent = LOADING_TEXT;
     setLoading(false);
     // After an error the question is back in the box, so the counter and height follow it
     updateComposer();

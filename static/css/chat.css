@@ -488,6 +488,16 @@ body {
   box-shadow: none;
 }
 
+/* After 15 seconds of waiting: a short note next to the waiting logo.
+   Two classes, so it wins over ".message p { margin: 0 }" */
+.typing .still-working {
+  margin: 0 0 0 0.6rem;
+  max-width: 40ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .waiting-mark {
   display: block;
   width: 1.5rem;

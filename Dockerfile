@@ -32,5 +32,5 @@ EXPOSE 10000
 # visitors while one answer waits for Gemini, and a second worker would only load everything
 # twice. With threads, --timeout doesn't limit a request; --graceful-timeout is what cuts off
 # answers still running when Render restarts the service, so it is above the Gemini client's
-# worst case (3 attempts x 60 seconds plus pauses) instead of the default 30 seconds.
+# worst case (2 attempts x 45 seconds plus a pause) instead of the default 30 seconds.
 CMD ["gunicorn", "app:app", "--workers", "1", "--threads", "4", "--graceful-timeout", "200"]
