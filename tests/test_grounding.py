@@ -1,5 +1,4 @@
 # Tests for answer grounding, written from specs/task3_answer_grounding.md.
-# src/grounding.py does not exist yet, so every test fails until it is written.
 # The generate function (the LLM call) is passed in, so the tests never call a real model.
 # Whether the model really follows the rules is checked with real questions in Task 8;
 # these tests check that our code gives it the right context and instructions.

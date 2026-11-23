@@ -1,6 +1,5 @@
 # Tests for the script that runs the ingestion: read data/sources.json,
 # ingest the sources and save the chunks to a JSON file.
-# src/run_ingestion.py does not exist yet, so every test fails until it is written.
 # The tests use pytest's tmp_path, so they never touch the real data/ folder.
 import json
 from pathlib import Path

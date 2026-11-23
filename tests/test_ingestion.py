@@ -1,5 +1,4 @@
 # Tests for the content ingestion pipeline, written from specs/task2_content_ingestion.md.
-# src/ingestion.py does not exist yet, so every test fails until it is written.
 # The fetch function is passed in, so the tests never touch the network.
 import copy
 
