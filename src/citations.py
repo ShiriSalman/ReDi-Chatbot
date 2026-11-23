@@ -44,24 +44,3 @@ def collect_citations(sources):
         citations.append({"title": title, "url": url})
 
     return citations
-
-
-def format_answer(result):
-    """Return the answer text followed by a Sources section with links to the ReDI pages.
-
-    The Sources section is only shown when at least one source has a valid URL.
-    Sources without a valid URL are listed as plain text, never as a link.
-    """
-    citations = collect_citations(result.sources)
-    if not any(citation["url"] for citation in citations):
-        return result.text
-
-    lines = [result.text, "", "**Sources**"]
-    for citation in citations:
-        # Titles are data: square brackets are removed so a title can never form its own link
-        title = citation["title"].replace("[", "").replace("]", "")
-        if citation["url"]:
-            lines.append(f"- [{title}]({citation['url']})")
-        else:
-            lines.append(f"- {title} (no link available)")
-    return "\n".join(lines)
