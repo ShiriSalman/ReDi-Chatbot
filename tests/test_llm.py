@@ -134,6 +134,11 @@ class TestChooseGenerate:
         assert http_options.timeout == TIMEOUT_MS
         assert http_options.retry_options.attempts == RETRY_ATTEMPTS
 
+    # AC16: an overloaded Gemini kept visitors waiting about 3 minutes (MVP review, 2026-11-23)
+    def test_two_attempts_of_45_seconds_each(self):
+        assert TIMEOUT_MS == 45_000
+        assert RETRY_ATTEMPTS == 2
+
 
 def record_client_creation(monkeypatch):
     """Replace genai.Client with a fake and return the list of arguments it was created with."""
