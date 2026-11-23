@@ -137,3 +137,4 @@ python -m pytest
   - `0002-chat-interface-json-api.md`
 - **`docs/task8_findings.md`:** what the evaluation found, and the order of the next fixes.
 - **`docs/update_content.md`:** how to keep the content current (Task 10).
+- **`docs/mvp_review.md`:** what the review after Task 10 found and changed.
