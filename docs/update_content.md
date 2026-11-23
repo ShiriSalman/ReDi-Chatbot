@@ -107,6 +107,12 @@ git push -u origin update-content-2026-11
 Open a pull request and merge it. Render builds a new image from `main`
 (the `Dockerfile` copies `data/chunks.json`), which takes a few minutes.
 
+Check in the Render dashboard, under **Events**, that a deploy for your merge
+commit started within about a minute and ends with "Deploy live". An automatic
+deploy has no "by you" next to it. If no deploy appears, Render didn't hear
+about the merge: start one with **Manual Deploy → Deploy latest commit**, and
+see "If something goes wrong" below.
+
 ### 7. Check the live page
 
 Open https://redi-chatbot.onrender.com and ask one question about a changed
@@ -121,7 +127,17 @@ page. The answer should use the new content and link to the page.
   usually a page lost text or changed its layout. Write the finding down in
   `docs/task8_findings.md`.
 - **The live page still shows old answers:** check in the Render dashboard
-  that the deploy for your merge finished.
+  that the deploy for your merge finished. If merges never start a deploy,
+  Render isn't connected to GitHub: until 2026-11-23 the Render GitHub app
+  wasn't installed, so only manual deploys ran, and the live page stayed on
+  an old version for three weeks without any error. The fix: install the app
+  (Render → Account Settings → Git Deployment Credentials → GitHub, access to
+  `ReDi-Chatbot`) and check that the service's **Repository** shows
+  `ShiriSalman / ReDi-Chatbot`, not a public URL.
+- **Which version is live?** Compare the live script with the one on `main`;
+  they should be the same:
+  https://redi-chatbot.onrender.com/static/js/chat.js and
+  `static/js/chat.js`.
 
 ## Limits
 
