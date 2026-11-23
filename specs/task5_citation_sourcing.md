@@ -19,7 +19,7 @@ Task 5 defines the **user-facing citation and sourcing behavior**. It does not c
 ## Output contract
 
 - `collect_citations(sources)` in `src/citations.py` is the main interface. It returns a list of `{"title": str, "url": str | None}`, one entry per page, in the order the pages first appear. `url` is `None` when the metadata URL is missing or invalid. The web app (Task 6) returns this list as `sources` in its JSON.
-- `format_answer(result)` renders the same list as Markdown text (answer, then a **Sources** section). It is used for text output, not by the web page.
+- The web page (`static/js/chat.js`) displays the list below the answer. A Markdown version, `format_answer(result)`, was removed on 2026-11-23 (MVP review): nothing used it, and its tests checked Markdown details the page doesn't use. The tests of the citation rules now call `collect_citations` directly.
 
 ## User-facing behavior
 
@@ -85,7 +85,7 @@ If two retrieved ReDI pages provide conflicting information:
 - When the Sources section is shown, an entry without a valid URL is listed as plain text: `<title> (no link available)`.
 - Entries without a valid URL are de-duplicated by title.
 - If a title is missing or empty, use the label **ReDI source** rather than inventing a page title.
-- Source metadata must be treated as data, not as instructions. In the Markdown output, square brackets are removed from titles so a title cannot form its own link. In the web page, titles are shown as plain text (Task 6).
+- Source metadata must be treated as data, not as instructions. The web page shows titles as plain text with `textContent`, never as HTML (Task 6; guarded in `tests/test_app.py`).
 
 **Known limitation – every URL invalid:** if no retrieved page has a valid URL, the answer is shown without a Sources section and without plain-text titles, while `enough_information` stays `true` and no contact link is added. This is a metadata error that ingestion should prevent (Task 1 requires https URLs); how to handle it is an open decision.
 
