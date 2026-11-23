@@ -3,8 +3,9 @@
 # src/run_ingestion.py does not exist yet, so every test fails until it is written.
 # The tests use pytest's tmp_path, so they never touch the real data/ folder.
 import json
+from pathlib import Path
 
-from run_ingestion import format_report, run
+from run_ingestion import compare_chunks, format_changes, format_report, run
 
 PAGE_HTML = "<html><body><main><p>All our courses are free.</p></main></body></html>"
 
@@ -160,3 +161,123 @@ def test_format_report_shows_the_counts_and_the_failure_reasons():
     assert "No content: 0" in text
     assert "https://www.redi-school.org/broken" in text
     assert "ConnectionError: 404" in text
+
+
+# specs/task10_update_loop.md: the change summary
+FAQ = "https://www.redi-school.org/faq"
+MUNICH = "https://www.redi-school.org/redi-school-munich"
+FINDER = "https://www.redi-school.org/course-finder"
+
+
+def chunk(url, text):
+    return {"url": url, "text": text}
+
+
+# AC1
+def test_a_source_with_chunks_only_after_the_run_is_new():
+    changes = compare_chunks([], [chunk(FAQ, "a"), chunk(FAQ, "b")])
+
+    assert changes["new"] == [{"url": FAQ, "chunks": 2}]
+
+
+# AC2
+def test_a_source_with_chunks_only_before_the_run_is_removed():
+    changes = compare_chunks([chunk(MUNICH, "a")], [])
+
+    assert changes["removed"] == [{"url": MUNICH, "chunks": 1}]
+
+
+# AC3
+def test_a_source_whose_texts_differ_is_changed():
+    old = [chunk(MUNICH, "x" * 500), chunk(MUNICH, "y" * 500), chunk(MUNICH, "z" * 100)]
+    new = [chunk(MUNICH, "x" * 500), chunk(MUNICH, "w" * 200)]
+
+    changes = compare_chunks(old, new)
+
+    assert changes["changed"] == [{"url": MUNICH, "chunks_before": 3, "chunks_after": 2, "characters": -400}]
+
+
+# AC4
+def test_a_source_with_the_same_texts_is_unchanged():
+    chunks = [chunk(FAQ, "a"), chunk(MUNICH, "b")]
+
+    changes = compare_chunks(chunks, [dict(c) for c in chunks])
+
+    assert changes["unchanged"] == 2
+    assert changes["new"] == changes["removed"] == changes["changed"] == []
+
+
+# AC5
+def test_city_lists_count_as_part_of_their_source():
+    old = [chunk(FINDER, "overview"), chunk(FINDER + "?category=Munich", "Python")]
+    new = [chunk(FINDER, "overview"), chunk(FINDER + "?category=Munich", "Python, Java")]
+
+    changes = compare_chunks(old, new)
+
+    assert [change["url"] for change in changes["changed"]] == [FINDER]
+    assert changes["new"] == []
+
+
+# AC6
+def test_format_changes_shows_every_group():
+    changes = {
+        "new": [{"url": FAQ, "chunks": 3}],
+        "removed": [{"url": "https://www.redi-school.org/old-page", "chunks": 5}],
+        "changed": [{"url": MUNICH, "chunks_before": 12, "chunks_after": 9, "characters": -4400}],
+        "unchanged": 23,
+    }
+
+    text = format_changes(changes)
+
+    assert text.splitlines() == [
+        "Changes since the last run:",
+        f"  new: {FAQ} (3 chunks)",
+        "  removed: https://www.redi-school.org/old-page (5 chunks)",
+        f"  changed: {MUNICH} (12 -> 9 chunks, -4,400 characters)",
+        "  unchanged: 23 sources",
+    ]
+
+
+def test_format_changes_shows_a_gain_with_a_plus_and_one_chunk_in_the_singular():
+    changes = {
+        "new": [{"url": FAQ, "chunks": 1}],
+        "removed": [],
+        "changed": [{"url": MUNICH, "chunks_before": 1, "chunks_after": 2, "characters": 1500}],
+        "unchanged": 1,
+    }
+
+    text = format_changes(changes)
+
+    assert f"  new: {FAQ} (1 chunk)" in text
+    assert f"  changed: {MUNICH} (1 -> 2 chunks, +1,500 characters)" in text
+    assert "  unchanged: 1 source" in text.splitlines()
+
+
+def test_format_changes_says_when_nothing_changed():
+    text = format_changes({"new": [], "removed": [], "changed": [], "unchanged": 26})
+
+    assert text.splitlines() == ["No changes since the last run.", "  unchanged: 26 sources"]
+
+
+# AC7
+def test_run_returns_the_changes_and_a_first_run_lists_every_source_as_new(tmp_path):
+    sources_path = write_sources(tmp_path)
+    chunks_path = tmp_path / "chunks.json"
+
+    first = run(sources_path, chunks_path, fetch=fetch_ok)
+    second = run(sources_path, chunks_path, fetch=fetch_ok)
+
+    assert {change["url"] for change in first.changes["new"]} == {
+        "https://www.redi-school.org/faq",
+        "https://www.redi-school.org/redi-school-malmo",
+    }
+    assert second.changes["unchanged"] == 2
+    assert second.changes["new"] == second.changes["changed"] == []
+
+
+# AC8
+def test_the_update_guide_exists_and_the_readme_links_to_it():
+    project_dir = Path(__file__).parent.parent
+
+    assert (project_dir / "docs" / "update_content.md").exists()
+    assert "docs/update_content.md" in (project_dir / "README.md").read_text(encoding="utf-8")

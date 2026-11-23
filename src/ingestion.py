@@ -33,6 +33,8 @@ class IngestionResult:
         "failed": [],
         "no_content": [],
     })
+    # Filled by run_ingestion.run(): which sources changed since the last run
+    changes: dict = field(default_factory=dict)
 
 
 def summarize_report(report):

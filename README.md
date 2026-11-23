@@ -42,6 +42,10 @@ Fetches the approved sources in `data/sources.json` and saves the chunks to `dat
 python src/run_ingestion.py
 ```
 
+At the end it prints which sources changed since the last run. The full routine for keeping
+the content current (when to update, checking the answers, deploying) is in
+[docs/update_content.md](docs/update_content.md).
+
 ### 3. Run the chat page
 
 ```powershell
@@ -75,16 +79,18 @@ run the ingestion (step 2) first.
 ## What it does not do yet
 
 - **Demo mode** without `GEMINI_API_KEY`: no real answer text.
-- **Keyword search, not semantic search:** some pages are not found even though they would
-  answer the question. Known cases: "How can I contact ReDI?" doesn't find `/contact`, and
-  "Does ReDI help me find a job?" doesn't find `/our-career-support`. Details in
-  `docs/task8_findings.md`.
-- **Answers can be incomplete**, for example the Munich address without the street, because
-  the street is in a chunk that is not retrieved.
-- **No automatic updates:** the content only changes when you re-run the ingestion.
+- **Keyword search, not semantic search:** small spelling mistakes are corrected, but a
+  question that uses different words than the pages can still miss them. Known case:
+  "which courses are they" doesn't find the course list. Details in `docs/task8_findings.md`.
+- **No conversation memory:** each question is answered on its own, so a follow-up such as
+  "which courses are they" doesn't know what was asked before.
+- **No automatic updates:** the content only changes when you re-run the ingestion
+  ([docs/update_content.md](docs/update_content.md)).
+- **No PDF reader:** documents from ReDI staff can't be ingested yet, only web pages.
 - **Deferred until after the MVP:** different answers for prospective and current students,
   user feedback, other languages, conversation memory, and embedding on other platforms.
-- **Public Render URL:** no privacy note on the page and no per-visitor rate limit yet.
+- **Public Render URL:** each visitor can ask 5 questions per minute, and Gemini's free tier
+  allows 15 per minute for everyone together; after that the page asks visitors to wait.
 
 ## Evaluate real user questions (Task 8)
 
@@ -129,3 +135,4 @@ python -m pytest
   - `0001-ingestion-report-summary.md`
   - `0002-chat-interface-json-api.md`
 - **`docs/task8_findings.md`:** what the evaluation found, and the order of the next fixes.
+- **`docs/update_content.md`:** how to keep the content current (Task 10).
