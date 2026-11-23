@@ -66,7 +66,7 @@ Run from the project folder with the virtual environment active (`.venv\Scripts\
 
 `tests/test_real_questions.py` runs real questions against the committed `data/chunks.json`, so a content update can change its results.
 
-The Node/Jest setup (`package.json`, `npm test`) is left over from practicing: `tests/chat.test.js` only checks that Jest works, and Jest ignores `tests/js/`.
+The JavaScript tests need only Node, no npm packages: `node --test tests/js/` runs them directly. (A Jest setup from practicing was removed on 2026-11-23.)
 
 ## Things to know
 
