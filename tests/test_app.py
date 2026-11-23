@@ -2,6 +2,7 @@
 # The app gets its chunks and generate function passed in, so no real model or data file is used.
 import json
 import logging
+import re
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,7 @@ import app as app_module
 from app import create_app, demo_generate, load_chunks, log_startup
 from rate_limit import RateLimiter
 from grounding import NOT_ENOUGH_INFO
-from llm import MODEL
+from llm import MODEL, RETRY_ATTEMPTS, TIMEOUT_MS
 
 FAQ_URL = "https://www.redi-school.org/faq"
 APPLY_URL = "https://www.redi-school.org/apply"
@@ -569,6 +570,32 @@ class TestSafeRendering:
         scripts = [tag["src"] for tag in page().find_all("script")]
 
         assert [src.rsplit("/", 1)[-1] for src in scripts] == ["format.js", "chat.js"]
+
+
+# Long waits, written from specs/gemini_error_handling.md ("Iteration: shorter retries and
+# feedback during long waits"). The page's timing is checked by hand in the browser (AC19).
+def chat_js_number(name):
+    """The value of a constant like 'const GIVE_UP_MS = 100_000;' in chat.js."""
+    match = re.search(rf"const {name} = ([\d_]+);", CHAT_JS.read_text(encoding="utf-8"))
+    assert match, f"{name} not found in chat.js"
+    return int(match.group(1).replace("_", ""))
+
+
+class TestLongWait:
+    # AC17: the page must not give up on an answer the server could still deliver
+    def test_the_page_waits_longer_than_the_servers_worst_case(self):
+        assert chat_js_number("GIVE_UP_MS") >= RETRY_ATTEMPTS * TIMEOUT_MS + 5000
+
+    def test_the_still_working_note_comes_after_15_seconds(self):
+        assert chat_js_number("STILL_WORKING_MS") == 15_000
+
+    # AC18
+    def test_the_page_has_both_messages_and_can_stop_waiting(self):
+        script = CHAT_JS.read_text(encoding="utf-8")
+
+        assert "Still working on it. The chatbot is busy right now, so this can take up to a minute." in script
+        assert "This is taking too long. Please try again in a moment." in script
+        assert "new AbortController()" in script
 
 
 # Contact link for unanswered questions, written from specs/task6_contact_link.md.

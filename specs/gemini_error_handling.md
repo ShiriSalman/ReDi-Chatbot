@@ -220,7 +220,8 @@ Whether it still follows the prompt rules (only the sources, plain text) is
 checked by hand in the chat page.
 
 **Known limitation:** the worst case is about 3 × 60 seconds plus the waits
-between attempts. On Render, gunicorn's `--graceful-timeout` is set above it
+between attempts (shortened to 2 × 45 seconds in "Iteration: shorter retries
+and feedback during long waits" below). On Render, gunicorn's `--graceful-timeout` is set above it
 (`specs/task9_deploy_render.md`).
 
 **Tests (`tests/test_llm.py`):**
@@ -260,6 +261,52 @@ per visitor (`specs/rate_limit_per_visitor.md`).
 - **AC14:** an error with another `code` (for example 503), or none, still
   gives 500 `SERVER_ERROR`.
 - **AC15:** the 429 is logged like other errors.
+
+## Iteration: shorter retries and feedback during long waits
+
+**Problem (MVP review, 2026-11-23):** when Gemini is overloaded, the client
+tries 3 times with up to 60 seconds each, plus pauses of about 1 and 2
+seconds (`google/genai/_api_client.py`: backoff starting at 1 s, factor 2,
+up to 1 s jitter). A visitor can wait about 3 minutes and sees only the typing
+animation; the page has no timeout. gunicorn has 4 threads, so four such waits
+block every other visitor.
+
+**Decision (owner, 2026-11-23):** shorter retries on the server and feedback
+on the page, both.
+
+**Change on the server (`src/llm.py`):**
+- `TIMEOUT_MS = 45_000` (was 60,000) and `RETRY_ATTEMPTS = 2` (was 3).
+- Worst case: 2 × 45 s plus one pause of at most about 2 s, so about 92 s
+  instead of about 185 s.
+- Risk: an answer that needs more than 45 seconds is cut off and retried once.
+  The 56 seconds in the earlier iteration were measured with the slower
+  `gemini-3.8-flash`; `gemini-3.5-flash-lite`'s usual time isn't measured.
+- gunicorn's `--graceful-timeout 200` stays; it is now well above the worst
+  case (the deploy test compares it with `RETRY_ATTEMPTS × TIMEOUT_MS`).
+
+**Change on the page (`static/js/chat.js`):**
+- After `STILL_WORKING_MS` (15 seconds) without an answer, the typing card
+  shows *"Still working on it. The chatbot is busy right now, so this can
+  take up to a minute."* The hidden status text ("Looking for an answer…")
+  changes to the same words, so screen readers announce it.
+- After `GIVE_UP_MS` (100 seconds) the page stops waiting (`AbortController`)
+  and shows the error card *"This is taking too long. Please try again in a
+  moment."* The question goes back into the box, as after other errors.
+- `GIVE_UP_MS` is later than the server's worst case, so the page never gives
+  up on an answer the server could still deliver.
+
+**Acceptance criteria:**
+- **AC16 (`tests/test_llm.py`):** `TIMEOUT_MS` is 45,000 and
+  `RETRY_ATTEMPTS` is 2.
+- **AC17 (`tests/test_app.py`):** `GIVE_UP_MS` in `chat.js` is at least the
+  server's worst case plus 5 seconds (`RETRY_ATTEMPTS × TIMEOUT_MS + 5000`),
+  and `STILL_WORKING_MS` is 15,000.
+- **AC18 (`tests/test_app.py`):** `chat.js` contains both messages and uses
+  an `AbortController`.
+- **AC19 (by hand, browser):** with a delayed answer, the note appears after
+  15 seconds; after 100 seconds the error card appears, the question is back
+  in the box and the box can be used again. A normal answer still appears
+  without the note.
 
 ## Later (not in this spec)
 
