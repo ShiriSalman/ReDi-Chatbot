@@ -475,6 +475,20 @@ limit (#80, not active in the evaluation).
   misspelled questions such as "how du i apply" and "how to be a
   voulenteer", seen on the live page.
 
+## Run 20: after the first content update with the change summary
+
+Run on 2026-11-23 with the same model and 28 questions, on the content
+update `update-content-2026-11` (the first run of the update loop from
+`docs/update_content.md`). The change summary listed 6 of 26 sources as
+changed, still 387 chunks; the only important change was the Course Finder's
+Munich list.
+
+- **27 of 28 passed,** the same as run 19; only q26 fails (it needs
+  conversation memory, after the MVP). No error answers.
+- **The new content reaches the answers:** "Which courses are there in
+  Munich?" now lists Cybersecurity, which is new, and no longer lists
+  Back-End Development.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
