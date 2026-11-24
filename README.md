@@ -1,6 +1,6 @@
-# ReDi-Chatbot
+# 🤖 ReDi-Chatbot
 
-## What this is
+## 💬 What this is
 
 A chatbot that answers questions about ReDI School with clear answers based on official ReDI
 information, and links to the sources it used.
@@ -15,7 +15,7 @@ information, and links to the sources it used.
 
 How it works step by step, with diagrams: [docs/how_it_works.md](docs/how_it_works.md).
 
-## Before you start
+## 📋 Before you start
 
 You need:
 
@@ -24,9 +24,9 @@ You need:
 - optional: a **Google Gemini API key** for real answers. Without it, the app runs in demo
   mode (see below).
 
-## How to run it
+## 🚀 How to run it
 
-### 1. Setup
+### ⚙️ 1. Setup
 
 ```powershell
 python -m venv .venv
@@ -34,7 +34,7 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 ```
 
-### 2. Update the content
+### 🔄 2. Update the content
 
 Fetches the approved sources in `data/sources.json` and saves the chunks to `data/chunks.json`:
 
@@ -46,7 +46,7 @@ At the end it prints which sources changed since the last run. The full routine 
 the content current (when to update, checking the answers, deploying) is in
 [docs/update_content.md](docs/update_content.md).
 
-### 3. Run the chat page
+### ▶️ 3. Run the chat page
 
 ```powershell
 python src/app.py
@@ -63,7 +63,7 @@ python src/app.py
 Without `GEMINI_API_KEY` the app runs in **demo mode**: retrieval and source links are real,
 but the answer text is a placeholder that says it is not a real answer.
 
-## How to know it worked
+## ✅ How to know it worked
 
 1. Open http://127.0.0.1:5000 in your browser.
 2. You see the page **"ReDI School Chatbot"** with the welcome message **"Hi! How can I help
@@ -77,7 +77,7 @@ but the answer text is a placeholder that says it is not a real answer.
 If every question gets a "temporarily unavailable" message, `data/chunks.json` is missing:
 run the ingestion (step 2) first.
 
-## What it does not do yet
+## 🚧 What it does not do yet
 
 - **Demo mode** without `GEMINI_API_KEY`: no real answer text.
 - **Keyword search, not semantic search:** small spelling mistakes are corrected, but a
@@ -93,7 +93,7 @@ run the ingestion (step 2) first.
 - **Public Render URL:** each visitor can ask 5 questions per minute, and Gemini's free tier
   allows 15 per minute for everyone together; after that the page asks visitors to wait.
 
-## Evaluate real user questions (Task 8)
+## 🧪 Evaluate real user questions (Task 8)
 
 Sends every question in `data/task8_questions.json` through the chat API and writes the
 results table to `docs/task8_results.md`:
@@ -106,7 +106,7 @@ With `GEMINI_API_KEY` set, the answers come from Gemini (one call per answered q
 without it, only retrieval, sources and the fallback can be judged.
 The findings from each run are summarised in `docs/task8_findings.md`.
 
-## Deploy to Render
+## ☁️ Deploy to Render
 
 The `Dockerfile` runs the app with gunicorn (see `specs/task9_deploy_render.md`). On Render:
 
@@ -117,13 +117,13 @@ The `Dockerfile` runs the app with gunicorn (see `specs/task9_deploy_render.md`)
 
 After re-running the ingestion, commit `data/chunks.json`; Render then builds a new image.
 
-## Run the tests
+## 🔬 Run the tests
 
 ```powershell
 python -m pytest
 ```
 
-## Where the decisions live
+## 🗂️ Where the decisions live
 
 - **`CLAUDE.md`:** the agreed MVP scope and the task order.
 - **`docs/how_it_works.md`:** diagrams of the structure, the ingestion and the answering flow.
