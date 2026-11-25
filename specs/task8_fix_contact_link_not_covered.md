@@ -115,3 +115,59 @@ Checked by hand (after): `python src/run_evaluation.py`.
   marker, the answer looks as it does today (no contact link).
 - The keyword tests for the old rules are not affected. `"not"` and
   `"enough"` / `"cover"` still occur in the new rule (Task 3, Scenario 5).
+
+## Iteration: nothing left after cleaning (MVP stabilization, 2026-11-25)
+
+### Problem
+
+`answer_question()` cleans the model's answer in three steps: it removes URLs,
+the marker and a source list. When nothing is left, the text becomes
+`NOT_ENOUGH_INFO`, but `enough_information` stays `True` and the retrieved
+chunks stay the sources. Checked with a fake model on the real content: the
+answers `https://www.redi-school.org/faq` and `Sources: - FAQ` both gave the
+text "… do not provide enough information …" with 5 sources and **no contact
+link**. That breaks the MVP rule "say so and link to the contact page".
+
+An answer that is only the marker (AC4) already gets `enough_information`
+`False`, but still lists the chunks as sources, although none of them was used.
+
+### Change
+
+In `answer_question()`: **when no text of the model's answer is left after the
+cleaning, the result is the same as when retrieval finds nothing**:
+`NOT_ENOUGH_INFO`, `enough_information` `False`, `sources` `[]`. The app then
+shows the contact link, as for every fallback.
+
+This also applies to an answer that is only the marker (AC4): its sources
+become `[]` (owner's decision D3, 2026-11-25). The table in "What
+`enough_information` means now" gets one row:
+
+| Case | `enough_information` | `sources` | contact link |
+|---|---|---|---|
+| **Nothing of the model's answer is left after cleaning** | **`False`** | **`[]`** | **yes** |
+
+Unchanged: the cleaning steps themselves, normal answers, and marked partial
+answers, which keep their sources.
+
+### Assumptions
+
+- An answer with no text left used none of the sources, so it shows none.
+- The model writing exactly the `NOT_ENOUGH_INFO` sentence is treated like an
+  empty answer. That gives the same text, plus the contact link.
+
+### Acceptance criteria
+
+`tests/test_grounding.py`, `TestNotCoveredMarker`:
+- **AC10:** an answer that is only a URL, only a source list, a source list
+  with a URL, the marker with a URL, or only the marker gives `NOT_ENOUGH_INFO`,
+  `enough_information` `False` and `sources` `[]`.
+- **AC11:** a normal answer with a URL in it keeps its text without the URL,
+  `enough_information` `True` and its sources.
+
+`tests/test_app.py`, `TestContactLink`:
+- **AC12:** through `POST /api/chat`, an answer that is only a URL returns
+  `NOT_ENOUGH_INFO`, `enough_information` `false`, no sources and the
+  `contact` field.
+
+- **AC13:** all existing tests pass, including AC2 (a marked partial answer
+  keeps its sources) and AC4.
