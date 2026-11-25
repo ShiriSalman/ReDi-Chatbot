@@ -7,6 +7,7 @@ from collections import Counter
 
 import pytest
 
+import grounding
 from grounding import (
     GOODBYE_REPLY,
     GREETING_REPLY,
@@ -839,3 +840,29 @@ class TestSpellingMistakes:
         counts = Counter({"registration": 1, "registrations": 9})
 
         assert correct_spelling({"registraton"}, counts) == {"registration"}
+
+    # Iteration: a limit on two-typo corrections per question
+    # Each word is two typos from its chunk word and one typo from no chunk word
+    TWO_TYPO_COUNTS = Counter({"volunteer": 3, "instruction": 2, "registration": 1})
+
+    # AC14
+    def test_two_typo_candidates_are_built_for_at_most_two_words(self, monkeypatch):
+        calls = []
+        original = grounding.two_typos_away
+        monkeypatch.setattr(grounding, "two_typos_away", lambda word: calls.append(word) or original(word))
+        words = {"voulenteer", "instrcutoin", "regsitratoin", "qwrtzpsdfghj", "zxcvbnmlkjhg"}
+
+        correct_spelling(words, self.TWO_TYPO_COUNTS)
+
+        assert len(calls) == 2
+        assert grounding.MAX_TWO_TYPO_WORDS == 2
+
+    # AC15
+    def test_the_first_two_words_in_alphabetical_order_are_corrected(self):
+        words = {"voulenteer", "instrcutoin", "regsitratoin"}
+
+        assert correct_spelling(words, self.TWO_TYPO_COUNTS) == {"instruction", "registration", "voulenteer"}
+
+    # AC16
+    def test_two_long_words_with_two_typos_are_both_corrected(self):
+        assert correct_spelling({"voulenteer", "regsitratoin"}, self.TWO_TYPO_COUNTS) == {"volunteer", "registration"}
