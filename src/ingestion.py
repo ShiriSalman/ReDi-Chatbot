@@ -312,6 +312,11 @@ def ingest(sources, fetch, existing_chunks=None, fetch_collection=None):
                 if fetch_collection is None:
                     raise ValueError("a course list needs fetch_collection")
                 new_chunks = course_list_chunks(source, page["html"], fetch_collection(url))
+                # Without a single city list the Course Finder's data is broken, so the lists
+                # from the last run stay (specs/task8_course_list_per_city.md, "Iteration:
+                # broken pagination and empty lists")
+                if not any(chunk.get("list_part") for chunk in new_chunks):
+                    new_chunks = []
             else:
                 last_updated = page.get("last_updated") or "unavailable"
                 # "reader": "sections" keeps a heading and its text together

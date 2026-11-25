@@ -2,6 +2,7 @@
 # The get function is passed in, so the tests never touch the network.
 import pytest
 
+import fetching
 from fetching import FetchError, fetch_collection, fetch_page
 
 
@@ -128,3 +129,26 @@ class TestFetchCollection:
 
         with pytest.raises(FetchError, match="503"):
             fetch_collection(COURSE_FINDER, get=get)
+
+    # Iteration: broken pagination and empty lists, AC10
+    def test_a_repeated_offset_raises_an_error_instead_of_reading_the_page_again(self):
+        get = paged_get([
+            {"items": [{"title": "Python"}], "pagination": {"nextPage": True, "nextPageOffset": 111}},
+            {"items": [{"title": "Data Analytics"}], "pagination": {"nextPage": True, "nextPageOffset": 111}},
+        ])
+
+        with pytest.raises(FetchError, match="offset"):
+            fetch_collection(COURSE_FINDER, get=get)
+        assert len(get.calls) == 2
+
+    # AC11
+    def test_more_pages_than_the_limit_raise_an_error(self, monkeypatch):
+        monkeypatch.setattr(fetching, "MAX_COLLECTION_PAGES", 3)
+        get = paged_get([
+            {"items": [{"title": f"Course {n}"}], "pagination": {"nextPage": True, "nextPageOffset": n}}
+            for n in range(1, 4)
+        ])
+
+        with pytest.raises(FetchError, match="pages"):
+            fetch_collection(COURSE_FINDER, get=get)
+        assert len(get.calls) == 3

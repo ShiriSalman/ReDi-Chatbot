@@ -141,3 +141,62 @@ no course word in common with the lists).
 - The lists are as current as the last ingestion run (Task 10, update loop).
 - A question without a city ("which courses are there") gets the overview,
   not every course; the answer can then ask which city.
+
+## Iteration: broken pagination and empty lists (MVP stabilization, 2026-11-25)
+
+### Problem
+
+Checked with fake data on 2026-11-24:
+
+- **A repeated offset is read 50 times.** If the JSON says `nextPage` with the
+  same `nextPageOffset` again, `fetch_collection()` asks for the same page
+  until `MAX_COLLECTION_PAGES` (50) and returns **50 copies** of its courses.
+  The report says "ingested".
+- **The page limit cuts the list silently.** With more than 50 pages, the
+  courses after page 50 are missing, and nothing says so.
+- **An empty course list replaces the good one.** If the Course Finder returns
+  no items, `ingest()` reports "ingested", deletes every city list and keeps
+  only an overview that says "ReDI School offers courses in 0 locations".
+  The same happens when there are items, but none is in a city of
+  `LOCATIONS`.
+
+### Change
+
+1. **`fetch_collection()` raises `FetchError`** when a `nextPageOffset` comes
+   back that was already read, and when it has read `MAX_COLLECTION_PAGES`
+   pages and `nextPage` is still set.
+2. **`ingest()` treats a course list without any city list as "no
+   content"**: no items at all, or no item in a city of `LOCATIONS`.
+
+Both use paths that already exist: a source that fails or has no content
+keeps its chunks from the last run, and the ingestion report names it.
+
+Unchanged: a normal pagination (the Course Finder had 4 pages), the city
+lists, the overview and the links.
+
+### Assumptions
+
+- Squarespace's offsets are never repeated in a correct pagination.
+- 50 pages are enough. The Course Finder had 4 pages of 20 courses.
+- A Course Finder without a single course in a known city is always an error,
+  never a real state of the website.
+
+### Acceptance criteria
+
+`tests/test_fetching.py`, `TestFetchCollection`:
+- **AC10:** a repeated `nextPageOffset` raises `FetchError`, and the page is
+  not read again.
+- **AC11:** `nextPage` still set after `MAX_COLLECTION_PAGES` pages raises
+  `FetchError`.
+
+`tests/test_ingestion.py`, `TestCourseList`:
+- **AC12:** a course list with no items is reported as "no content", and the
+  chunks from the last run stay unchanged.
+- **AC13:** the same for items that are all in cities outside `LOCATIONS`.
+- **AC14:** all existing tests pass, including AC1 (every page is read) and
+  "a failed course list keeps the old chunks".
+
+### Check on the real Course Finder (2026-11-25, read only, no ingestion)
+
+`fetch_collection()` with the new checks read 4 pages and 74 courses, as
+before. All 74 courses are in a city of `LOCATIONS`.

@@ -2,6 +2,8 @@
 # The fetch function is passed in, so the tests never touch the network.
 import copy
 
+import pytest
+
 from ingestion import (
     MAX_CHUNK_CHARS,
     chunk_text,
@@ -574,6 +576,22 @@ class TestCourseList:
 
         assert result.chunks == first.chunks
         assert result.report["failed"][0]["url"] == FINDER_URL
+
+    # specs/task8_course_list_per_city.md, "Iteration: broken pagination and empty lists"
+    # AC12: no items; AC13: items, but none in a city of LOCATIONS
+    @pytest.mark.parametrize("items", [
+        [],
+        [course("Python", ["Stockholm", "Data Analytics"])],
+    ], ids=["no items", "no known city"])
+    def test_a_course_list_without_city_lists_keeps_the_old_chunks(self, items):
+        first = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: self.ITEMS)
+
+        result = ingest([finder_source()], fetch=fake_fetch(FINDER_HTML), fetch_collection=lambda url: items,
+                        existing_chunks=first.chunks)
+
+        assert result.chunks == first.chunks
+        assert result.report["no_content"] == [FINDER_URL]
+        assert result.report["ingested"] == []
 
 
 # Reading a page by its sections, written from specs/task8_contact_page_sections.md.
