@@ -171,3 +171,11 @@ answers, which keep their sources.
 
 - **AC13:** all existing tests pass, including AC2 (a marked partial answer
   keeps its sources) and AC4.
+
+### Check on the real content (2026-11-25, fake model, "How do I apply?")
+
+| Model answer | before | after |
+|---|---|---|
+| `https://www.redi-school.org/faq` | fallback text, `True`, 5 sources, no contact link | fallback text, `False`, no sources, contact link |
+| `Sources: - FAQ` | same as above | same as above |
+| `You can apply online.` | answer, `True`, 5 sources | unchanged |
