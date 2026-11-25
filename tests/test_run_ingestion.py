@@ -2,7 +2,10 @@
 # ingest the sources and save the chunks to a JSON file.
 # The tests use pytest's tmp_path, so they never touch the real data/ folder.
 import json
+import os
 from pathlib import Path
+
+import pytest
 
 from run_ingestion import compare_chunks, format_changes, format_report, run
 
@@ -141,6 +144,47 @@ def test_keeps_the_saved_chunks_of_a_source_that_fails_on_the_next_run(tmp_path)
 
     urls = {chunk["url"] for chunk in read_chunks(chunks_path)}
     assert "https://www.redi-school.org/faq" in urls
+
+
+# specs/task10_update_loop.md, "Iteration: a safe chunks.json"
+# AC9
+def test_a_successful_run_leaves_no_temporary_file(tmp_path):
+    chunks_path = tmp_path / "chunks.json"
+
+    run(write_sources(tmp_path), chunks_path, fetch=fetch_ok)
+
+    assert chunks_path.exists()
+    assert not (tmp_path / "chunks.json.tmp").exists()
+
+
+# AC10
+def test_a_failed_replace_keeps_the_old_file_and_removes_the_temporary_one(tmp_path, monkeypatch):
+    chunks_path = tmp_path / "chunks.json"
+    chunks_path.write_text('[{"text": "old", "url": "https://www.redi-school.org/faq"}]', encoding="utf-8")
+    old_content = chunks_path.read_text(encoding="utf-8")
+
+    def broken_replace(source, target):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(os, "replace", broken_replace)
+
+    with pytest.raises(OSError, match="disk full"):
+        run(write_sources(tmp_path), chunks_path, fetch=fetch_ok)
+
+    assert chunks_path.read_text(encoding="utf-8") == old_content
+    assert not (tmp_path / "chunks.json.tmp").exists()
+
+
+# AC11
+@pytest.mark.parametrize("content", ['[{"text": "half', '{"text": "not a list"}'], ids=["half-written", "not a list"])
+def test_a_broken_saved_file_stops_the_run_with_a_clear_error(tmp_path, content):
+    chunks_path = tmp_path / "chunks.json"
+    chunks_path.write_text(content, encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match=r"chunks\.json.*git checkout"):
+        run(write_sources(tmp_path), chunks_path, fetch=fetch_ok)
+
+    assert chunks_path.read_text(encoding="utf-8") == content
 
 
 # Scenario 10: Produce an ingestion report

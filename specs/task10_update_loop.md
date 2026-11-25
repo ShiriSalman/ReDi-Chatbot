@@ -100,6 +100,80 @@ the README's "What it does not do yet" are corrected at the same time.
 
 - **AC8:** `docs/update_content.md` exists and the README links to it.
 
+## Iteration: a safe `chunks.json` (MVP stabilization, 2026-11-25)
+
+### Problem
+
+- **An interrupted run can break the file.** `run()` writes `data/chunks.json`
+  directly. If the run is stopped while writing (Ctrl+C, a crash, a full
+  disk), the file is left half-written.
+- **A broken file stops the app with an unclear error.** Checked on
+  2026-11-24: `load_chunks()` with a half-written file raises
+  `JSONDecodeError` while the app is loaded, so it doesn't start, and the clear
+  log message in `log_startup()` is never written. The next ingestion run
+  stops with the same `JSONDecodeError`.
+
+### Change
+
+1. **`run()` writes `chunks.json.tmp` first and then replaces `chunks.json`
+   with it** (`os.replace`, standard library). The replacement happens as a
+   whole, so `chunks.json` is always either the old or the new file. If
+   writing or replacing fails, the `.tmp` file is removed and the old file
+   stays. `*.tmp` is already in `.gitignore`.
+2. **A broken file gives a clear error.** When `chunks.json` exists but is not
+   valid JSON or not a list, `load_chunks()` (app) and `run()` (ingestion)
+   raise an error that names the file and says what to do: restore it with
+   `git checkout data/chunks.json`, then re-run the ingestion if needed. Both
+   messages say "restore" first, because the ingestion refuses a broken file
+   too. `run()` doesn't overwrite the broken file.
+3. **The app still doesn't start with a broken file** (owner's decision D4,
+   2026-11-25). A missing file still gives an empty list and the
+   "temporarily unavailable" message, as before.
+
+### Why the app doesn't start (D4)
+
+On Render, an app that starts with no content would pass the health check
+(`/` still loads) and replace the working version with one that answers
+nothing. An app that doesn't start can't pass the health check.
+
+**Not verified:** what Render does when the app crashes at startup. Render's
+documentation says that when a new deploy doesn't pass its health checks
+within 15 minutes, Render "cancels the deploy" and "continues routing traffic
+to your service's existing instances"
+(https://render.com/docs/health-checks, read 2026-11-25). It doesn't say
+this explicitly for an app that crashes at startup. That the previous version
+stays live in this case is an inference, not a tested fact.
+
+### Assumptions
+
+- `os.replace` replaces the file as a whole on Windows and on Linux (Render),
+  when both files are in the same folder.
+- A valid `chunks.json` is always a JSON list. The checks don't look inside
+  the chunks.
+
+### Acceptance criteria
+
+`tests/test_run_ingestion.py`:
+- **AC9:** a successful run leaves no `chunks.json.tmp` behind.
+- **AC10:** when replacing the file fails, `chunks.json` keeps its old
+  content, the `.tmp` file is removed, and the error is raised.
+- **AC11:** when the saved `chunks.json` is not valid JSON or not a list,
+  `run()` raises an error that names the file and `git checkout`, and doesn't
+  change the file.
+
+`tests/test_app.py`, `TestUnavailableContent`:
+- **AC12:** `load_chunks()` with a file that is not valid JSON or not a list
+  raises an error that names the file and `git checkout`.
+- **AC13:** a missing file still gives `[]`; all existing tests pass.
+
+### Check by hand (2026-11-25)
+
+With a half-written `data/chunks.json`:
+- `import app` stops with "…chunks.json is not valid JSON: … Restore the
+  committed version with: git checkout data/chunks.json …".
+- `python src/run_ingestion.py` stops with the same advice before it fetches
+  any page, and the file is unchanged. No `.tmp` file is left in `data/`.
+
 ## Not in scope
 
 - Automatic or scheduled updates (after the MVP)

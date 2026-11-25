@@ -71,11 +71,28 @@ def demo_generate(prompt):
 
 
 def load_chunks(path=CHUNKS_PATH):
-    """Return the saved ingestion chunks, or an empty list when the file does not exist."""
+    """Return the saved ingestion chunks, or an empty list when the file does not exist.
+
+    A file that is not a JSON list raises RuntimeError, so the app doesn't start: on Render a
+    started app without content would replace a working version (specs/task10_update_loop.md,
+    "Iteration: a safe chunks.json").
+    """
     path = Path(path)
     if not path.exists():
         return []
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        chunks = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise RuntimeError(broken_chunks_file(path, f"not valid JSON: {error}")) from error
+    if not isinstance(chunks, list):
+        raise RuntimeError(broken_chunks_file(path, "not a list of chunks"))
+    return chunks
+
+
+def broken_chunks_file(path, problem):
+    # The ingestion refuses a broken file too, so restoring it comes first
+    return (f"{path} is {problem}. Restore the committed version with: git checkout "
+            "data/chunks.json (then re-run the ingestion if needed)")
 
 
 def create_app(chunks, generate, rate_limiter=None):
