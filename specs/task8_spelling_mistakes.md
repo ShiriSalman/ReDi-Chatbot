@@ -217,8 +217,23 @@ length limits and which candidate wins.
 - **AC17:** all existing tests, including AC10–AC13 and
   `tests/test_real_questions.py`, pass unchanged.
 
-### Check on the real content (by hand, before and after)
+### Check on the real content (2026-11-25, 387 chunks)
 
-- The 28 Task 8 questions, 11 misspelled questions and 15 unrelated questions
-  retrieve exactly the same pages, with the same corrected words.
-- The 495-character question drops from 13–25 s to about the cost of two words.
+- **Same results:** the 28 Task 8 questions, 11 misspelled questions (the 7
+  suggested ones, the 3 live-page ones and "how to be a voulenteer in the
+  instrction team") and 15 unrelated questions retrieve exactly the same pages,
+  with the same corrected words, as before the change.
+- **Time**, measured twice in one run, alternating without and with the limit,
+  so both see the same machine load:
+
+  | | 28 Task 8 questions (total) | 495-character question |
+  |---|---|---|
+  | without the limit | 2.07 s, 1.68 s | 26.08 s, 22.23 s |
+  | with `MAX_TWO_TYPO_WORDS = 2` | 1.90 s, 1.61 s | 1.45 s, 1.36 s |
+
+### Known limitations (still)
+
+- A question still costs up to about 1.5 s of computing, and the limit per
+  visitor doesn't count it, because it never reaches the model. Many such
+  questions at once can still slow the app down for everyone.
+- A third long word with two typos in one question is not corrected.
