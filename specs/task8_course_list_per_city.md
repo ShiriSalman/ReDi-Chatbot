@@ -195,3 +195,8 @@ lists, the overview and the links.
 - **AC13:** the same for items that are all in cities outside `LOCATIONS`.
 - **AC14:** all existing tests pass, including AC1 (every page is read) and
   "a failed course list keeps the old chunks".
+
+### Check on the real Course Finder (2026-11-25, read only, no ingestion)
+
+`fetch_collection()` with the new checks read 4 pages and 74 courses, as
+before. All 74 courses are in a city of `LOCATIONS`.

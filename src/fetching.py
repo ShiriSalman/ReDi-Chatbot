@@ -32,10 +32,14 @@ def fetch_collection(url, get=requests.get):
     """Return every item of a Squarespace collection page, such as the Course Finder.
 
     The page shows only 20 items and loads the rest while scrolling; its JSON version
-    (?format=json) gives them page by page. Raises FetchError on an error status.
+    (?format=json) gives them page by page. Raises FetchError on an error status, and when
+    the pagination repeats an offset or has more than MAX_COLLECTION_PAGES pages, so a
+    broken pagination can't give duplicated or cut lists (specs/task8_course_list_per_city.md,
+    "Iteration: broken pagination and empty lists").
     """
     items = []
     params = {"format": "json"}
+    read_offsets = set()
     # A limit, so a broken pagination can't loop forever (the Course Finder had 4 pages)
     for _ in range(MAX_COLLECTION_PAGES):
         response = get(url, params=dict(params), timeout=TIMEOUT_SECONDS)
@@ -46,9 +50,13 @@ def fetch_collection(url, get=requests.get):
 
         pagination = data.get("pagination") or {}
         if not pagination.get("nextPage"):
-            break
-        params["offset"] = pagination["nextPageOffset"]
-    return items
+            return items
+        offset = pagination["nextPageOffset"]
+        if offset in read_offsets:
+            raise FetchError(f"the pagination repeats offset {offset} for {url}")
+        read_offsets.add(offset)
+        params["offset"] = offset
+    raise FetchError(f"more than {MAX_COLLECTION_PAGES} pages for {url}")
 
 
 def parse_last_modified(value):
