@@ -377,7 +377,13 @@ def answer_question(question, chunks, generate):
     # The model marks answers the sources don't fully cover; the marker itself is never shown
     answer, covered = split_not_covered_marker(answer)
     # After the marker, so a marker at the end of a source list is still found
-    answer = remove_source_list(answer) or NOT_ENOUGH_INFO
+    answer = remove_source_list(answer)
+
+    if not answer or answer == NOT_ENOUGH_INFO:
+        # Nothing of the model's answer is left, so no source was used: the same result as
+        # finding nothing, with the contact link (specs/task8_fix_contact_link_not_covered.md,
+        # "Iteration: nothing left after cleaning")
+        return AnswerResult(text=NOT_ENOUGH_INFO, enough_information=False, sources=[])
 
     return AnswerResult(
         text=answer,

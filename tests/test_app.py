@@ -622,6 +622,20 @@ class TestContactLink:
             "contact": CONTACT,
         }
 
+    # specs/task8_fix_contact_link_not_covered.md, "Iteration: nothing left after cleaning",
+    # AC12: an answer that was only a URL is a fallback, with the contact link
+    def test_answer_with_nothing_left_after_cleaning_shows_the_contact_link(self):
+        generate = fake_generate("https://www.redi-school.org/faq")
+
+        data = ask(make_client(generate=generate), SUPPORTED_QUESTION).get_json()
+
+        assert data == {
+            "answer": NOT_ENOUGH_INFO,
+            "enough_information": False,
+            "sources": [],
+            "contact": CONTACT,
+        }
+
     # AC5
     def test_contact_url_is_an_approved_source(self):
         sources = json.loads(SOURCES_FILE.read_text(encoding="utf-8"))

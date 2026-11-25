@@ -581,6 +581,31 @@ class TestNotCoveredMarker:
         assert result.enough_information is True
         assert result.text == "Yes, all courses are free."
 
+    # Iteration: nothing left after cleaning, AC10
+    @pytest.mark.parametrize("answer", [
+        "https://www.redi-school.org/faq",
+        "Sources: - FAQ",
+        "Source: FAQ https://www.redi-school.org/faq",
+        f"{NOT_COVERED_MARKER} https://www.redi-school.org/faq",
+        f"  {NOT_COVERED_MARKER}  ",
+    ], ids=["only a url", "only a source list", "source list with url", "marker with url", "only the marker"])
+    def test_answer_with_nothing_left_after_cleaning_is_the_fallback(self, answer):
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.text == NOT_ENOUGH_INFO
+        assert result.enough_information is False
+        assert result.sources == []
+
+    # AC11
+    def test_answer_with_a_url_in_it_keeps_its_text_and_sources(self):
+        answer = "Yes, all courses are free, see https://www.redi-school.org/faq for details."
+
+        result = answer_question("Are the courses free?", ALL_CHUNKS, generate=fake_generate(answer))
+
+        assert result.text == "Yes, all courses are free, see for details."
+        assert result.enough_information is True
+        assert FREE_CHUNK in result.sources
+
     # The marker handling on its own, without a model or chunks
     @pytest.mark.parametrize("answer, expected", [
         ("Yes, all courses are free.", ("Yes, all courses are free.", True)),
