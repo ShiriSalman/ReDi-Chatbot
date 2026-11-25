@@ -382,6 +382,17 @@ class TestUnavailableContent:
     def test_load_chunks_returns_an_empty_list_when_the_file_is_missing(self, tmp_path):
         assert load_chunks(tmp_path / "missing.json") == []
 
+    # specs/task10_update_loop.md, "Iteration: a safe chunks.json", AC12: the app doesn't
+    # start with a broken file, but says which file and what to do
+    @pytest.mark.parametrize("content", ['[{"text": "half', '{"text": "not a list"}'],
+                             ids=["half-written", "not a list"])
+    def test_load_chunks_raises_a_clear_error_for_a_broken_file(self, tmp_path, content):
+        path = tmp_path / "chunks.json"
+        path.write_text(content, encoding="utf-8")
+
+        with pytest.raises(RuntimeError, match=r"chunks\.json.*git checkout"):
+            load_chunks(path)
+
 
 # AC7: Server and generation errors
 class TestGenerationFailure:
