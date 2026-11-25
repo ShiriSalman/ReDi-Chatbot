@@ -130,6 +130,9 @@ MIN_TWO_TYPO_LENGTH = 8
 # The two-typo candidates grow with the square of the word's length: a 500-letter word
 # (allowed by MAX_QUESTION_LENGTH) would give hundreds of millions and fill the memory
 MAX_TWO_TYPO_LENGTH = 15
+# The length limit caps one word, this caps a question: 31 made-up 15-letter words took 13-25 s
+# (specs/task8_spelling_mistakes.md, "Iteration: a limit on two-typo corrections per question")
+MAX_TWO_TYPO_WORDS = 2
 LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
@@ -158,11 +161,14 @@ def correct_spelling(question_words, chunk_counts):
     kept. An unknown word one typo from a stopword ("wich", "du") is dropped like a stopword.
     Otherwise it becomes the chunk word one typo away that appears in the most chunks
     ("corse" -> "course"); a long word without one becomes the most common chunk word two
-    typos away ("voulenteer" -> "volunteer"). Short words, words with digits and words
-    without a close chunk word are kept as they are.
+    typos away ("voulenteer" -> "volunteer"), for at most MAX_TWO_TYPO_WORDS words per
+    question. Short words, words with digits and words without a close chunk word are kept
+    as they are.
     """
     corrected = set()
-    for word in question_words:
+    two_typo_words = 0
+    # In alphabetical order, so the same words get the two-typo step in every run
+    for word in sorted(question_words):
         if word in chunk_counts or not word.isalpha():
             corrected.add(word)
             continue
@@ -174,7 +180,9 @@ def correct_spelling(question_words, chunk_counts):
             corrected.add(word)
             continue
         known = [candidate for candidate in candidates if candidate in chunk_counts]
-        if not known and MIN_TWO_TYPO_LENGTH <= len(word) <= MAX_TWO_TYPO_LENGTH:
+        if (not known and MIN_TWO_TYPO_LENGTH <= len(word) <= MAX_TWO_TYPO_LENGTH
+                and two_typo_words < MAX_TWO_TYPO_WORDS):
+            two_typo_words += 1
             known = [candidate for candidate in two_typos_away(word) if candidate in chunk_counts]
         # The most common candidate wins; ties go to the alphabetically first, so it's repeatable
         corrected.add(min(known, key=lambda c: (-chunk_counts[c], c)) if known else word)

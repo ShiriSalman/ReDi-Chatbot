@@ -164,3 +164,76 @@ such a word is simply kept as it is.
 - Short words are dropped or kept, never corrected: "fre" in "Are ReDI corses
   fre?" is dropped as a typo of "for", not read as "free".
 - `scholarchip` stays as it is: "scholarship" appears in no chunk.
+
+## Iteration: a limit on two-typo corrections per question (MVP stabilization, 2026-11-25)
+
+### Problem
+
+`MAX_TWO_TYPO_LENGTH` limits the cost of **one** word, but not of a whole
+question. A 495-character question of 31 made-up 15-letter words (allowed by
+`MAX_QUESTION_LENGTH`) builds the two-typo candidates 31 times: about 310,000
+strings and 0.4–0.8 s per word. On the real content (387 chunks) one such
+question took **13–25 s** in `retrieve()` (two measurements, 2026-11-24 and
+2026-11-25; the time depends on the machine's load).
+
+The limit per visitor (`specs/rate_limit_per_visitor.md`) doesn't help: it is
+checked right before the model call, and such a question never reaches the
+model. gunicorn runs 4 threads in one worker, and Python runs only one of them
+at a time, so a few such questions make every visitor wait.
+
+### Change
+
+In `correct_spelling()`:
+
+1. **At most `MAX_TWO_TYPO_WORDS = 2` words per question go through the
+   two-typo step** (step 6), whether or not a chunk word is found for them.
+   Further words that would reach it are kept as they are, like any word
+   without a close chunk word (step 7).
+2. **The words are handled in alphabetical order**, so which words get the two
+   two-typo corrections is the same in every run. The question's words are a
+   set, whose order can change between runs.
+
+Everything else is unchanged: the steps 1–5, the one- and two-typo rules, the
+length limits and which candidate wins.
+
+### Assumptions
+
+- A real question has at most 2 long words with two typos each. The 28 Task 8
+  questions have 1 word that goes through the two-typo step at all
+  (`instruction`, which has no close chunk word and stays as it is).
+- About 2 × 0.4–0.8 s in the worst case is acceptable for the MVP.
+- Alphabetical order is as good as any other: it only matters for questions
+  with 3 or more such words.
+
+### Acceptance criteria (`TestSpellingMistakes`)
+
+- **AC14:** for a question with 3 or more long unknown words without a one-typo
+  match, `two_typos_away()` is called at most `MAX_TWO_TYPO_WORDS` times.
+  The test counts the calls; it doesn't measure time.
+- **AC15:** the first two such words in alphabetical order are corrected, and
+  the others are kept.
+- **AC16:** a question with two long words two typos away corrects both, as
+  before.
+- **AC17:** all existing tests, including AC10–AC13 and
+  `tests/test_real_questions.py`, pass unchanged.
+
+### Check on the real content (2026-11-25, 387 chunks)
+
+- **Same results:** the 28 Task 8 questions, 11 misspelled questions (the 7
+  suggested ones, the 3 live-page ones and "how to be a voulenteer in the
+  instrction team") and 15 unrelated questions retrieve exactly the same pages,
+  with the same corrected words, as before the change.
+- **Time**, measured twice in one run, alternating without and with the limit,
+  so both see the same machine load:
+
+  | | 28 Task 8 questions (total) | 495-character question |
+  |---|---|---|
+  | without the limit | 2.07 s, 1.68 s | 26.08 s, 22.23 s |
+  | with `MAX_TWO_TYPO_WORDS = 2` | 1.90 s, 1.61 s | 1.45 s, 1.36 s |
+
+### Known limitations (still)
+
+- A question still costs up to about 1.5 s of computing, and the limit per
+  visitor doesn't count it, because it never reaches the model. Many such
+  questions at once can still slow the app down for everyone.
+- A third long word with two typos in one question is not corrected.
