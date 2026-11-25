@@ -122,9 +122,10 @@ the README's "What it does not do yet" are corrected at the same time.
    stays. `*.tmp` is already in `.gitignore`.
 2. **A broken file gives a clear error.** When `chunks.json` exists but is not
    valid JSON or not a list, `load_chunks()` (app) and `run()` (ingestion)
-   raise an error that names the file and says what to do: re-run the
-   ingestion, or restore the file with `git checkout data/chunks.json`. `run()`
-   doesn't overwrite the broken file.
+   raise an error that names the file and says what to do: restore it with
+   `git checkout data/chunks.json`, then re-run the ingestion if needed. Both
+   messages say "restore" first, because the ingestion refuses a broken file
+   too. `run()` doesn't overwrite the broken file.
 3. **The app still doesn't start with a broken file** (owner's decision D4,
    2026-11-25). A missing file still gives an empty list and the
    "temporarily unavailable" message, as before.
@@ -164,6 +165,14 @@ stays live in this case is an inference, not a tested fact.
 - **AC12:** `load_chunks()` with a file that is not valid JSON or not a list
   raises an error that names the file and `git checkout`.
 - **AC13:** a missing file still gives `[]`; all existing tests pass.
+
+### Check by hand (2026-11-25)
+
+With a half-written `data/chunks.json`:
+- `import app` stops with "…chunks.json is not valid JSON: … Restore the
+  committed version with: git checkout data/chunks.json …".
+- `python src/run_ingestion.py` stops with the same advice before it fetches
+  any page, and the file is unchanged. No `.tmp` file is left in `data/`.
 
 ## Not in scope
 

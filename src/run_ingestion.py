@@ -6,6 +6,7 @@ Running it again refreshes the saved chunks, so this is also how the content get
 (specs/task10_update_loop.md).
 """
 import json
+import os
 from pathlib import Path
 
 from fetching import fetch_collection, fetch_page
@@ -21,9 +22,7 @@ def run(sources_path, chunks_path, fetch=fetch_page, fetch_collection=fetch_coll
     sources = json.loads(Path(sources_path).read_text(encoding="utf-8"))
 
     chunks_path = Path(chunks_path)
-    existing_chunks = []
-    if chunks_path.exists():
-        existing_chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
+    existing_chunks = read_saved_chunks(chunks_path)
 
     result = ingest(sources, fetch=fetch, existing_chunks=existing_chunks, fetch_collection=fetch_collection)
 
@@ -34,11 +33,45 @@ def run(sources_path, chunks_path, fetch=fetch_page, fetch_collection=fetch_coll
         chunk for chunk in result.chunks if any(belongs_to(chunk, url) for url in listed_urls)
     ]
 
-    # ensure_ascii=False keeps characters like "ö" readable in the file
-    chunks_path.write_text(json.dumps(result.chunks, ensure_ascii=False, indent=2), encoding="utf-8")
+    save_chunks(result.chunks, chunks_path)
     # Only reads both lists, after saving, so it can't change which chunks are saved
     result.changes = compare_chunks(existing_chunks, result.chunks)
     return result
+
+
+def read_saved_chunks(chunks_path):
+    """Return the chunks of the last run, or [] on a first run.
+
+    A broken file stops the run and is not overwritten (specs/task10_update_loop.md,
+    "Iteration: a safe chunks.json").
+    """
+    if not chunks_path.exists():
+        return []
+    restore = ("Restore the committed version with: git checkout data/chunks.json, "
+               "then run the ingestion again. The file was not changed.")
+    try:
+        chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise RuntimeError(f"{chunks_path} is not valid JSON: {error}. {restore}") from error
+    if not isinstance(chunks, list):
+        raise RuntimeError(f"{chunks_path} is not a list of chunks. {restore}")
+    return chunks
+
+
+def save_chunks(chunks, chunks_path):
+    """Save the chunks so that the file is always either the old or the new one.
+
+    They are written to a .tmp file first, which then replaces chunks.json as a whole. If
+    anything fails, even Ctrl+C, the .tmp file is removed and the old file stays.
+    """
+    temporary = chunks_path.with_name(chunks_path.name + ".tmp")
+    try:
+        # ensure_ascii=False keeps characters like "ö" readable in the file
+        temporary.write_text(json.dumps(chunks, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(temporary, chunks_path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
 
 
 def texts_by_source(chunks):
