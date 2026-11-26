@@ -23,10 +23,11 @@ CHUNKS_PATH = PROJECT_DIR / "data" / "chunks.json"
 
 # Messages shown to visitors. They never contain internal details such as errors or paths.
 EMPTY_QUESTION = "Please enter a question."
-QUESTION_TOO_LONG = "Please keep your question under 500 characters."
 
 # Same limit as the input field's maxlength in templates/chat.html
 MAX_QUESTION_LENGTH = 500
+# Exactly MAX_QUESTION_LENGTH characters are allowed, so "or fewer", not "under"
+QUESTION_TOO_LONG = f"Please keep your question to {MAX_QUESTION_LENGTH} characters or fewer."
 CONTENT_UNAVAILABLE = "ReDI information is temporarily unavailable. Please try again later."
 SERVER_ERROR = "Something went wrong while answering your question. Please try again."
 # Gemini's free tier allows 15 requests per minute for everyone together; trying again right
@@ -158,7 +159,8 @@ def create_app(chunks, generate, rate_limiter=None):
             "enough_information": result.enough_information,
             "sources": collect_citations(result.sources),
         }
-        # Only when retrieval found nothing; the link is never one of the sources
+        # When retrieval found nothing, when the model marked the answer as not (fully) covered,
+        # or when nothing of its answer was left after cleaning; the link is never one of the sources
         if not result.enough_information:
             response["contact"] = {"title": CONTACT_TITLE, "url": CONTACT_URL}
         return jsonify(response)

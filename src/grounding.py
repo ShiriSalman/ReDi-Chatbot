@@ -111,8 +111,9 @@ def stem(word):
 def tokenize(text):
     """Split text into lowercase words, without stopwords, with plurals reduced to the singular.
 
-    Single letters and digits are dropped: they say nothing about a topic and matched
-    by accident, for example the "b" of "<b>" with the "B." of "z. B.".
+    Words of one character (a letter or a digit) are dropped: they say nothing about a topic
+    and matched by accident, for example the "b" of "<b>" with the "B." of "z. B.". Longer
+    numbers such as "2026" are kept.
     """
     return [
         stem(word)

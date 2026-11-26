@@ -63,6 +63,68 @@ three minutes.
 
 The tests replace the waiting with a fake, so they stay fast.
 
+## Iteration: what the checks measure, a checked question file (MVP stabilization, 2026-11-26)
+
+### Problem
+
+- **The count was read as "correct answers".** `docs/task8_results.md` ends
+  with "27 of 28 passed", and `CLAUDE.md` says the evaluation "passes 27 of 28
+  questions". But `passes()` only checks retrieval and fallback: for an
+  "answer" case, that the expected page is among the sources; for a
+  "fallback" case, no sources and the contact link; for "small_talk", the
+  fixed reply. It never reads the answer text. Whether an answer is factually
+  right is only known from reading it (Run 1–12 in `docs/task8_findings.md`).
+- **A bad entry is found after the Gemini calls.** `evaluate()` reads
+  `case["known_issue"]` and `case["expected_url"]` while it runs, and the
+  results file is written only at the end. An entry without one of these keys
+  stops the run with `KeyError` after the earlier questions have used
+  Gemini's quota, and their answers are lost. An unknown `expected` value is
+  silently checked like "answer".
+- **"What is ReDI?" finds the wrong pages** (seen in the live app on
+  2026-11-25). `/our-impact` answers it ("ReDI School of Digital Integration
+  is a non-profit tech school …"), but "redi" is in 200 of 387 chunks, so BM25
+  gives it almost no weight; the contact and city pages, which repeat "ReDI
+  School …", rank above it. The catalogue had no question for it.
+
+### Change
+
+1. **`validate_questions()`** checks every entry before the first model call:
+   the keys the runner reads (`id`, `question`, `expected`, `expected_url`,
+   `known_issue`), a non-empty question, and an `expected` of `answer`,
+   `fallback` or `small_talk`. If anything is wrong, `run()` raises
+   `ValueError` listing every problem with the entry's id (or position), and
+   no question is asked.
+2. **The results file says what the checks cover.** The count reads "27 of 28
+   automated evaluation checks passed", and the header explains what is
+   checked and that factual answer correctness needs a manual review. The
+   README, `CLAUDE.md` and `docs/update_content.md` use the same wording.
+3. **q29 "What is ReDI?"** is added with `expected_url`
+   `https://www.redi-school.org/our-impact` and a `known_issue`, so it is a
+   strict `xfail` in `tests/test_real_questions.py` and is counted as a failed
+   check in every run until retrieval finds the page (owner's decision,
+   2026-11-25). No retrieval change: this is the keyword-search limit noted
+   after Run 12 ("may need semantic search").
+
+### Acceptance criteria
+
+`tests/test_run_evaluation.py`:
+- **AC-V1:** an entry without a required key, with an empty question, or with
+  an unknown `expected` makes `run()` raise `ValueError` naming every problem,
+  and the model is never called.
+- **AC-V2:** the real `data/task8_questions.json` passes `validate_questions()`.
+- **AC-V3:** `format_results()` ends with "N of M automated evaluation checks
+  passed", and the file written by `run()` says that factual answer
+  correctness is not checked and needs a manual review.
+
+`tests/test_real_questions.py`:
+- **AC-V4:** q29 retrieves no `/our-impact` chunk (strict `xfail` from its
+  `known_issue`).
+
+- **AC-V5:** all existing tests pass.
+
+Expected after this change, checked in demo mode (pass/fail doesn't depend on
+the answer text): **27 of 29** checks pass; q26 and q29 fail.
+
 ## Definition of done
 - [ ] Question set and expected outcomes documented.
 - [ ] At least 10 cases run and results recorded.

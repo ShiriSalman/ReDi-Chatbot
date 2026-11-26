@@ -489,6 +489,31 @@ Munich list.
   Munich?" now lists Cybersecurity, which is new, and no longer lists
   Back-End Development.
 
+## Seen in the live app on 2026-11-25: "What is ReDI?" (q29)
+
+"what is redi" got the sources Contact, ReDI School Hamburg, Munich and
+Berlin. The model said the sources don't define ReDI, gave what they mention
+(locations, tech education) and marked the answer, so the contact link was
+shown. The page that answers it, `/our-impact` ("ReDI School of Digital
+Integration is a non-profit tech school …"), is ingested but not retrieved:
+
+- After the stopwords only `redi` is left, and it is in 200 of 387 chunks, so
+  BM25 gives it almost no weight. The contact and city pages repeat "ReDI
+  School …" and rank first.
+- Longer wordings don't help: "What is ReDI School?", "What does ReDI do?"
+  and "what is redi school of digital integration" don't find `/our-impact`
+  either.
+
+Added as **q29** with a `known_issue` (strict `xfail`), so it counts as a
+failed check until retrieval finds the page. No keyword rule was added: it
+would be a special case for one question, like the reverted title weighting.
+Expected in the next run: **27 of 29** automated evaluation checks pass
+(checked in demo mode; q26 and q29 fail).
+
+From now on the count is called "automated evaluation checks passed": the
+checks cover retrieval and fallback only, and whether an answer is factually
+right is judged by reading it, as in the runs above.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -505,7 +530,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
 6. ~~**G** (source list in the answer).~~ Done (run 10).
 7. **Ranking:** ~~q08~~ done ("as" as a stopword), ~~q09~~ done (run 18,
    contact page by sections). Still open: q10,
-   **I** (q25, q26: the Course Finder), the German q15 finding only FAQ
+   **I** (q25, q26: the Course Finder), q29 "What is ReDI?" (a word in half
+   of all chunks), the German q15 finding only FAQ
    chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
