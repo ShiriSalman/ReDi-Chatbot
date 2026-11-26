@@ -2,6 +2,9 @@
 
 # 🤖 ReDi-Chatbot
 
+🌐 **Try it live:** [redi-chatbot.onrender.com](https://redi-chatbot.onrender.com), with nothing
+to install.
+
 ## 💬 What this is
 
 A chatbot that answers questions about ReDI School with clear answers based on official ReDI
