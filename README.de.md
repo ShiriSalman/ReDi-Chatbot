@@ -2,6 +2,10 @@
 
 # 🤖 ReDi-Chatbot
 
+🌐 **Live ausprobieren:** [redi-chatbot.onrender.com](https://redi-chatbot.onrender.com), ohne
+Installation. Die App läuft im kostenlosen Tarif von Render, der sie schlafen legt, wenn sie
+niemand nutzt; beim ersten Aufruf kann die Seite deshalb etwa eine Minute zum Laden brauchen.
+
 ## 💬 Worum es geht
 
 Ein Chatbot, der Fragen zur ReDI School klar beantwortet, auf Grundlage offizieller
