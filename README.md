@@ -148,3 +148,29 @@ python -m pytest
 - **`docs/update_content.md`:** how to keep the content current (Task 10).
 - **`docs/mvp_review.md`:** what the reviews after Task 10 found and changed, and the known
   limitations.
+
+## 🤝 AI Collaboration & My Contribution
+
+I developed this project using Claude Code, Anthropic's AI coding assistant, as a development partner. I was responsible for the project direction, requirements, technical decisions, quality assurance and final results, while AI supported the implementation.
+
+### What I did
+
+- **Defined the project scope and requirements:** target audience, approved sources, language and grounding rules.
+- **Made technical decisions:** evaluated different approaches, compared their trade-offs and selected suitable solutions based on test results.
+- **Established the development workflow:** specification first, numbered acceptance criteria, test-driven development and separate pull requests.
+- **Managed the GitHub workflow:** reviewed, approved and merged every pull request.
+- **Tested and evaluated the chatbot:** ran evaluations, tested the deployed application, identified issues and prioritized improvements.
+- **Managed the MVP scope:** decided which findings to address and which to document as known limitations.
+
+### What AI did
+
+- Proposed technical approaches and explained their trade-offs.
+- Drafted most of the implementation code, tests, specifications and documentation for my review.
+- Supported debugging, code reviews and performance optimization.
+- Ran approved tests and measurements and reported the results, including failures.
+
+### Transparency & Traceability
+
+Technical decisions, acceptance criteria and evaluation findings are documented in `specs/`, `docs/adr/` and `docs/task8_findings.md`. All changes are traceable through the GitHub pull requests.
+
+This project demonstrates my approach to AI-assisted software development: combining human decision-making, critical evaluation and structured development practices with AI-supported implementation.
