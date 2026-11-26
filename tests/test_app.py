@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 
 import pytest
+from flask import Flask
+from flask import request as flask_request
 
 import app as app_module
 from app import create_app, demo_generate, load_chunks, log_startup
@@ -507,8 +509,9 @@ class TestVisitorLimit:
                                   rate_limiter=RateLimiter(5, 60, clock=self.clock))
 
     def ask_as(self, visitor, question=SUPPORTED_QUESTION):
+        # The header as Render passes it on: the visitor, then two proxy addresses
         return self.client.post("/api/chat", json={"question": question},
-                                headers={"X-Forwarded-For": f"{visitor}, 10.0.0.1"})
+                                headers={"X-Forwarded-For": f"{visitor}, 10.0.0.1, 10.0.0.2"})
 
     # AC5
     def test_the_sixth_question_in_a_minute_gets_a_wait_message_without_calling_gemini(self):
@@ -567,57 +570,63 @@ class TestVisitorLimit:
         assert app_module.rate_limiter.window_seconds == 60
 
 
-# specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)", step 1:
-# a temporary log line that shows how Render forwards the address, without any address
-class TestForwardingLog:
-    HEADERS = {
-        "X-Forwarded-For": "203.0.113.9, 198.51.100.4, 10.1.2.3",
-        "True-Client-IP": "198.51.100.4",
-        "CF-Connecting-IP": "192.0.2.77",
-        "CF-Ray": "8a1b2c3d4e5f-FRA",
-    }
+# specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)", step 2:
+# the visitor is the third-last X-Forwarded-For entry, as measured on Render on 2026-11-26
+REAL = "198.51.100.4"
+PROXIES = "10.1.2.3, 10.4.5.6"
 
-    def forwarding_lines(self, caplog, question=SUPPORTED_QUESTION, headers=HEADERS, rate_limiter=True):
-        limiter = RateLimiter(5, 60, clock=FakeClock()) if rate_limiter else None
-        client = make_client(rate_limiter=limiter)
+
+def key_for(forwarded=None, remote_addr="192.0.2.1"):
+    headers = {"X-Forwarded-For": forwarded} if forwarded is not None else {}
+    with Flask("key-test").test_request_context("/", headers=headers, environ_base={"REMOTE_ADDR": remote_addr}):
+        return app_module.visitor_key(flask_request)
+
+
+class TestRealVisitorAddress:
+    # AC14: the two header shapes from the Render log
+    def test_both_measured_header_shapes_give_the_real_address(self):
+        assert key_for(f"{REAL}, {PROXIES}") == REAL
+        assert key_for(f"203.0.113.50, {REAL}, {PROXIES}") == REAL
+
+    # AC15: the live finding as a test
+    def test_made_up_first_entries_no_longer_get_past_the_limit(self):
+        generate = fake_generate()
+        client = make_client(generate=generate, rate_limiter=RateLimiter(5, 60, clock=FakeClock()))
+
+        statuses = [
+            client.post("/api/chat", json={"question": SUPPORTED_QUESTION},
+                        headers={"X-Forwarded-For": f"203.0.113.{n}, {REAL}, {PROXIES}"}).status_code
+            for n in range(1, 7)
+        ]
+
+        assert statuses == [200] * 5 + [429]
+        assert len(generate.prompts) == 5
+
+    # AC16
+    def test_different_real_addresses_are_different_visitors(self):
+        assert key_for(f"203.0.113.50, {REAL}, {PROXIES}") != key_for(f"203.0.113.50, 198.51.100.99, {PROXIES}")
+
+    @pytest.mark.parametrize("forwarded, expected", [
+        (REAL, REAL),
+        (f"{REAL}, 10.1.2.3", REAL),
+        (" , ", "192.0.2.1"),
+    ], ids=["one entry", "two entries", "only commas"])
+    def test_a_short_header_uses_its_first_entry(self, forwarded, expected):
+        assert key_for(forwarded) == expected
+
+    def test_without_the_header_the_connection_address_is_used(self):
+        assert key_for() == "192.0.2.1"
+
+    # AC17
+    def test_the_temporary_forwarding_log_is_gone(self, caplog):
+        client = make_client(rate_limiter=RateLimiter(5, 60, clock=FakeClock()))
+
         with caplog.at_level(logging.INFO):
-            client.post("/api/chat", json={"question": question}, headers=headers)
-        return [r.getMessage() for r in caplog.records if "X-Forwarded-For" in r.getMessage()]
+            client.post("/api/chat", json={"question": SUPPORTED_QUESTION},
+                        headers={"X-Forwarded-For": f"{REAL}, {PROXIES}", "True-Client-IP": REAL})
 
-    # AC10
-    def test_a_counted_question_logs_the_number_of_entries_and_the_header_names(self, caplog):
-        [line] = self.forwarding_lines(caplog)
-
-        assert "X-Forwarded-For has 3 entries" in line
-        assert "True-Client-IP" in line and "CF-Connecting-IP" in line and "CF-Ray" in line
-        assert "X-Real-IP" not in line
-
-    def test_without_the_header_it_logs_zero_entries(self, caplog):
-        [line] = self.forwarding_lines(caplog, headers={})
-
-        assert "X-Forwarded-For has 0 entries" in line
-
-    # AC11
-    def test_it_logs_which_entry_a_client_address_header_matches(self, caplog):
-        [line] = self.forwarding_lines(caplog)
-
-        assert "True-Client-IP = entry 2 of 3" in line
-        assert "CF-Connecting-IP = no entry" in line
-
-    # AC12
-    def test_no_address_or_header_value_is_logged(self, caplog):
-        self.forwarding_lines(caplog)
-
-        for value in ["203.0.113.9", "198.51.100.4", "10.1.2.3", "192.0.2.77", "8a1b2c3d4e5f", "127.0.0.1"]:
-            assert value not in caplog.text
-
-    # AC13
-    @pytest.mark.parametrize("question", ["thanks", UNRELATED_QUESTION], ids=["small talk", "fallback"])
-    def test_questions_that_are_not_counted_log_nothing(self, caplog, question):
-        assert self.forwarding_lines(caplog, question=question) == []
-
-    def test_an_app_without_a_rate_limiter_logs_nothing(self, caplog):
-        assert self.forwarding_lines(caplog, rate_limiter=False) == []
+        assert "X-Forwarded-For" not in caplog.text
+        assert not hasattr(app_module, "forwarding_summary")
 
 
 # AC9: Safe rendering (backend side, plus a check on the browser script)

@@ -45,36 +45,26 @@ class VisitorLimitReached(Exception):
     """Raised instead of calling the model when a visitor has asked too often."""
 
 
+# Render's proxies add the visitor's address and then two proxy addresses to the end of
+# X-Forwarded-For, after whatever the visitor sent (measured in the Render log on 2026-11-26;
+# specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)").
+RENDER_PROXY_ENTRIES = 2
+
+
 def visitor_key(request):
-    """Return the visitor's IP address: the first X-Forwarded-For entry, else the connection's.
+    """Return the visitor's IP address, counted from the end of X-Forwarded-For.
 
-    On Render every request comes through a proxy, which adds the address it sees at the end
-    of X-Forwarded-For. How many proxies there are isn't documented, so the first entry is
-    used: counting from the end could give a proxy address shared by many visitors.
+    The front of the header is whatever the visitor sent, so it can be made up; the entries
+    Render's proxies add at the end can't. With fewer entries than expected (no proxy, as
+    when running locally) the first one is used; without the header, the connection's address.
     """
-    first_forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
-    return first_forwarded or request.remote_addr or "unknown"
-
-
-# TEMPORARY (specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)",
-# step 1): shows how Render forwards the address. Step 2 removes it.
-OTHER_FORWARDING_HEADERS = ["Forwarded", "X-Real-IP", "True-Client-IP", "CF-Connecting-IP", "CF-Ray"]
-CLIENT_ADDRESS_HEADERS = ["X-Real-IP", "True-Client-IP", "CF-Connecting-IP"]
-
-
-def forwarding_summary(request):
-    """Describe the forwarding headers by counts, names and positions, never by their values."""
     forwarded = request.headers.get("X-Forwarded-For", "")
     entries = [entry.strip() for entry in forwarded.split(",") if entry.strip()]
-    parts = [f"X-Forwarded-For has {len(entries)} entries"]
-    present = [name for name in OTHER_FORWARDING_HEADERS if name in request.headers]
-    parts.append("other headers: " + (", ".join(present) or "none"))
-    for name in CLIENT_ADDRESS_HEADERS:
-        value = request.headers.get(name, "").strip()
-        if value:
-            position = entries.index(value) + 1 if value in entries else None
-            parts.append(f"{name} = entry {position} of {len(entries)}" if position else f"{name} = no entry")
-    return "; ".join(parts)
+    if len(entries) > RENDER_PROXY_ENTRIES:
+        return entries[-(RENDER_PROXY_ENTRIES + 1)]
+    if entries:
+        return entries[0]
+    return request.remote_addr or "unknown"
 
 # Offered when retrieval finds nothing, so the visitor can ask ReDI directly.
 # The URL is an approved source in data/sources.json; tests/test_app.py checks that.
@@ -156,8 +146,6 @@ def create_app(chunks, generate, rate_limiter=None):
         # The limit is checked right before the model call, so small talk and questions the
         # sources don't cover never count
         def limited_generate(prompt):
-            if rate_limiter is not None:
-                app.logger.info(forwarding_summary(request))  # TEMPORARY, see forwarding_summary
             if rate_limiter is not None and not rate_limiter.allow(visitor_key(request)):
                 raise VisitorLimitReached()
             return generate(prompt)
