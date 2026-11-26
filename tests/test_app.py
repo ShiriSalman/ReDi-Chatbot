@@ -331,7 +331,8 @@ class TestQuestionLength:
         response = ask(make_client(generate=generate), "a" * 501)
 
         assert response.status_code == 400
-        assert response.get_json() == {"error": "Please keep your question under 500 characters."}
+        # The message matches the limit: exactly 500 characters are allowed (MVP stabilization, D5)
+        assert response.get_json() == {"error": "Please keep your question to 500 characters or fewer."}
         assert generate.prompts == []
 
     def test_question_of_exactly_500_characters_is_accepted(self):

@@ -250,5 +250,14 @@
     "expected": "answer",
     "expected_url": "https://www.redi-school.org/course-finder?category=Munich",
     "known_issue": null
+  },
+  {
+    "id": "q29",
+    "question": "What is ReDI?",
+    "topic": "About ReDI",
+    "case": "straightforward",
+    "expected": "answer",
+    "expected_url": "https://www.redi-school.org/our-impact",
+    "known_issue": "'redi' is in 200 of 387 chunks, so BM25 gives it almost no weight; the contact and city pages, which repeat 'ReDI School', rank above /our-impact"
   }
 ]

@@ -4,6 +4,8 @@
 # Small fake chunks and a fake model are used, so the tests don't depend on the real content.
 import json
 
+import pytest
+
 import run_evaluation
 from app import demo_generate
 from run_evaluation import PAUSE_SECONDS, evaluate, format_results, load_questions, paced
@@ -67,6 +69,56 @@ def test_load_questions_reads_the_file(tmp_path):
     path.write_text(json.dumps(questions), encoding="utf-8")
 
     assert load_questions(path) == questions
+
+
+# specs/task8_test_against_real_user_questions.md, "Iteration: what the checks measure,
+# a checked question file"
+class TestQuestionFileCheck:
+    def run_with(self, monkeypatch, tmp_path, cases):
+        calls = []
+        monkeypatch.setattr(run_evaluation, "choose_generate", lambda fallback: lambda p: calls.append(p) or "x")
+        monkeypatch.setattr(run_evaluation.time, "sleep", lambda seconds: None)
+        monkeypatch.setattr(run_evaluation, "load_questions", lambda: cases)
+        monkeypatch.setattr(run_evaluation, "load_chunks", lambda: CHUNKS)
+        return calls, (lambda: run_evaluation.run(output_path=tmp_path / "results.md"))
+
+    # AC-V1
+    def test_a_bad_entry_stops_the_run_before_any_model_call(self, monkeypatch, tmp_path):
+        no_known_issue = make_case(COVERED, case_id="q02")
+        del no_known_issue["known_issue"]
+        cases = [
+            make_case(COVERED, case_id="q01"),
+            no_known_issue,
+            make_case("  ", case_id="q03"),
+            make_case(COVERED, expected="fallbak", case_id="q04"),
+        ]
+        calls, run = self.run_with(monkeypatch, tmp_path, cases)
+
+        with pytest.raises(ValueError) as error:
+            run()
+
+        message = str(error.value)
+        assert "q02" in message and "known_issue" in message
+        assert "q03" in message and "question" in message
+        assert "q04" in message and "fallbak" in message
+        assert "q01" not in message
+        assert calls == []
+        assert not (tmp_path / "results.md").exists()
+
+    # AC-V2
+    def test_the_real_question_file_is_valid(self):
+        assert run_evaluation.validate_questions(load_questions()) == []
+
+    # AC-V3
+    def test_the_results_file_says_what_the_checks_cover(self, monkeypatch, tmp_path):
+        _, run = self.run_with(monkeypatch, tmp_path, [make_case(COVERED, expected_url=FAQ_URL)])
+
+        run()
+
+        report = (tmp_path / "results.md").read_text(encoding="utf-8")
+        assert "1 of 1 automated evaluation checks passed" in report
+        assert "does not check whether the answer text is factually correct" in report
+        assert "manual review" in report
 
 
 # Pass/fail rules
@@ -160,7 +212,7 @@ class TestFormatResults:
 
         table = format_results(evaluate(cases, CHUNKS, fake_generate))
 
-        assert "1 of 2 passed" in table
+        assert table.endswith("1 of 2 automated evaluation checks passed")
 
     def test_answers_with_line_breaks_or_pipes_stay_in_one_table_row(self):
         # A real model may answer with several lines or a "|"; neither may break the table
