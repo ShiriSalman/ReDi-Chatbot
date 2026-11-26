@@ -16,6 +16,12 @@ UNWANTED_TAGS = ["nav", "header", "footer", "aside", "script", "style", "noscrip
 
 MAX_CHUNK_CHARS = 500
 
+# The values data/sources.json may use (sources.md; "Maybe" is treated like "No"). Any other
+# value is a typo and fails, so it can't delete chunks or change the chunking without a warning
+# (specs/task2_content_ingestion.md, "Iteration: unknown include and reader values")
+INCLUDE_VALUES = {"Yes", "No", "Maybe"}
+READERS = {None, "course-list", "sections"}
+
 # The Course Finder's categories mix locations and topics; these are the locations
 # (specs/task8_course_list_per_city.md). A new location must be added here.
 LOCATIONS = ["Berlin", "Munich", "NRW", "Hamburg", "Copenhagen", "Aarhus", "Malmö", "Gothenburg"]
@@ -285,6 +291,15 @@ def course_list_chunks(source, html, items):
     return chunks
 
 
+def configuration_problem(source):
+    """Return why the source's include or reader value is not allowed, or None if both are."""
+    if source.get("include") not in INCLUDE_VALUES:
+        return f"include must be Yes, No or Maybe, not {source.get('include')!r}"
+    if source.get("reader") not in READERS:
+        return f"unknown reader {source.get('reader')!r}"
+    return None
+
+
 def ingest(sources, fetch, existing_chunks=None, fetch_collection=None):
     """Fetch, clean and chunk every source whose include is "Yes".
 
@@ -299,6 +314,12 @@ def ingest(sources, fetch, existing_chunks=None, fetch_collection=None):
 
     for source in sources:
         url = source["url"]
+
+        # Checked before anything else, so a typo keeps the source's old chunks
+        problem = configuration_problem(source)
+        if problem:
+            result.report["failed"].append({"url": url, "reason": problem})
+            continue
 
         if source.get("include") != "Yes":
             # Drop chunks from earlier runs, so a source marked "No" is no longer used
