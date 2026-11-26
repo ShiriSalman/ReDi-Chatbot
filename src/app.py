@@ -55,6 +55,27 @@ def visitor_key(request):
     first_forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
     return first_forwarded or request.remote_addr or "unknown"
 
+
+# TEMPORARY (specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)",
+# step 1): shows how Render forwards the address. Step 2 removes it.
+OTHER_FORWARDING_HEADERS = ["Forwarded", "X-Real-IP", "True-Client-IP", "CF-Connecting-IP", "CF-Ray"]
+CLIENT_ADDRESS_HEADERS = ["X-Real-IP", "True-Client-IP", "CF-Connecting-IP"]
+
+
+def forwarding_summary(request):
+    """Describe the forwarding headers by counts, names and positions, never by their values."""
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    entries = [entry.strip() for entry in forwarded.split(",") if entry.strip()]
+    parts = [f"X-Forwarded-For has {len(entries)} entries"]
+    present = [name for name in OTHER_FORWARDING_HEADERS if name in request.headers]
+    parts.append("other headers: " + (", ".join(present) or "none"))
+    for name in CLIENT_ADDRESS_HEADERS:
+        value = request.headers.get(name, "").strip()
+        if value:
+            position = entries.index(value) + 1 if value in entries else None
+            parts.append(f"{name} = entry {position} of {len(entries)}" if position else f"{name} = no entry")
+    return "; ".join(parts)
+
 # Offered when retrieval finds nothing, so the visitor can ask ReDI directly.
 # The URL is an approved source in data/sources.json; tests/test_app.py checks that.
 CONTACT_URL = "https://www.redi-school.org/contact"
@@ -135,6 +156,8 @@ def create_app(chunks, generate, rate_limiter=None):
         # The limit is checked right before the model call, so small talk and questions the
         # sources don't cover never count
         def limited_generate(prompt):
+            if rate_limiter is not None:
+                app.logger.info(forwarding_summary(request))  # TEMPORARY, see forwarding_summary
             if rate_limiter is not None and not rate_limiter.allow(visitor_key(request)):
                 raise VisitorLimitReached()
             return generate(prompt)
