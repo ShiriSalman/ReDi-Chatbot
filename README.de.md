@@ -6,6 +6,8 @@
 Installation. Die App läuft im kostenlosen Tarif von Render, der sie schlafen legt, wenn sie
 niemand nutzt; beim ersten Aufruf kann die Seite deshalb etwa eine Minute zum Laden brauchen.
 
+![Die Chat-Seite mit Begrüßung, Themen-Tabs und Beispielfragen](docs/images/chat_page.png)
+
 ## 💬 Worum es geht
 
 Ein Chatbot, der Fragen zur ReDI School klar beantwortet, auf Grundlage offizieller
