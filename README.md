@@ -3,7 +3,8 @@
 # 🤖 ReDi-Chatbot
 
 🌐 **Try it live:** [redi-chatbot.onrender.com](https://redi-chatbot.onrender.com), with nothing
-to install.
+to install. It runs on Render's free plan, which puts it to sleep when nobody uses it, so the
+page can take about a minute to load the first time.
 
 ## 💬 What this is
 
