@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the ReDI Chatbot, a chatbot that answers questions about ReDI School using official ReDI information and links to the relevant sources. It's a solo learning project: the owner decides how each task gets built. Propose options and explain tradeoffs rather than picking a stack or architecture on your own.
 
-**Status:** the MVP is complete (2026-11-23). It runs publicly at https://redi-chatbot.onrender.com. The Task 8 evaluation passes 27 of 28 questions; the one failure (q26, a follow-up question) needs conversation memory, which is after the MVP.
+**Status:** the MVP is complete (2026-11-23). It runs publicly at https://redi-chatbot.onrender.com. In the last Task 8 run (2026-11-23), 27 of 28 automated evaluation checks passed; the one failure (q26, a follow-up question) needs conversation memory, which is after the MVP. q29 "What is ReDI?" was added on 2026-11-26 as a known retrieval failure, so the next run is expected to give 27 of 29. The checks cover retrieval and fallback only (expected page among the sources, fallback with contact link, small-talk reply); whether the answers are factually correct needs a manual review of the answers.
 
 **Stack:** Python 3.14 and Flask, keyword retrieval (BM25, no embeddings), Google Gemini (`gemini-3.5-flash-lite`, free tier) for the answer text, plain HTML/CSS/JavaScript for the page, Docker on Render. The owner chose Gemini for free testing; a Claude API connection is specified but parked (`specs/claude_api_connection.md`).
 
@@ -27,7 +27,7 @@ This is the ReDI Chatbot, a chatbot that answers questions about ReDI School usi
 - **Ingestion** (`src/run_ingestion.py`, `src/ingestion.py`, `src/fetching.py`): fetches the `Yes` sources, cleans the HTML and saves chunks of about 500 characters, each with its source URL, to `data/chunks.json`. A source can set `"reader"`: `"course-list"` (the Course Finder, one list per city) or `"sections"` (the contact page, chunked by headings). It ends with a change summary per source. There is no PDF reader yet.
 - **Answering** (`src/grounding.py`): small talk gets a fixed reply; otherwise BM25 retrieval with a gate (`MIN_WORD_SHARE`, `MIN_MATCHED_WORDS`), spelling correction, and `SYNONYMS`. No matching chunk means the fallback answer without a model call. Otherwise the prompt (`INSTRUCTIONS`) and the chunks go to the model, which answers only from them or returns a "not covered" marker.
 - **Web app** (`src/app.py`): the chat page and `POST /api/chat`. The chunks are read once at start. The served app limits each visitor to 5 Gemini questions per minute (`src/rate_limit.py`); Gemini's used-up quota gives a 429 wait message. `src/citations.py` builds the source links; `static/js/format.js` turns the answer into paragraphs and lists (DOM only, never `innerHTML`).
-- **Evaluation** (`src/run_evaluation.py`): sends the 28 questions in `data/task8_questions.json` through the API and writes `docs/task8_results.md`. Each run is summarised in `docs/task8_findings.md`.
+- **Evaluation** (`src/run_evaluation.py`): checks the entries of `data/task8_questions.json` (29 questions), sends them through the API and writes `docs/task8_results.md`. Each run is summarised in `docs/task8_findings.md`.
 
 ## Task order
 
@@ -44,12 +44,12 @@ The owner reviewed and approved this order. All MVP tasks are done.
 9. ~~Deploy and make accessible~~ (`specs/task9_deploy_render.md`, `specs/rate_limit_per_visitor.md`)
 10. ~~Set up an update loop~~ (`specs/task10_update_loop.md`, `docs/update_content.md`). *(after MVP: collecting user feedback)*
 
-Task 8, testing against real user questions, is the main measure of correctness for the whole project. Open items and the suggested order of fixes are at the end of `docs/task8_findings.md`.
+Task 8, testing against real user questions, is the main measure of correctness for the whole project: its automated checks for retrieval and fallback, plus a manual review of the answers for factual correctness. Open items and the suggested order of fixes are at the end of `docs/task8_findings.md`.
 
 ## How the owner works
 
 - **Spec first:** each task or fix gets a spec in `specs/` (or an "Iteration" section in an existing one) with numbered acceptance criteria, then failing tests, then the implementation. Commit the spec and tests first, then the code.
-- **Check retrieval changes on the real content:** before and after a change to `grounding.py`, compare what the 28 Task 8 questions and a set of unrelated questions retrieve. The 28 should retrieve the same pages unless the change is meant to fix one.
+- **Check retrieval changes on the real content:** before and after a change to `grounding.py`, compare what the Task 8 questions and a set of unrelated questions retrieve. They should retrieve the same pages unless the change is meant to fix one.
 - **The owner runs the evaluation** with their own `GEMINI_API_KEY`. Never ask for the key or write it in a file.
 - **Explain before editing** when the owner asks for it, and keep solutions simple, without new dependencies.
 

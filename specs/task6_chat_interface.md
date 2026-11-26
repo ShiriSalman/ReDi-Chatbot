@@ -120,7 +120,7 @@ In a successful response, a `sources` entry whose metadata URL is missing or inv
 **Question too long** (`400 Bad Request`), when the question is longer than 500 characters after trimming:
 
 ```json
-{"error": "Please keep your question under 500 characters."}
+{"error": "Please keep your question to 500 characters or fewer."}
 ```
 
 **Unavailable ingested content** (`503 Service Unavailable`):

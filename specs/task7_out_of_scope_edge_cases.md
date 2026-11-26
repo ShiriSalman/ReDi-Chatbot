@@ -49,7 +49,7 @@ Task 7 has two kinds of behaviour (see Task 3, "Who decides what"):
 | Case | Behaviour | Defined in |
 |---|---|---|
 | Empty or blank question | 400 "Please enter a question." | Task 6 |
-| Question over 500 characters | 400 "Please keep your question under 500 characters." | Task 6 |
+| Question over 500 characters | 400 "Please keep your question to 500 characters or fewer." | Task 6 |
 | HTML-like text (`<b>hallo</b>`) | shown as text; single letters don't match | Task 3, Task 6 |
 | Greetings ("hi", "hello", "hallo", "bye") | no relevant chunk → fallback with contact link | Task 3, contact-link spec |
 | Small talk that shares a word with ReDI pages ("thanks!", "good morning") | retrieval finds pages (for example "a huge thank you to our supporters"), so the model is called with them; the real model's reply is checked in Task 8 | Task 3 |

@@ -51,8 +51,45 @@ def load_questions(path=QUESTIONS_PATH):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+# The keys evaluate() and passes() read, and the behaviours passes() knows
+REQUIRED_KEYS = ["id", "question", "expected", "expected_url", "known_issue"]
+EXPECTED_VALUES = {"answer", "fallback", "small_talk"}
+
+# Pass/fail only checks retrieval and fallback, never the answer text
+# (specs/task8_test_against_real_user_questions.md, "Iteration: what the checks measure")
+CHECKS_EXPLAINED = (
+    "Pass/fail is an automated check of retrieval and fallback behaviour: for \"answer\" the "
+    "expected ReDI page is among the sources, for \"fallback\" there are no sources and the "
+    "contact link is shown, and for \"small_talk\" the fixed reply is given. It does not check "
+    "whether the answer text is factually correct; that needs a manual review of the answers below."
+)
+
+
+def validate_questions(questions):
+    """Return a list of problems in the question set, empty when every entry is usable.
+
+    Run before the first question, so a bad entry can't stop a run after it used Gemini's quota.
+    """
+    problems = []
+    for position, case in enumerate(questions, start=1):
+        name = case.get("id") or f"entry {position}"
+        missing = [key for key in REQUIRED_KEYS if key not in case]
+        if missing:
+            problems.append(f"{name}: missing {', '.join(missing)}")
+        question = case.get("question")
+        if not isinstance(question, str) or not question.strip():
+            problems.append(f"{name}: the question is empty")
+        if "expected" in case and case["expected"] not in EXPECTED_VALUES:
+            problems.append(f"{name}: unknown expected value {case['expected']!r}")
+    return problems
+
+
 def passes(case, data):
-    """Check one response against the expected behaviour of its case."""
+    """Check one response against the expected behaviour of its case.
+
+    Only retrieval and fallback are checked (sources, contact link, small-talk reply), never
+    whether the answer text is correct (see CHECKS_EXPLAINED).
+    """
     source_urls = [source["url"] for source in data.get("sources", [])]
     if case["expected"] == "fallback":
         return data.get("enough_information") is False and not source_urls and "contact" in data
@@ -119,22 +156,31 @@ def format_results(results):
 
     passed = sum(1 for result in results if result["passed"])
     lines.append("")
-    lines.append(f"{passed} of {len(results)} passed")
+    lines.append(f"{passed} of {len(results)} automated evaluation checks passed")
     return "\n".join(lines)
 
 
 def run(output_path=RESULTS_PATH):
-    """Evaluate the question set with the app's real setup and save the table."""
+    """Evaluate the question set with the app's real setup and save the table.
+
+    Raises ValueError before any question is asked when the question set has a bad entry.
+    """
+    questions = load_questions()
+    problems = validate_questions(questions)
+    if problems:
+        raise ValueError("data/task8_questions.json has problems:\n- " + "\n- ".join(problems))
+
     generate = choose_generate(demo_generate)
     mode = "demo mode" if generate is demo_generate else f"Gemini ({MODEL})"
     if generate is not demo_generate:
         generate = paced(generate)
-    results = evaluate(load_questions(), load_chunks(), generate)
+    results = evaluate(questions, load_chunks(), generate)
 
     report = (
         "# Task 8 results\n\n"
         f"Run on {date.today().isoformat()} in {mode}. "
         "Created by `src/run_evaluation.py` from `data/task8_questions.json`.\n\n"
+        + CHECKS_EXPLAINED + "\n\n"
         + format_results(results)
         + "\n"
     )
@@ -146,4 +192,5 @@ def run(output_path=RESULTS_PATH):
 if __name__ == "__main__":
     results = run()
     passed = sum(1 for result in results if result["passed"])
-    print(f"{passed} of {len(results)} passed. Saved to {RESULTS_PATH}")
+    print(f"{passed} of {len(results)} automated evaluation checks passed. Saved to {RESULTS_PATH}")
+    print("They check retrieval and fallback, not whether the answers are correct: read the answers too.")
