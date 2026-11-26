@@ -153,6 +153,17 @@ class TestInvalidUrls:
         # The valid page keeps its link; the invalid one gets no URL, and none is guessed for it
         assert citations == [{"title": "FAQ", "url": FAQ_URL}, {"title": "Old page", "url": None}]
 
+    # specs/task5_citation_sourcing.md, "Iteration: malformed URLs", AC9
+    @pytest.mark.parametrize("bad_url", [
+        "http://[broken",
+        "https://exa mple.org/faq",
+        "https://www.redi-school.org/\nfaq",
+    ], ids=["broken brackets", "space", "line break"])
+    def test_a_malformed_url_is_not_a_link_and_raises_no_error(self, bad_url):
+        sources = [make_chunk(url=FAQ_URL, title="FAQ"), make_chunk(url=bad_url, title="Old page")]
+
+        assert collect_citations(sources) == [{"title": "FAQ", "url": FAQ_URL}, {"title": "Old page", "url": None}]
+
     def test_a_chunk_without_a_url_key_has_no_url(self):
         chunk = make_chunk(title="Old page")
         del chunk["url"]

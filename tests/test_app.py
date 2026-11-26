@@ -265,6 +265,15 @@ class TestCitations:
         assert "javascript:" not in response.get_data(as_text=True)
         assert {"title": "Apply", "url": APPLY_URL} in sources
 
+    # specs/task5_citation_sourcing.md, "Iteration: malformed URLs", AC10
+    def test_a_malformed_source_url_still_gives_an_answer(self):
+        chunks = [make_chunk("All our courses are free of charge.", url="http://[broken", title="Old page")]
+
+        response = ask(make_client(chunks=chunks), SUPPORTED_QUESTION)
+
+        assert response.status_code == 200
+        assert response.get_json()["sources"] == [{"title": "Old page", "url": None}]
+
     def test_urls_written_in_the_answer_do_not_become_sources(self):
         generate = fake_generate("Read more at https://made-up.example/courses")
 

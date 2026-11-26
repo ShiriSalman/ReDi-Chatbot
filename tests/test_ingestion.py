@@ -1,9 +1,12 @@
 # Tests for the content ingestion pipeline, written from specs/task2_content_ingestion.md.
 # The fetch function is passed in, so the tests never touch the network.
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
+import ingestion
 from ingestion import (
     MAX_CHUNK_CHARS,
     chunk_text,
@@ -592,6 +595,59 @@ class TestCourseList:
         assert result.chunks == first.chunks
         assert result.report["no_content"] == [FINDER_URL]
         assert result.report["ingested"] == []
+
+
+# specs/task2_content_ingestion.md, "Iteration: unknown include and reader values"
+class TestConfigurationErrors:
+    OLD_CHUNK = {
+        "url": "https://www.redi-school.org/course-finder",
+        "title": "Course Finder",
+        "category": "Courses",
+        "language": "en",
+        "last_updated": "unavailable",
+        "text": "Chunk from the last run.",
+    }
+
+    # AC1
+    @pytest.mark.parametrize("include", ["yes", "", None], ids=["lower case", "empty", "missing"])
+    def test_an_unknown_include_value_fails_and_keeps_the_old_chunks(self, include):
+        source = make_source(include=include)
+        fetch = fake_fetch()
+
+        result = ingest([source], fetch=fetch, existing_chunks=[self.OLD_CHUNK])
+
+        assert fetch.calls == []
+        assert result.chunks == [self.OLD_CHUNK]
+        assert result.report["skipped"] == []
+        [failure] = result.report["failed"]
+        assert failure["url"] == source["url"]
+        assert "include" in failure["reason"] and repr(include) in failure["reason"]
+
+    # AC2
+    def test_an_unknown_reader_fails_and_keeps_the_old_chunks(self):
+        source = make_source(reader="section")
+        fetch = fake_fetch()
+
+        result = ingest([source], fetch=fetch, existing_chunks=[self.OLD_CHUNK])
+
+        assert fetch.calls == []
+        assert result.chunks == [self.OLD_CHUNK]
+        [failure] = result.report["failed"]
+        assert "reader" in failure["reason"] and "'section'" in failure["reason"]
+
+    # AC3
+    def test_maybe_is_skipped_like_no(self):
+        result = ingest([make_source(include="Maybe")], fetch=fake_fetch(), existing_chunks=[self.OLD_CHUNK])
+
+        assert result.report["skipped"] == [self.OLD_CHUNK["url"]]
+        assert result.chunks == []
+
+    # AC4
+    def test_every_real_source_has_a_valid_include_and_reader(self):
+        sources = json.loads((Path(__file__).parent.parent / "data" / "sources.json").read_text(encoding="utf-8"))
+
+        assert {source.get("include") for source in sources} <= ingestion.INCLUDE_VALUES
+        assert {source.get("reader") for source in sources} <= ingestion.READERS
 
 
 # Reading a page by its sections, written from specs/task8_contact_page_sections.md.

@@ -10,10 +10,17 @@ NEUTRAL_TITLE = "ReDI source"
 
 
 def is_valid_url(url):
-    """Return True only for http:// and https:// URLs with a host."""
-    if not isinstance(url, str):
+    """Return True only for http:// and https:// URLs with a host and without whitespace.
+
+    A malformed URL such as "http://[broken" is invalid instead of an error, so it can't stop
+    the visitor's answer (specs/task5_citation_sourcing.md, "Iteration: malformed URLs").
+    """
+    if not isinstance(url, str) or any(character.isspace() for character in url):
         return False
-    parsed = urlparse(url)
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
