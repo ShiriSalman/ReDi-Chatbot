@@ -170,3 +170,51 @@ limitations).
 **Then** a report should show which sources were successfully ingested  
 **And** which sources were skipped  
 **And** which sources failed.
+
+---
+
+## Iteration: unknown `include` and `reader` values (MVP stabilization, 2026-11-26)
+
+### Problem
+
+A typo in `data/sources.json` changes what is ingested without any warning.
+Checked on 2026-11-24:
+
+- `"include": "yes"` (lower case) is treated like `"No"`: the source is
+  reported as "skipped" and **its chunks from earlier runs are deleted**.
+- A `"reader"` with a typo (for example `"section"`) quietly falls back to
+  cutting the page every 500 characters, which the `sections` and
+  `course-list` readers were made to avoid.
+
+### Change
+
+In `ingest()`, before a source is fetched:
+
+1. **An `include` other than `Yes`, `No` or `Maybe` is reported as "failed"**,
+   with a reason that names the value. These are the three values in
+   `sources.md` and Task 1 (Scenario 2); `Maybe` stays treated like `No`.
+2. **A `reader` other than none, `course-list` or `sections` is reported as
+   "failed"**, with a reason that names the value.
+
+Like every failed source, its chunks from the last run stay, and it is not
+fetched. Unchanged: `Yes`, `No` and `Maybe`, and both readers.
+
+### Assumptions
+
+- The values stay case-sensitive. `"yes"` is now reported instead of being
+  skipped silently, so the owner can correct it.
+- Today's `data/sources.json` uses only `Yes` (26) and `No` (23), and the
+  readers `course-list` (1) and `sections` (1), so no current source changes.
+
+### Acceptance criteria (`tests/test_ingestion.py`, `TestConfigurationErrors`)
+
+- **AC1:** a source with `include` `"yes"`, `""` or missing is reported as
+  failed with a reason naming the value; it is not fetched, and its old
+  chunks stay.
+- **AC2:** a source with an unknown `reader` is reported as failed with a
+  reason naming the value; it is not fetched, and its old chunks stay.
+- **AC3:** `Maybe` is skipped like `No`, and its old chunks are removed, as in
+  Scenario 2.
+- **AC4:** every source in the real `data/sources.json` has a valid `include`
+  and `reader`.
+- **AC5:** all existing tests pass.

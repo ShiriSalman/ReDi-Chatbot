@@ -134,6 +134,39 @@ Also run `tests/test_grounding.py` to catch regressions.
 - Guaranteeing that a real LLM follows grounding instructions (evaluate with real questions in Task 8)
 - Building a full chatbot UI
 
+## Iteration: malformed URLs (MVP stabilization, 2026-11-26)
+
+### Problem
+
+Checked on 2026-11-24:
+
+- `collect_citations()` **crashes** on a URL such as `http://[broken`:
+  `urlparse()` raises `ValueError` ("Invalid IPv6 URL"). Through
+  `POST /api/chat` the visitor gets the 500 error instead of an answer.
+- A URL with a space, such as `https://exa mple.org`, counts as valid and
+  becomes a link that can't work.
+
+### Change
+
+`is_valid_url()` returns `False` instead of raising, and also for a URL that
+contains whitespace. Such a source gets `url: None` and is shown without a
+link, like every invalid URL (section 6). No URL is guessed or repaired.
+
+### Assumption
+
+URLs in `data/sources.json` are written by hand, so a malformed one is a typo.
+It shouldn't stop the visitor's answer.
+
+### Acceptance criteria
+
+- **AC9** (`tests/test_citations.py`, `TestInvalidUrls`): `http://[broken`,
+  a URL with a space and a URL with a line break give `url: None`, without an
+  error, and the valid page keeps its link.
+- **AC10** (`tests/test_app.py`, `TestCitations`): through `POST /api/chat`,
+  a chunk with `http://[broken` gives status 200 and its source without a
+  link.
+- **AC11:** all existing tests pass.
+
 ## Implementation note
 
 Prefer a small citation-formatting/presentation function that consumes `AnswerResult.sources` instead of changing the existing `AnswerResult` structure. If the app later uses a web UI, it can render the same title-and-URL data as clickable links.
