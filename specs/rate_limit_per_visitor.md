@@ -32,6 +32,10 @@ keeps a single visitor from causing it.
 
 ## Who is a visitor
 
+> **Changed on 2026-11-26** by "Iteration: the visitor's real address (F2)"
+> below: the visitor is now the **third-last** entry. The rest of this
+> section is the original decision.
+
 The visitor is recognised by their IP address:
 
 - the **first** address in the `X-Forwarded-For` header, if there is one;
@@ -79,7 +83,7 @@ who were inactive for a minute are forgotten.
 - **AC5:** the 6th question within a minute gets 429 and `VISITOR_LIMIT`, and
   Gemini is called only 5 times.
 - **AC6:** a minute later the visitor can ask again.
-- **AC7:** two visitors (different first `X-Forwarded-For` entries, or
+- **AC7:** two visitors (different addresses in `X-Forwarded-For`, or
   different connection addresses) have their own limits.
 - **AC8:** small talk and fallback questions don't count and aren't blocked.
 - **AC9:** without a `rate_limiter`, there is no limit; the served app has a
@@ -95,11 +99,16 @@ works at the same time.
   restarts).
 - With more than one gunicorn worker, each worker would count on its own.
 - Visitors sharing one address (a school network) share one limit.
-- A visitor who changes their address, or fakes the header, gets around it.
+- A visitor who changes their address gets around it. (Faking the header no
+  longer works since the F2 iteration.)
+- The visitor's position in `X-Forwarded-For` depends on Render's proxy chain
+  as measured on 2026-11-26. If Render adds more entries, a proxy address may
+  be counted and visitors would share a limit (too strict, never a way
+  around it); if it adds fewer, the header's first entry is used.
 
 ## Iteration: the visitor's real address (F2)
 
-**Status:** step 1 (diagnosis) in progress.
+**Status:** done (step 1 diagnosis, step 2 fix).
 
 ### Finding (live check, 2026-11-26)
 
@@ -146,3 +155,42 @@ app logs it for a short time:
 - **AC12:** the line contains no address and no header value from the request.
 - **AC13:** small talk, fallback questions and an app without a
   `rate_limiter` log no such line.
+
+### Measurement (Render log, 2026-11-26, two live questions)
+
+```
+X-Forwarded-For has 3 entries; other headers: True-Client-IP, CF-Connecting-IP, CF-Ray; True-Client-IP = entry 1 of 3; CF-Connecting-IP = entry 1 of 3
+X-Forwarded-For has 4 entries; other headers: True-Client-IP, CF-Connecting-IP, CF-Ray; True-Client-IP = entry 2 of 4; CF-Connecting-IP = entry 2 of 4
+```
+
+The first question sent no header, the second a made-up one. In both, the
+real address (the one Cloudflare reports in `True-Client-IP` and
+`CF-Connecting-IP`) is the **third-last** entry: Render's proxies add the
+visitor's address and two proxy addresses after whatever the visitor sent.
+
+### Step 2: count from the end
+
+**Decision (owner, 2026-11-26):** option A, count from the end of
+`X-Forwarded-For`; not `CF-Connecting-IP`, because whether Cloudflare
+overwrites one sent by the visitor wasn't checked, and the fix shouldn't
+depend on a Cloudflare-specific header.
+
+- `RENDER_PROXY_ENTRIES = 2`: the proxy entries after the visitor's address.
+- `visitor_key` uses the entry `RENDER_PROXY_ENTRIES + 1` from the end. With
+  fewer entries it uses the first one; without the header,
+  `request.remote_addr`, as before.
+- The temporary log line of step 1 is removed.
+
+**Acceptance criteria** (`tests/test_app.py`):
+- **AC14:** for the two header shapes measured above, the visitor is the
+  same address.
+- **AC15:** six questions within a minute, each with a different made-up
+  first entry but the same real address, get the visitor limit on the 6th.
+- **AC16:** visitors with different real addresses have their own limits; a
+  header with fewer than three entries uses its first entry; without the
+  header the connection address is used.
+- **AC17:** the forwarding log line is gone (no counted question logs an
+  `X-Forwarded-For` summary).
+
+By hand (after deploying): the live check script from the finding gives the
+visitor limit on the 6th question in **both** rounds.
