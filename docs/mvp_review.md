@@ -72,6 +72,95 @@ A few practice leftovers had already been removed: the outdated
 `CLAUDE.md` status (#87), the Jest practice setup (#88) and the practice test
 `tests/test_example.py` (#89).
 
+## 5. Stabilization (2026-11-24 to 2026-11-26, #97–#104)
+
+A code review of `src/` found broken behaviour and missing error handling.
+Each fix got a spec iteration with numbered acceptance criteria and failing
+tests first. No new features or dependencies.
+
+| Finding | Fix | PR | Spec |
+|---|---|---|---|
+| F1: a question with several long unknown words took 13–26 s (spelling correction) | at most 2 words get the expensive two-typo search; about 1.4 s, normal questions unchanged | #97 | `task8_spelling_mistakes.md` AC14–AC17 |
+| F3: an answer emptied by cleaning showed no text but kept sources | it becomes the fallback with the contact link and no sources | #98 | `task8_fix_contact_link_not_covered.md` AC10–AC13 |
+| F4: a broken Course Finder pagination could loop or duplicate courses; an empty list replaced the old lists | repeated offsets and more than 50 pages stop the source; a list without city lists keeps the old chunks | #99 | `task8_course_list_per_city.md` AC10–AC14 |
+| E1: an interrupted run could leave a half-written `chunks.json`, and a broken file was overwritten or made the app start empty | atomic write; the ingestion and the app refuse a broken file with restore advice | #100 | `task10_update_loop.md` AC9–AC13 |
+| E2: a typo in `include` or `reader` silently skipped a source | reported as failed, old chunks kept | #101 | `task2_content_ingestion.md` AC1–AC5 |
+| Malformed citation URLs could raise an error | not a link, no error | #101 | `task5_citation_sourcing.md` AC9–AC11 |
+| F6: a bad entry in the question file stopped the evaluation after Gemini calls | checked before the first call; the result says what the checks cover | #102 | `task8_test_against_real_user_questions.md` AC-V1–AC-V5 |
+| F2: a made-up `X-Forwarded-For` got past the visitor limit (checked live) | the visitor is counted from the end of the header, as measured in the Render log | #103, #104 | `rate_limit_per_visitor.md` AC10–AC17 |
+
+The F2 fix was checked live after deploying (2026-11-26): six questions with
+made-up headers got the visitor limit on the 6th, like six without.
+
+**Result:** 445 tests pass, 2 xfailed (q26 needs conversation memory; q29
+"What is ReDI?" is a known retrieval failure). The expected evaluation result
+is 27 of 29 automated evaluation checks.
+
+## Known limitations
+
+Checked in the code on 2026-11-26 and accepted for the MVP. None of them gives
+a wrong answer as if it were from the sources.
+
+**Answers**
+
+- **"What is ReDI?" (q29):** "redi" is in about half of all chunks, so BM25
+  gives it almost no weight and `/our-impact` isn't found
+  (`docs/task8_findings.md`).
+- **"IT" is a stopword:** it is lowercased to "it", so "IT courses" searches
+  only "course".
+- **Thresholds tuned on few questions:** `MIN_WORD_SHARE`,
+  `MIN_MATCHED_WORDS` and the synonyms were tuned on the Task 8 questions;
+  other wordings may miss or retrieve too much.
+- **Spelling correction still costs time:** about 1.5 s for a question with
+  long unknown words (F1 limits it; it doesn't remove it).
+- **A blocked Gemini answer** (no text) is shown as "Something went wrong…
+  Please try again", although trying again gives the same result.
+- **The used-up quota** is recognised by the `code` attribute (429) of the
+  SDK's error. If google-genai changes it, visitors see the general error
+  instead of the wait message.
+
+**Visitor limit**
+
+- It depends on Render's proxy chain as measured on 2026-11-26
+  (`RENDER_PROXY_ENTRIES = 2`). If it changes, the limit can become too strict,
+  but not bypassable. It resets when the app restarts, and visitors on one
+  network share it.
+
+**Ingestion**
+
+- **New cities:** a city in the Course Finder gets its own list only if it is
+  in `LOCATIONS` (`src/ingestion.py`); otherwise it appears as a topic.
+- **Squarespace format:** `fetch_collection` expects `items` and
+  `pagination.nextPage`/`nextPageOffset` in `?format=json`. A changed format
+  ends the source with an error (old chunks kept) or reads too few items.
+- **Redirects are followed silently:** a moved page is read from its new
+  address, but its chunks keep the old URL.
+- **Pages without a charset:** `requests` reads `text/html` without a charset
+  as ISO-8859-1, which would garble characters such as "ö". Today's pages
+  declare it.
+- **The URLs in `data/sources.json` are trusted:** whatever is listed with
+  `"Yes"` is fetched; there is no domain check.
+- **An empty `data/sources.json`** removes every chunk. The change summary
+  shows this before the commit, and the app then starts with "content
+  unavailable".
+- **A course line longer than the chunk size** isn't cut, so its chunk would be
+  longer than 500 characters. None is today (longest chunk: 500).
+
+**Code**
+
+- Naming leftovers, not changed to avoid unrelated refactoring:
+  `enough_information` also means "not fully covered"; the parameter `request`
+  in `visitor_key` and `fetch_collection` in `ingest` have the same names as
+  the module-level objects; `plural()` exists in both `ingestion.py` and
+  `run_ingestion.py`.
+- `from app import …` (in `run_evaluation.py` and the tests) runs `app.py`'s
+  module-level code: it loads `chunks.json` and creates the served app.
+- google-genai shows a `DeprecationWarning` (`_UnionGenericAlias`, to be
+  removed in Python 3.17). Harmless on Python 3.14; update google-genai before
+  moving to 3.17.
+- What Render does when the app fails at startup (for example with a broken
+  `chunks.json`) hasn't been verified (`specs/task10_update_loop.md`).
+
 ## Open after the MVP
 
 - Conversation memory (q26) and semantic search

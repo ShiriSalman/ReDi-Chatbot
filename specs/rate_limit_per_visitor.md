@@ -194,3 +194,7 @@ depend on a Cloudflare-specific header.
 
 By hand (after deploying): the live check script from the finding gives the
 visitor limit on the 6th question in **both** rounds.
+
+**Checked live on 2026-11-26 after #104:** round A (no header) and round B
+(made-up headers) both gave 5 answers and `VISITOR_LIMIT` on the 6th; no
+`MODEL_BUSY` reply.

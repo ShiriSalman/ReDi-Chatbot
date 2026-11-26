@@ -48,6 +48,19 @@ open for a later decision:
 - **Last-updated date:** ReDI's pages currently send no `Last-Modified`
   header, so every chunk has `last_updated: "unavailable"`.
 
+Added after the MVP stabilization (checked in the code on 2026-11-26, also
+in `docs/mvp_review.md`):
+
+- **Redirects are followed silently:** a moved page is read from its new
+  address, but its chunks keep the URL from `data/sources.json`.
+- **Pages without a charset:** `requests` reads `text/html` without a
+  charset as ISO-8859-1, which would garble characters such as "ö". Today's
+  pages declare it.
+- **The listed URLs are trusted:** every `"Yes"` entry is fetched; there is
+  no domain check.
+- **An empty `data/sources.json`** removes every chunk (Scenario 2b). The
+  change summary shows it before the commit.
+
 ---
 
 ## Scenario 1 – Ingest an approved web source
