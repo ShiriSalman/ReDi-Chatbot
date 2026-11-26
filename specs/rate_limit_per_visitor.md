@@ -96,3 +96,53 @@ works at the same time.
 - With more than one gunicorn worker, each worker would count on its own.
 - Visitors sharing one address (a school network) share one limit.
 - A visitor who changes their address, or fakes the header, gets around it.
+
+## Iteration: the visitor's real address (F2)
+
+**Status:** step 1 (diagnosis) in progress.
+
+### Finding (live check, 2026-11-26)
+
+A script sent the same covered question to https://redi-chatbot.onrender.com
+twice six times, with a one-minute pause in between:
+
+| Round | Header sent | Result |
+|---|---|---|
+| A | none | 5 answers, the 6th got `VISITOR_LIMIT` |
+| B | a different made-up `X-Forwarded-For` each time (203.0.113.1–6) | 6 answers, no limit |
+
+No reply was Gemini's quota message (`MODEL_BUSY`), so the result is not
+caused by the shared quota. Render passes the client's `X-Forwarded-For` on
+and adds its own entries after it: the **first entry is chosen by the
+visitor**, and the limit can be bypassed with one header. The trade-off above
+was accepted on the assumption that this needs effort; it needs none, and one
+script can use up the shared quota for every visitor.
+
+The source cited above ("Render community, checked 2026-11-22") can no longer
+be checked: the community forum closed on 2026-03-24, and Render's docs don't
+describe `X-Forwarded-For`.
+
+### Step 1: find out how many entries Render adds (temporary)
+
+The fix counts from the end of `X-Forwarded-For`, which needs the number of
+entries Render's proxies add. That can't be seen from outside, so the served
+app logs it for a short time:
+
+- For every question that is counted, one INFO line: the number of
+  `X-Forwarded-For` entries, the **names** of other forwarding headers that
+  are present (`Forwarded`, `X-Real-IP`, `True-Client-IP`,
+  `CF-Connecting-IP`, `CF-Ray`), and, for `X-Real-IP`, `True-Client-IP` and
+  `CF-Connecting-IP`, the position in `X-Forwarded-For` whose value equals
+  theirs (values are compared, never logged).
+- **No address and no header value is logged**, in line with "Privacy" above.
+- The owner reads two lines in the Render log: one for a request without the
+  header, one with a made-up header. Step 2 removes the log line.
+
+**Acceptance criteria** (`tests/test_app.py`, `TestForwardingLog`):
+- **AC10:** a counted question logs the number of `X-Forwarded-For` entries
+  and the names of the other forwarding headers present.
+- **AC11:** for a client-address header, the line gives the matching
+  `X-Forwarded-For` position, or says it matches none.
+- **AC12:** the line contains no address and no header value from the request.
+- **AC13:** small talk, fallback questions and an app without a
+  `rate_limiter` log no such line.

@@ -567,6 +567,59 @@ class TestVisitorLimit:
         assert app_module.rate_limiter.window_seconds == 60
 
 
+# specs/rate_limit_per_visitor.md, "Iteration: the visitor's real address (F2)", step 1:
+# a temporary log line that shows how Render forwards the address, without any address
+class TestForwardingLog:
+    HEADERS = {
+        "X-Forwarded-For": "203.0.113.9, 198.51.100.4, 10.1.2.3",
+        "True-Client-IP": "198.51.100.4",
+        "CF-Connecting-IP": "192.0.2.77",
+        "CF-Ray": "8a1b2c3d4e5f-FRA",
+    }
+
+    def forwarding_lines(self, caplog, question=SUPPORTED_QUESTION, headers=HEADERS, rate_limiter=True):
+        limiter = RateLimiter(5, 60, clock=FakeClock()) if rate_limiter else None
+        client = make_client(rate_limiter=limiter)
+        with caplog.at_level(logging.INFO):
+            client.post("/api/chat", json={"question": question}, headers=headers)
+        return [r.getMessage() for r in caplog.records if "X-Forwarded-For" in r.getMessage()]
+
+    # AC10
+    def test_a_counted_question_logs_the_number_of_entries_and_the_header_names(self, caplog):
+        [line] = self.forwarding_lines(caplog)
+
+        assert "X-Forwarded-For has 3 entries" in line
+        assert "True-Client-IP" in line and "CF-Connecting-IP" in line and "CF-Ray" in line
+        assert "X-Real-IP" not in line
+
+    def test_without_the_header_it_logs_zero_entries(self, caplog):
+        [line] = self.forwarding_lines(caplog, headers={})
+
+        assert "X-Forwarded-For has 0 entries" in line
+
+    # AC11
+    def test_it_logs_which_entry_a_client_address_header_matches(self, caplog):
+        [line] = self.forwarding_lines(caplog)
+
+        assert "True-Client-IP = entry 2 of 3" in line
+        assert "CF-Connecting-IP = no entry" in line
+
+    # AC12
+    def test_no_address_or_header_value_is_logged(self, caplog):
+        self.forwarding_lines(caplog)
+
+        for value in ["203.0.113.9", "198.51.100.4", "10.1.2.3", "192.0.2.77", "8a1b2c3d4e5f", "127.0.0.1"]:
+            assert value not in caplog.text
+
+    # AC13
+    @pytest.mark.parametrize("question", ["thanks", UNRELATED_QUESTION], ids=["small talk", "fallback"])
+    def test_questions_that_are_not_counted_log_nothing(self, caplog, question):
+        assert self.forwarding_lines(caplog, question=question) == []
+
+    def test_an_app_without_a_rate_limiter_logs_nothing(self, caplog):
+        assert self.forwarding_lines(caplog, rate_limiter=False) == []
+
+
 # AC9: Safe rendering (backend side, plus a check on the browser script)
 class TestSafeRendering:
     def test_html_in_the_answer_is_returned_as_plain_json_text(self):
