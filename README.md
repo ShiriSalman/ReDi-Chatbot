@@ -1,3 +1,5 @@
+**English** | [Deutsch](README.de.md)
+
 # 🤖 ReDi-Chatbot
 
 ## 💬 What this is
@@ -109,7 +111,7 @@ python src/run_evaluation.py
 With `GEMINI_API_KEY` set, the answers come from Gemini (one call per answered question);
 without it, only retrieval, sources and the fallback can be judged.
 
-The result shows how many **automated evaluation checks passed**, for example "27 of 28".
+The result shows how many **automated evaluation checks passed**; the last run had "27 of 29".
 These checks only look at whether the right ReDI pages were found and whether unrelated
 questions got the fallback. Whether an answer is factually correct isn't checked
 automatically: read the answers in the results table for that.
