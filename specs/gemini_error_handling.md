@@ -313,6 +313,17 @@ on the page, both.
 - **Response validation beyond empty text**, for example checking the finish
   reason or handling a cut-off answer.
 
+## Known limitations (MVP stabilization, 2026-11-26)
+
+- **A blocked answer** (no text) raises `ValueError` and is shown as the
+  general error "…Please try again", although trying again gives the same
+  result.
+- **The used-up quota** is recognised by the `code` attribute (429) of the
+  SDK's error. If google-genai changes it, visitors see the general error
+  instead of the wait message.
+- google-genai shows a `DeprecationWarning` (`_UnionGenericAlias`, to be
+  removed in Python 3.17); update it before moving to Python 3.17.
+
 ## To verify before implementing
 
 - The model ID on the Gemini models page. It must be a model available on

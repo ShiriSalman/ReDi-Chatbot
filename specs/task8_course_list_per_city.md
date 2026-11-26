@@ -141,6 +141,14 @@ no course word in common with the lists).
 - The lists are as current as the last ingestion run (Task 10, update loop).
 - A question without a city ("which courses are there") gets the overview,
   not every course; the answer can then ask which city.
+- A new city gets its own list only after it is added to `LOCATIONS`
+  (`src/ingestion.py`); until then it appears as a topic in the overview.
+  (Added 2026-11-26.)
+- The reader expects Squarespace's `?format=json` with `items` and
+  `pagination.nextPage`/`nextPageOffset`. A changed format ends the source
+  with an error (old chunks kept) or reads too few items. (Added 2026-11-26.)
+- A course line is never cut, so a line longer than the list's budget would
+  give a chunk over 500 characters. None is today. (Added 2026-11-26.)
 
 ## Iteration: broken pagination and empty lists (MVP stabilization, 2026-11-25)
 

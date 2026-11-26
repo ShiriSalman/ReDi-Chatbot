@@ -81,8 +81,9 @@ run the ingestion (step 2) first.
 
 - **Demo mode** without `GEMINI_API_KEY`: no real answer text.
 - **Keyword search, not semantic search:** small spelling mistakes are corrected, but a
-  question that uses different words than the pages can still miss them. Known case:
-  "which courses are they" doesn't find the course list. Details in `docs/task8_findings.md`.
+  question that uses different words than the pages can still miss them. Known cases:
+  "which courses are they" doesn't find the course list, and "What is ReDI?" doesn't find
+  the "Our impact" page. Details in `docs/task8_findings.md`.
 - **No conversation memory:** each question is answered on its own, so a follow-up such as
   "which courses are they" doesn't know what was asked before.
 - **No automatic updates:** the content only changes when you re-run the ingestion
@@ -92,6 +93,9 @@ run the ingestion (step 2) first.
   user feedback, other languages, conversation memory, and embedding on other platforms.
 - **Public Render URL:** each visitor can ask 5 questions per minute, and Gemini's free tier
   allows 15 per minute for everyone together; after that the page asks visitors to wait.
+
+The technical limitations are listed in
+[docs/mvp_review.md](docs/mvp_review.md#known-limitations).
 
 ## 🧪 Evaluate real user questions (Task 8)
 
@@ -142,4 +146,5 @@ python -m pytest
   - `0002-chat-interface-json-api.md`
 - **`docs/task8_findings.md`:** what the evaluation found, and the order of the next fixes.
 - **`docs/update_content.md`:** how to keep the content current (Task 10).
-- **`docs/mvp_review.md`:** what the review after Task 10 found and changed.
+- **`docs/mvp_review.md`:** what the reviews after Task 10 found and changed, and the known
+  limitations.
