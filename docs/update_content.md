@@ -87,9 +87,9 @@ waits between questions for the free tier):
 python src/run_evaluation.py
 ```
 
-Compare the result with the last run in `docs/task8_findings.md` (27 of 28
-automated evaluation checks passed on 2026-11-23; with q29, added on
-2026-11-26 as a known failure, 27 of 29 are expected). The checks cover
+Compare the result with the last run in `docs/task8_findings.md` (27 of 29
+automated evaluation checks passed in run 21 on 2026-11-26; q26 and q29 are
+known failures). The checks cover
 retrieval and fallback only, so also read the answers of the changed topics. Also ask the chat page a question about each changed page:
 
 ```powershell

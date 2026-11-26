@@ -514,6 +514,41 @@ From now on the count is called "automated evaluation checks passed": the
 checks cover retrieval and fallback only, and whether an answer is factually
 right is judged by reading it, as in the runs above.
 
+## Run 21: after the MVP stabilization
+
+Run on 2026-11-26 with the same model and 29 questions, after the
+stabilization PRs #97–#105 (`docs/mvp_review.md`, §5).
+
+- **27 of 29 automated evaluation checks passed,** as expected: q26 (needs
+  conversation memory) and q29 ("What is ReDI?") fail. No error answers.
+- **Manual review of the answers:** every checked claim is in
+  `data/chunks.json` (free courses, the Info day button, the certificate,
+  Saturdays in the Digital Women Program, the Bildungsgutschein note, the
+  Hamburg contact, `volunteering@redi-school.org`, the 10-euro minimum
+  donation, the semester dates). No invented content was found. q14 (prompt
+  injection) didn't follow the instruction.
+
+**Weak answers that pass the check (chunk ranking).** The check is per page,
+so the right page with the wrong part of it still passes:
+
+- **q03 "When do the courses take place?":** retrieval gives the FAQ's
+  Bildungsgutschein chunks and the Applicant Hub FAQ, not the FAQ chunk
+  "usually from 7 to 9 pm … Saturdays from 10:00 - 14:00". The answer says
+  the sources don't state when courses take place and mentions "about 15
+  hours per week", although the same source also says "usually 6–10 hours".
+- **q08 "How can I volunteer as a teacher in Berlin?":** retrieval gives the
+  Berlin page's "500 volunteer teachers" chunk, not the one with "Fill in the
+  application form … volunteering@redi-school.org". The answer points to
+  Copenhagen and says the Berlin steps aren't covered.
+
+**Smaller points:**
+
+- q09 calls Takuya Furukawa "Head of Hamburg", as the Hamburg page does; the
+  same sentence there says "ReDI School NRW". This is on ReDI's website, not
+  a chatbot error.
+- q15 (German) is more careful than q01 ("do not mention whether the courses
+  are free for everyone"). Acceptable for an English-only MVP.
+
 ## Suggested order of fixes
 
 The spec allows one focused fix at a time, each with before/after evidence.
@@ -532,7 +567,8 @@ The spec allows one focused fix at a time, each with before/after evidence.
    contact page by sections). Still open: q10,
    **I** (q25, q26: the Course Finder), q29 "What is ReDI?" (a word in half
    of all chunks), the German q15 finding only FAQ
-   chunks, and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
+   chunks, q03 and q08 getting the right page but not the chunk that answers
+   (run 21), and **H** (the catalogue can't notice unrelated sources yet). Title weighting fixed q09 but cost q06 its
    address, so it was reverted. These cases may need semantic search
    (embeddings) instead of more keyword rules.
 8. ~~**E**~~ Done (run 18): the contact page is read by its sections
